@@ -1,0 +1,78 @@
+
+ignore_keywords = ["java", "php", "permanent resident", "senior"]
+
+search_keywords = [
+  "backend developer!",
+  "Golang",
+  "graduate",
+  "Vue",
+  "Nuxt",
+  "python",
+  "data analysis",
+]
+
+[search_params_preset]
+user_id = "573752354"
+site_key = "AU-Main"
+salary_type = "annual"
+min_salary = "100000"
+max_salary = ""
+lang_locale = "en-AU"
+work_locale = "All Sydney NSW"
+work_type = ""
+classification = "6281"
+company_size = "501-1000"
+
+[template]
+cover_letter_path = "template/cover_letter.mdx"
+cv_path = "template/cv.mdx"
+mail_path = "template/mail.mdx"
+
+
+[api_endpoint.ollama]
+url = "http://192.168.0.102:11434/api/generate"
+model = "phi3:mini"
+prompt = """
+generate a Cover Letter content without the letter header, address , with following information:
+
+# work experience of the applicant
+## Frontend Developer [January 2021 - November 2022]
+  Centaline Data Technology Limited, Large-scale Property Agency Company
+  • Evolved and maintained the Centaline Group-related website to implement a Content Management System and property searching page.
+  • Enhanced website's search engine visibility with performance (SEO).
+  • Constructed a new design system with the design team for the entire Centaline Web application.
+  • Maintained web component library and established development tool for documentation.
+  • related apps:
+    o Index page( https://hk.centanet.com/info/en/index),
+    o Find property page (https://hk.centanet.com/findproperty/en/list/buy),
+    o Estate page (https://hk.centanet.com/estate/en/index)
+## Web Programmer November [2017 - May 2019]
+  Teksbotics (Hong Kong ) Limited , Start-up Company for Robotic solution
+  • Developed applications for Pepper Robot, including the User Interface in touch panel and robot motion. For example, a pizza ordering web app with robot chating dialog.
+  • Built web applications for support UNO Patrol Robot by Vue.js and Flask framework, for example, data displaying and video streaming.
+  • Served as Customer service support, including hardware setup and installation, and on-site support, for example, robot network setup and demo for packing and unpacking
+
+# education of the applicant
+## Master of Information Technology [January 2023 - December 2024]
+  University of Technology Sydney (UTS)
+  Major: Data Science
+## Bachelor of Science (Hons) Computing Science [September 2017 - July 2020]
+  School Of Continuing and Professional Education
+## Associate of Science in Information Systems Development [September 2015 - July 2017]
+  Community College Of City University
+  Major: Computer Programming
+
+# skills of the applicant
+- Javascript: Reactjs, Vue.js, Svelte, Solidjs, AngularJS, AstroJS
+- Golang: mainly on Web Service, Gin, Web server, gRPC
+- Python: mainly on data modeling, SkLearn
+- Rust: mainly on Web Service, Axum, Tonic
+- CSharp: mainly on Web Service, ASP.net, Unity
+- Others: SQL database (PSQL, SQLite, MSSQL, MySQL), NoSQL (MongoDB, Redis)
+---
+# Job description
+{{job_description}}
+
+# Company information
+{{company_information}}
+"""
