@@ -2,10 +2,7 @@ syntax = "proto3";
 package job_seek.user_management;
 option go_package = "job-seek/pkg/protos";
 
-message GetUserRequest {
-  string user_id = 1;
-}
-
+message GetUserRequest { string user_id = 1; }
 
 message UserResponse {
   string status = 1;
@@ -22,33 +19,30 @@ message UserAccount {
   string user_address = 6;
 }
 
-
 message UserSearchPerfence {
-  string user_id = 1;       // seeker-id
-  string work_location = 2; // where
-  string site_key = 3;
-  string locale = 4;
-  repeated PerfenceKeyword keywords = 5;
+  string record_id = 1;
+  string user_id = 2; // seeker-id
+  string job_id = 3;  // job-id
+  repeated PerfenceKeyword keywords = 4;
 }
 
 message PerfenceKeyword {
-  string user_id = 1;   // seeker-id
-  string keyword = 2;   //
-  string value = 3;     //
-  string type = 4;      //
-  bool is_positive = 5; // true: positive, false: negative
+  string kw_id = 1;
+  string user_id = 2;   // seeker-id
+  string keyword = 3;   //
+  string value = 4;     //
+  string type = 5;      //
+  bool is_positive = 6; // true: positive, false: negative
 }
 
-message GetPredictedPerfence {
-  string record_id = 1;
-}
+message GetPredictedPerfence { string record_id = 1; }
+
 message PredictedPerfenceResponse {
   string status = 1;
   string user_id = 2;
   string record_id = 3;
   string message = 4;
 }
-
 
 message UserJobSearchPredictedPerfence {
   string record_id = 1;
@@ -57,8 +51,8 @@ message UserJobSearchPredictedPerfence {
   string site_key = 4;
   string locale = 5;
   repeated PerfenceKeyword job_keyword = 6; //
-  int32 score = 7;      // 0-100
-  int32 count = 8;      // 0-100
+  int32 score = 7;                          // 0-100
+  int32 count = 8;                          // 0-100
 }
 
 message PredictedPerfenceMap {
@@ -66,18 +60,21 @@ message PredictedPerfenceMap {
   string map_id = 2;
 }
 
-
 service UserManagementService {
   // from user management
-  rpc SaveUserAccount (UserAccount) returns (UserResponse);
-  rpc GetUserAccount (GetUserRequest) returns (UserAccount);
+  rpc SaveUserAccount(UserAccount) returns (UserResponse);
+  rpc GetUserAccount(GetUserRequest) returns (UserAccount);
 
   // store point of user search perfence
-  rpc SaveUserSearchPerfence (UserSearchPerfence) returns (UserResponse);
-  rpc UpdateUserSearchPerfence (UserSearchPerfence) returns (UserResponse);
-  rpc GetUserSearchPerfence (GetUserRequest) returns (UserSearchPerfence);
-  // 
-  rpc SaveUserJobSearchPredictedPerfence (UserJobSearchPredictedPerfence) returns (PredictedPerfenceResponse);
-  rpc GetUserJobSearchPredictedPerfence (GetPredictedPerfence) returns (UserJobSearchPredictedPerfence);
-  rpc CreateUserJobSearchPredictedPerfence(stream UserJobSearchPredictedPerfence) returns (stream PredictedPerfenceResponse);
+  rpc SaveUserSearchPerfence(UserSearchPerfence) returns (UserResponse);
+  rpc UpdateUserSearchPerfence(UserSearchPerfence) returns (UserResponse);
+  rpc GetUserSearchPerfence(GetUserRequest) returns (UserSearchPerfence);
+  //
+  rpc SaveUserJobSearchPredictedPerfence(UserJobSearchPredictedPerfence)
+      returns (PredictedPerfenceResponse);
+  rpc GetUserJobSearchPredictedPerfence(GetPredictedPerfence)
+      returns (UserJobSearchPredictedPerfence);
+  rpc CreateUserJobSearchPredictedPerfence(
+      stream UserJobSearchPredictedPerfence)
+      returns (stream PredictedPerfenceResponse);
 }

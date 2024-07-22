@@ -19,12 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	UserManagementService_SaveUserAccount_FullMethodName                    = "/job_seek.user_management.UserManagementService/SaveUserAccount"
-	UserManagementService_GetUserAccount_FullMethodName                     = "/job_seek.user_management.UserManagementService/GetUserAccount"
-	UserManagementService_SaveUserSearchPerfence_FullMethodName             = "/job_seek.user_management.UserManagementService/SaveUserSearchPerfence"
-	UserManagementService_GetUserSearchPerfence_FullMethodName              = "/job_seek.user_management.UserManagementService/GetUserSearchPerfence"
-	UserManagementService_SaveUserJobSearchPredictedPerfence_FullMethodName = "/job_seek.user_management.UserManagementService/SaveUserJobSearchPredictedPerfence"
-	UserManagementService_GetUserJobSearchPredictedPerfence_FullMethodName  = "/job_seek.user_management.UserManagementService/GetUserJobSearchPredictedPerfence"
+	UserManagementService_SaveUserAccount_FullMethodName                      = "/job_seek.user_management.UserManagementService/SaveUserAccount"
+	UserManagementService_GetUserAccount_FullMethodName                       = "/job_seek.user_management.UserManagementService/GetUserAccount"
+	UserManagementService_SaveUserSearchPerfence_FullMethodName               = "/job_seek.user_management.UserManagementService/SaveUserSearchPerfence"
+	UserManagementService_UpdateUserSearchPerfence_FullMethodName             = "/job_seek.user_management.UserManagementService/UpdateUserSearchPerfence"
+	UserManagementService_GetUserSearchPerfence_FullMethodName                = "/job_seek.user_management.UserManagementService/GetUserSearchPerfence"
+	UserManagementService_SaveUserJobSearchPredictedPerfence_FullMethodName   = "/job_seek.user_management.UserManagementService/SaveUserJobSearchPredictedPerfence"
+	UserManagementService_GetUserJobSearchPredictedPerfence_FullMethodName    = "/job_seek.user_management.UserManagementService/GetUserJobSearchPredictedPerfence"
+	UserManagementService_CreateUserJobSearchPredictedPerfence_FullMethodName = "/job_seek.user_management.UserManagementService/CreateUserJobSearchPredictedPerfence"
 )
 
 // UserManagementServiceClient is the client API for UserManagementService service.
@@ -34,10 +36,13 @@ type UserManagementServiceClient interface {
 	// from user management
 	SaveUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error)
 	GetUserAccount(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserAccount, error)
+	// store point of user search perfence
 	SaveUserSearchPerfence(ctx context.Context, in *UserSearchPerfence, opts ...grpc.CallOption) (*UserResponse, error)
+	UpdateUserSearchPerfence(ctx context.Context, in *UserSearchPerfence, opts ...grpc.CallOption) (*UserResponse, error)
 	GetUserSearchPerfence(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPerfence, error)
 	SaveUserJobSearchPredictedPerfence(ctx context.Context, in *UserJobSearchPredictedPerfence, opts ...grpc.CallOption) (*PredictedPerfenceResponse, error)
 	GetUserJobSearchPredictedPerfence(ctx context.Context, in *GetPredictedPerfence, opts ...grpc.CallOption) (*UserJobSearchPredictedPerfence, error)
+	CreateUserJobSearchPredictedPerfence(ctx context.Context, opts ...grpc.CallOption) (UserManagementService_CreateUserJobSearchPredictedPerfenceClient, error)
 }
 
 type userManagementServiceClient struct {
@@ -78,6 +83,16 @@ func (c *userManagementServiceClient) SaveUserSearchPerfence(ctx context.Context
 	return out, nil
 }
 
+func (c *userManagementServiceClient) UpdateUserSearchPerfence(ctx context.Context, in *UserSearchPerfence, opts ...grpc.CallOption) (*UserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, UserManagementService_UpdateUserSearchPerfence_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userManagementServiceClient) GetUserSearchPerfence(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPerfence, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserSearchPerfence)
@@ -108,6 +123,38 @@ func (c *userManagementServiceClient) GetUserJobSearchPredictedPerfence(ctx cont
 	return out, nil
 }
 
+func (c *userManagementServiceClient) CreateUserJobSearchPredictedPerfence(ctx context.Context, opts ...grpc.CallOption) (UserManagementService_CreateUserJobSearchPredictedPerfenceClient, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &UserManagementService_ServiceDesc.Streams[0], UserManagementService_CreateUserJobSearchPredictedPerfence_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &userManagementServiceCreateUserJobSearchPredictedPerfenceClient{ClientStream: stream}
+	return x, nil
+}
+
+type UserManagementService_CreateUserJobSearchPredictedPerfenceClient interface {
+	Send(*UserJobSearchPredictedPerfence) error
+	Recv() (*PredictedPerfenceResponse, error)
+	grpc.ClientStream
+}
+
+type userManagementServiceCreateUserJobSearchPredictedPerfenceClient struct {
+	grpc.ClientStream
+}
+
+func (x *userManagementServiceCreateUserJobSearchPredictedPerfenceClient) Send(m *UserJobSearchPredictedPerfence) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *userManagementServiceCreateUserJobSearchPredictedPerfenceClient) Recv() (*PredictedPerfenceResponse, error) {
+	m := new(PredictedPerfenceResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // UserManagementServiceServer is the server API for UserManagementService service.
 // All implementations must embed UnimplementedUserManagementServiceServer
 // for forward compatibility
@@ -115,10 +162,13 @@ type UserManagementServiceServer interface {
 	// from user management
 	SaveUserAccount(context.Context, *UserAccount) (*UserResponse, error)
 	GetUserAccount(context.Context, *GetUserRequest) (*UserAccount, error)
+	// store point of user search perfence
 	SaveUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error)
+	UpdateUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error)
 	GetUserSearchPerfence(context.Context, *GetUserRequest) (*UserSearchPerfence, error)
 	SaveUserJobSearchPredictedPerfence(context.Context, *UserJobSearchPredictedPerfence) (*PredictedPerfenceResponse, error)
 	GetUserJobSearchPredictedPerfence(context.Context, *GetPredictedPerfence) (*UserJobSearchPredictedPerfence, error)
+	CreateUserJobSearchPredictedPerfence(UserManagementService_CreateUserJobSearchPredictedPerfenceServer) error
 	mustEmbedUnimplementedUserManagementServiceServer()
 }
 
@@ -135,6 +185,9 @@ func (UnimplementedUserManagementServiceServer) GetUserAccount(context.Context, 
 func (UnimplementedUserManagementServiceServer) SaveUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveUserSearchPerfence not implemented")
 }
+func (UnimplementedUserManagementServiceServer) UpdateUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserSearchPerfence not implemented")
+}
 func (UnimplementedUserManagementServiceServer) GetUserSearchPerfence(context.Context, *GetUserRequest) (*UserSearchPerfence, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserSearchPerfence not implemented")
 }
@@ -143,6 +196,9 @@ func (UnimplementedUserManagementServiceServer) SaveUserJobSearchPredictedPerfen
 }
 func (UnimplementedUserManagementServiceServer) GetUserJobSearchPredictedPerfence(context.Context, *GetPredictedPerfence) (*UserJobSearchPredictedPerfence, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserJobSearchPredictedPerfence not implemented")
+}
+func (UnimplementedUserManagementServiceServer) CreateUserJobSearchPredictedPerfence(UserManagementService_CreateUserJobSearchPredictedPerfenceServer) error {
+	return status.Errorf(codes.Unimplemented, "method CreateUserJobSearchPredictedPerfence not implemented")
 }
 func (UnimplementedUserManagementServiceServer) mustEmbedUnimplementedUserManagementServiceServer() {}
 
@@ -211,6 +267,24 @@ func _UserManagementService_SaveUserSearchPerfence_Handler(srv interface{}, ctx 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserManagementService_UpdateUserSearchPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSearchPerfence)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserManagementServiceServer).UpdateUserSearchPerfence(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserManagementService_UpdateUserSearchPerfence_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserManagementServiceServer).UpdateUserSearchPerfence(ctx, req.(*UserSearchPerfence))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserManagementService_GetUserSearchPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
@@ -265,6 +339,32 @@ func _UserManagementService_GetUserJobSearchPredictedPerfence_Handler(srv interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserManagementService_CreateUserJobSearchPredictedPerfence_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(UserManagementServiceServer).CreateUserJobSearchPredictedPerfence(&userManagementServiceCreateUserJobSearchPredictedPerfenceServer{ServerStream: stream})
+}
+
+type UserManagementService_CreateUserJobSearchPredictedPerfenceServer interface {
+	Send(*PredictedPerfenceResponse) error
+	Recv() (*UserJobSearchPredictedPerfence, error)
+	grpc.ServerStream
+}
+
+type userManagementServiceCreateUserJobSearchPredictedPerfenceServer struct {
+	grpc.ServerStream
+}
+
+func (x *userManagementServiceCreateUserJobSearchPredictedPerfenceServer) Send(m *PredictedPerfenceResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *userManagementServiceCreateUserJobSearchPredictedPerfenceServer) Recv() (*UserJobSearchPredictedPerfence, error) {
+	m := new(UserJobSearchPredictedPerfence)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // UserManagementService_ServiceDesc is the grpc.ServiceDesc for UserManagementService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -285,6 +385,10 @@ var UserManagementService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserManagementService_SaveUserSearchPerfence_Handler,
 		},
 		{
+			MethodName: "UpdateUserSearchPerfence",
+			Handler:    _UserManagementService_UpdateUserSearchPerfence_Handler,
+		},
+		{
 			MethodName: "GetUserSearchPerfence",
 			Handler:    _UserManagementService_GetUserSearchPerfence_Handler,
 		},
@@ -297,6 +401,13 @@ var UserManagementService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserManagementService_GetUserJobSearchPredictedPerfence_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "CreateUserJobSearchPredictedPerfence",
+			Handler:       _UserManagementService_CreateUserJobSearchPredictedPerfence_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "user-management.proto",
 }

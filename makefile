@@ -1,4 +1,7 @@
-generate-proto:
+current_dir := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
+rust_dir := $(current_dir)../job-seek-v2
+
+generate-go-proto:
 	protoc \
 	--proto_path=pkg/protos \
 	--go_out=pkg/protos --go_opt=paths=source_relative \
@@ -6,7 +9,17 @@ generate-proto:
 		pkg/protos/*.proto
 
 sync-proto:
-	cp -r pkg/protos/* ~/git_src/job-seek/
+	cp -r pkg/protos/* $(rust_dir)/packages/protos/defines/
+
+check-rust-protos:
+	cd $(rust_dir)/packages/protos && \
+	cargo check &&\
+	cd $(current_dir)
+
+generate-proto: \
+	generate-go-proto \
+	sync-proto \
+	check-rust-protos
 
 build-fetch-job-service:
 	go build -o bin/fetch-job-service services/fetch_job_service/main.go
