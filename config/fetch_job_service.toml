@@ -1,0 +1,7 @@
+
+
+[seek_service]
+domain = 'https://www.seek.com.au'
+
+[yahoo_search]
+domain = 'hk.yahoo.com'

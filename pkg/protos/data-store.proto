@@ -1,0 +1,57 @@
+syntax = "proto3";
+package job_seek.data_store;
+import "job-search.proto";
+import "job-apply.proto";
+import "user-management.proto";
+option go_package = "job-seek/pkg/protos";
+
+
+service DataStoreService {
+  // from user management
+  rpc SaveUserAccount (job_seek.user_management.UserAccount) returns (job_seek.user_management.UserResponse);
+  rpc GetUserAccount (job_seek.user_management.GetUserRequest) returns (job_seek.user_management.UserAccount);
+  // 
+  rpc SaveUserSearchPerfence (job_seek.user_management.UserSearchPerfence) returns (job_seek.user_management.UserResponse);
+  rpc GetUserSearchPerfence (job_seek.user_management.GetUserRequest) returns (job_seek.user_management.UserSearchPerfence);
+  // 
+  rpc SaveUserJobSearchPredictedPerfence (job_seek.user_management.UserJobSearchPredictedPerfence) returns (job_seek.user_management.PredictedPerfenceResponse);
+  rpc GetUserJobSearchPredictedPerfence (job_seek.user_management.GetPredictedPerfence) returns (job_seek.user_management.UserJobSearchPredictedPerfence);
+  
+  // 
+  rpc SaveJobApply (job_seek.job_apply.JobApply) returns (DataStoreResponse);
+  rpc GetJobApply (job_seek.job_apply.GetJobApplyRequest) returns (job_seek.job_apply.GetJobApplyResponse);
+  rpc ListJobApply (job_seek.job_apply.GetJobApplyRequest) returns (job_seek.job_apply.GetJobApplyResponse);
+  rpc DeleteJobApply (job_seek.job_apply.JobApply) returns (DataStoreResponse);
+  // 
+  rpc SaveBookmarkJob (job_seek.job_apply.BookmarkJob) returns (DataStoreResponse);
+  rpc GetBookmarkJob (job_seek.job_apply.BookmarkJobRequest) returns (job_seek.job_apply.BookmarkJob);
+  rpc ListBookmarkJob (job_seek.job_apply.BookmarkJobRequest) returns (job_seek.job_apply.ListBookmarkJobResponse);
+  rpc DeleteBookmarkJob (job_seek.job_apply.BookmarkJobRequest) returns (DataStoreResponse);
+
+  // from job search
+  rpc SaveJob (job_seek.job_search.Job) returns (DataStoreResponse);
+  rpc BatchSaveJob (stream job_seek.job_search.Job) returns (stream job_seek.job_search.JobSearchResponse);
+  rpc SearchJob (job_seek.job_search.JobSearchRequest) returns (job_seek.job_search.JobSearchResponse);
+  rpc DeleteJob (job_seek.job_search.Job) returns (DataStoreResponse);
+  rpc DropExpiredJob (job_seek.job_search.Job) returns (DataStoreResponse);
+  
+  rpc ListCachedJobSearch (DataStoreRequest) returns (CacheJobSearchResponse);
+  rpc CreateCachedJobSearchList (job_seek.job_search.JobSearchRequest) returns (job_seek.job_search.JobSearchRequest);
+  rpc GetCachedJobSearch (job_seek.job_search.JobSearchRequest) returns (job_seek.job_search.JobSearchResponse);
+
+
+  rpc SaveCompanyDetail (job_seek.job_search.CompanyDetail) returns (DataStoreResponse);
+  rpc BatchSaveCompanyDetail (stream job_seek.job_search.CompanyDetail) returns (stream job_seek.job_search.CompanyDetailResponse);
+  rpc GetCompanyDetail (job_seek.job_search.CompanyDetailRequest) returns (job_seek.job_search.CompanyDetailResponse);
+  
+}
+message DataStoreRequest {
+}
+
+message DataStoreResponse {
+  string message = 1;
+}
+
+message CacheJobSearchResponse {
+  repeated job_seek.job_search.JobSearchRequest job_searches = 1;
+}
