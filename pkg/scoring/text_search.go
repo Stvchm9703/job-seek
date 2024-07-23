@@ -161,7 +161,8 @@ func CalculateMatchingScores(readConfig *config.SearchConfig, postDetail *reques
 	positiveMatch = append(positiveMatch, pMatch...)
 	negativeMatch = append(negativeMatch, nMatch...)
 
-	pMatch, nMatch = ScorePostMatchingKeyword(readConfig, postDetail.CompanyDetails.Specialties)
+	specialties := strings.Join(postDetail.CompanyDetails.Specialties, " ")
+	pMatch, nMatch = ScorePostMatchingKeyword(readConfig, specialties)
 	score += scoringMatch(pMatch, nMatch, 2, 1, 2, 1, true)
 	positiveMatch = append(positiveMatch, pMatch...)
 	negativeMatch = append(negativeMatch, nMatch...)

@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion8
 
 const (
 	JobSearchService_JobSearch_FullMethodName         = "/job_seek.job_search.JobSearchService/JobSearch"
+	JobSearchService_UserJobSearch_FullMethodName     = "/job_seek.job_search.JobSearchService/UserJobSearch"
 	JobSearchService_GetJobByPostId_FullMethodName    = "/job_seek.job_search.JobSearchService/GetJobByPostId"
 	JobSearchService_GetJobByCompanyId_FullMethodName = "/job_seek.job_search.JobSearchService/GetJobByCompanyId"
 	JobSearchService_ListCompanyDetail_FullMethodName = "/job_seek.job_search.JobSearchService/ListCompanyDetail"
@@ -31,6 +32,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type JobSearchServiceClient interface {
 	JobSearch(ctx context.Context, in *JobSearchRequest, opts ...grpc.CallOption) (*JobSearchResponse, error)
+	UserJobSearch(ctx context.Context, in *JobSearchRequest, opts ...grpc.CallOption) (*JobSearchResponse, error)
 	GetJobByPostId(ctx context.Context, in *JobSearchRequest, opts ...grpc.CallOption) (*JobSearchResponse, error)
 	GetJobByCompanyId(ctx context.Context, in *JobSearchRequest, opts ...grpc.CallOption) (*JobSearchResponse, error)
 	ListCompanyDetail(ctx context.Context, in *CompanyDetailRequest, opts ...grpc.CallOption) (*CompanyDetailResponse, error)
@@ -49,6 +51,16 @@ func (c *jobSearchServiceClient) JobSearch(ctx context.Context, in *JobSearchReq
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(JobSearchResponse)
 	err := c.cc.Invoke(ctx, JobSearchService_JobSearch_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobSearchServiceClient) UserJobSearch(ctx context.Context, in *JobSearchRequest, opts ...grpc.CallOption) (*JobSearchResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobSearchResponse)
+	err := c.cc.Invoke(ctx, JobSearchService_UserJobSearch_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +112,7 @@ func (c *jobSearchServiceClient) GetCompanyDetail(ctx context.Context, in *Compa
 // for forward compatibility
 type JobSearchServiceServer interface {
 	JobSearch(context.Context, *JobSearchRequest) (*JobSearchResponse, error)
+	UserJobSearch(context.Context, *JobSearchRequest) (*JobSearchResponse, error)
 	GetJobByPostId(context.Context, *JobSearchRequest) (*JobSearchResponse, error)
 	GetJobByCompanyId(context.Context, *JobSearchRequest) (*JobSearchResponse, error)
 	ListCompanyDetail(context.Context, *CompanyDetailRequest) (*CompanyDetailResponse, error)
@@ -113,6 +126,9 @@ type UnimplementedJobSearchServiceServer struct {
 
 func (UnimplementedJobSearchServiceServer) JobSearch(context.Context, *JobSearchRequest) (*JobSearchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JobSearch not implemented")
+}
+func (UnimplementedJobSearchServiceServer) UserJobSearch(context.Context, *JobSearchRequest) (*JobSearchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserJobSearch not implemented")
 }
 func (UnimplementedJobSearchServiceServer) GetJobByPostId(context.Context, *JobSearchRequest) (*JobSearchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJobByPostId not implemented")
@@ -153,6 +169,24 @@ func _JobSearchService_JobSearch_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(JobSearchServiceServer).JobSearch(ctx, req.(*JobSearchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobSearchService_UserJobSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobSearchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobSearchServiceServer).UserJobSearch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobSearchService_UserJobSearch_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobSearchServiceServer).UserJobSearch(ctx, req.(*JobSearchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -239,6 +273,10 @@ var JobSearchService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "JobSearch",
 			Handler:    _JobSearchService_JobSearch_Handler,
+		},
+		{
+			MethodName: "UserJobSearch",
+			Handler:    _JobSearchService_UserJobSearch_Handler,
 		},
 		{
 			MethodName: "GetJobByPostId",

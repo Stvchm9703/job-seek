@@ -1,0 +1,21 @@
+syntax = "proto3";
+package job_seek.prediction;
+option go_package = "job-seek/pkg/protos";
+
+
+// service PredictionService {
+//   rpc SaveUserJobSearchPredictedPerfence (UserJobSearchPredictedPerfence) returns (PredictedPerfenceResponse);
+//   rpc GetUserJobSearchPredictedPerfence (GetPredictedPerfence) returns (UserJobSearchPredictedPerfence);
+// }
+
+
+message simple {
+  string message = 1;
+}
+
+service PredictionService {
+  rpc UnaryServerUnaryClient (simple) returns (simple);
+  rpc StreamServerUnaryClient (simple) returns (stream simple);
+  rpc UnaryServerStreamClient (stream simple) returns (simple);
+  rpc StreamServerStreamClient (stream simple) returns (stream simple);
+}

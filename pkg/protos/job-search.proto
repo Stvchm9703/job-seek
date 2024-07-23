@@ -128,6 +128,8 @@ message CompanyDetailResponse {
 
 service JobSearchService {
   rpc JobSearch(JobSearchRequest) returns (JobSearchResponse);
+  rpc UserJobSearch(JobSearchRequest) returns (JobSearchResponse);
+
   rpc GetJobByPostId(JobSearchRequest) returns (JobSearchResponse);
   rpc GetJobByCompanyId(JobSearchRequest) returns (JobSearchResponse);
 

@@ -8,14 +8,17 @@ import (
 	"strings"
 
 	"job-seek/pkg/request"
+	seekAPI "job-seek/pkg/request/seek_api"
 	seekGQL "job-seek/pkg/request/seek_gql"
+
+	lo "github.com/samber/lo"
 
 	"github.com/dghubble/sling"
 	"github.com/gocolly/colly"
 	pp "github.com/k0kubun/pp/v3"
 )
 
-func ExtractCompanyProfile(postData *request.SeekSearchApiResponseData) *request.SeekCompanyDetails {
+func ExtractCompanyProfile(postData *seekAPI.SeekSearchApiResponseData) *request.SeekCompanyDetails {
 	name := postData.CompanyName
 	if name == "" {
 		name = postData.Advertiser.Description
@@ -117,7 +120,7 @@ func checkFieldIsNotEmpty(companyDetail *request.SeekCompanyDetails) bool {
 		companyDetail.Industry != "" &&
 		companyDetail.GroupSize != "" &&
 		companyDetail.HeadQuarters != "" &&
-		companyDetail.Specialties != "" &&
+		len(companyDetail.Specialties) == 0 &&
 		companyDetail.Url != ""
 
 }
@@ -157,9 +160,11 @@ func scrapeLinkedinDetail(c *colly.Collector, companyDetail *request.SeekCompany
 		})
 	}
 
-	if companyDetail.Specialties == "" {
+	if len(companyDetail.Specialties) == 0 {
 		c2.OnHTML("div[data-test-id='about-us__specialties'] dd", func(e *colly.HTMLElement) {
-			companyDetail.Specialties = strings.TrimSpace(e.Text)
+			companyDetail.Specialties = lo.Map(strings.Split(e.Text, ","), func(item string, _ int) string {
+				return strings.TrimSpace(item)
+			})
 		})
 	}
 
@@ -174,18 +179,18 @@ func scrapeLinkedinDetail(c *colly.Collector, companyDetail *request.SeekCompany
 	return c2
 }
 
-func GetCompanyPostList(paramsPreset *request.SeekSearchApiParams, postData *request.SeekSearchApiResponseData) (int, error) {
+func GetCompanyPostList(paramsPreset *seekAPI.SeekSearchApiParams, postData *seekAPI.SeekSearchApiResponseData) (int, error) {
 	client := sling.New().Base("https://www.seek.com.au/api/chalice-search/v4/")
 	// params := map[string]string{
 	// 	"advertiserid":   postData.Advertiser.ID,
 	// 	"classification": paramsPreset.Classification,
 	// }
-	params := &request.SeekSearchApiParams{
+	params := &seekAPI.SeekSearchApiParams{
 		AdvertiserId:   postData.Advertiser.ID,
 		Classification: paramsPreset.Classification,
 	}
 
-	responseData := request.SeekSearchApiResponse{}
+	responseData := seekAPI.SeekSearchApiResponse{}
 
 	_, err := client.Get("search").
 		QueryStruct(params).
@@ -210,7 +215,7 @@ func GetCompanyPostListByCompanySearchURL(url string) (int, error) {
 	// 	Classification: paramsPreset.Classification,
 	// }
 
-	responseData := request.SeekSearchApiResponse{}
+	responseData := seekAPI.SeekSearchApiResponse{}
 
 	_, err := sling.New().Get(url).
 		Receive(&responseData, nil)

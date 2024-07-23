@@ -3,13 +3,13 @@ package template
 import (
 	"fmt"
 	"io"
-	request "job-seek/pkg/request"
+	seekAPI "job-seek/pkg/request/seek_api"
 	"strings"
 
 	fastTemplate "github.com/valyala/fasttemplate"
 )
 
-func DebugPrintPostListData(postList *[]request.SeekSearchApiResponseData) string {
+func DebugPrintPostListData(postList *[]seekAPI.SeekSearchApiResponseData) string {
 	template := "{{idx}}: {{ID}}, {{Title}}, {{WorkType}}, {{Salary}}, {{CompanyName}};"
 	engine := fastTemplate.New(template, "{{", "}}")
 	templatedCollection := []string{}

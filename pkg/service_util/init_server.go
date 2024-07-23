@@ -2,7 +2,7 @@ package service_util
 
 import (
 	"context"
-	runConf "job-seek/services/fetch_job_service/config"
+	"job-seek/pkg/config"
 	"time"
 
 	logrus "github.com/sirupsen/logrus"
@@ -12,21 +12,21 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
-func CreateGrpcServerOption(config *runConf.ServerConfig, log *logrus.Logger) []grpc.ServerOption {
+func CreateGrpcServerOption(conf *config.ServerConfig, log *logrus.Logger) []grpc.ServerOption {
 	return []grpc.ServerOption{
 		grpc.KeepaliveParams(
 			keepalive.ServerParameters{
-				MaxConnectionIdle:     time.Duration(config.MaxConnectionIdle) * time.Second,
-				MaxConnectionAge:      time.Duration(config.MaxConnectionAge) * time.Second,
-				MaxConnectionAgeGrace: time.Duration(config.MaxConnectionAgeGrace) * time.Second,
-				Time:                  time.Duration(config.Time) * time.Second,
-				Timeout:               time.Duration(config.Timeout) * time.Second,
+				MaxConnectionIdle:     time.Duration(conf.MaxConnectionIdle) * time.Second,
+				MaxConnectionAge:      time.Duration(conf.MaxConnectionAge) * time.Second,
+				MaxConnectionAgeGrace: time.Duration(conf.MaxConnectionAgeGrace) * time.Second,
+				Time:                  time.Duration(conf.Time) * time.Second,
+				Timeout:               time.Duration(conf.Timeout) * time.Second,
 			},
 		),
 		grpc.KeepaliveEnforcementPolicy(
 			keepalive.EnforcementPolicy{
-				MinTime:             time.Duration(config.MinTime) * time.Second,
-				PermitWithoutStream: config.PermitWithoutStream,
+				MinTime:             time.Duration(conf.MinTime) * time.Second,
+				PermitWithoutStream: conf.PermitWithoutStream,
 			},
 		),
 		grpc.ChainUnaryInterceptor(

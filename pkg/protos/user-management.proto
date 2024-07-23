@@ -72,8 +72,10 @@ service UserManagementService {
   //
   rpc SaveUserJobSearchPredictedPerfence(UserJobSearchPredictedPerfence)
       returns (PredictedPerfenceResponse);
+      
   rpc GetUserJobSearchPredictedPerfence(GetPredictedPerfence)
       returns (UserJobSearchPredictedPerfence);
+      
   rpc CreateUserJobSearchPredictedPerfence(
       stream UserJobSearchPredictedPerfence)
       returns (stream PredictedPerfenceResponse);

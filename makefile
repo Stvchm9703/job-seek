@@ -21,9 +21,10 @@ generate-proto: \
 	sync-proto \
 	check-rust-protos
 
-build-fetch-job-service:
-	go build -o bin/fetch-job-service services/fetch_job_service/main.go
+build-job-search-service:
+	go build -o bin/job-search-service services/job-search-service/main.go
 
+build-
 
 build-service:\
  build-fetch-job-service

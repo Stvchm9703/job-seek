@@ -1,0 +1,312 @@
+[31m[1m"[0m[31mService: [0m[31m[1m"[0m &parser.[32mService[0m{
+  [33mServiceName[0m: [31m[1m"[0m[31mJobSearchService[0m[31m[1m"[0m,
+  [33mServiceBody[0m: []parser.[32mVisitee[0m{
+    &parser.[32mRPC[0m{
+      [33mRPCName[0m:    [31m[1m"[0m[31mJobSearch[0m[31m[1m"[0m,
+      [33mRPCRequest[0m: &parser.[32mRPCRequest[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mJobSearchRequest[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3294[0m,
+            [33mLine[0m:     [34m[1m130[0m,
+            [33mColumn[0m:   [34m[1m16[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3311[0m,
+            [33mLine[0m:     [34m[1m130[0m,
+            [33mColumn[0m:   [34m[1m33[0m,
+          },
+        },
+      },
+      [33mRPCResponse[0m: &parser.[32mRPCResponse[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mJobSearchResponse[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3321[0m,
+            [33mLine[0m:     [34m[1m130[0m,
+            [33mColumn[0m:   [34m[1m43[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3339[0m,
+            [33mLine[0m:     [34m[1m130[0m,
+            [33mColumn[0m:   [34m[1m61[0m,
+          },
+        },
+      },
+      [33mOptions[0m:                      []*parser.[32mOption[0m([36m[1mnil[0m),
+      [33mComments[0m:                     []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mInlineComment[0m:                (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mInlineCommentBehindLeftCurly[0m: (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mEmbeddedComments[0m:             []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mMeta[0m:                         meta.[32mMeta[0m{
+        [33mPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3281[0m,
+          [33mLine[0m:     [34m[1m130[0m,
+          [33mColumn[0m:   [34m[1m3[0m,
+        },
+        [33mLastPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3340[0m,
+          [33mLine[0m:     [34m[1m130[0m,
+          [33mColumn[0m:   [34m[1m62[0m,
+        },
+      },
+    },
+    &parser.[32mRPC[0m{
+      [33mRPCName[0m:    [31m[1m"[0m[31mGetJobByPostId[0m[31m[1m"[0m,
+      [33mRPCRequest[0m: &parser.[32mRPCRequest[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mJobSearchRequest[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3362[0m,
+            [33mLine[0m:     [34m[1m131[0m,
+            [33mColumn[0m:   [34m[1m21[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3379[0m,
+            [33mLine[0m:     [34m[1m131[0m,
+            [33mColumn[0m:   [34m[1m38[0m,
+          },
+        },
+      },
+      [33mRPCResponse[0m: &parser.[32mRPCResponse[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mJobSearchResponse[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3389[0m,
+            [33mLine[0m:     [34m[1m131[0m,
+            [33mColumn[0m:   [34m[1m48[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3407[0m,
+            [33mLine[0m:     [34m[1m131[0m,
+            [33mColumn[0m:   [34m[1m66[0m,
+          },
+        },
+      },
+      [33mOptions[0m:                      []*parser.[32mOption[0m([36m[1mnil[0m),
+      [33mComments[0m:                     []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mInlineComment[0m:                (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mInlineCommentBehindLeftCurly[0m: (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mEmbeddedComments[0m:             []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mMeta[0m:                         meta.[32mMeta[0m{
+        [33mPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3344[0m,
+          [33mLine[0m:     [34m[1m131[0m,
+          [33mColumn[0m:   [34m[1m3[0m,
+        },
+        [33mLastPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3408[0m,
+          [33mLine[0m:     [34m[1m131[0m,
+          [33mColumn[0m:   [34m[1m67[0m,
+        },
+      },
+    },
+    &parser.[32mRPC[0m{
+      [33mRPCName[0m:    [31m[1m"[0m[31mGetJobByCompanyId[0m[31m[1m"[0m,
+      [33mRPCRequest[0m: &parser.[32mRPCRequest[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mJobSearchRequest[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3433[0m,
+            [33mLine[0m:     [34m[1m132[0m,
+            [33mColumn[0m:   [34m[1m24[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3450[0m,
+            [33mLine[0m:     [34m[1m132[0m,
+            [33mColumn[0m:   [34m[1m41[0m,
+          },
+        },
+      },
+      [33mRPCResponse[0m: &parser.[32mRPCResponse[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mJobSearchResponse[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3460[0m,
+            [33mLine[0m:     [34m[1m132[0m,
+            [33mColumn[0m:   [34m[1m51[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3478[0m,
+            [33mLine[0m:     [34m[1m132[0m,
+            [33mColumn[0m:   [34m[1m69[0m,
+          },
+        },
+      },
+      [33mOptions[0m:                      []*parser.[32mOption[0m([36m[1mnil[0m),
+      [33mComments[0m:                     []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mInlineComment[0m:                (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mInlineCommentBehindLeftCurly[0m: (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mEmbeddedComments[0m:             []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mMeta[0m:                         meta.[32mMeta[0m{
+        [33mPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3412[0m,
+          [33mLine[0m:     [34m[1m132[0m,
+          [33mColumn[0m:   [34m[1m3[0m,
+        },
+        [33mLastPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3479[0m,
+          [33mLine[0m:     [34m[1m132[0m,
+          [33mColumn[0m:   [34m[1m70[0m,
+        },
+      },
+    },
+    &parser.[32mRPC[0m{
+      [33mRPCName[0m:    [31m[1m"[0m[31mListCompanyDetail[0m[31m[1m"[0m,
+      [33mRPCRequest[0m: &parser.[32mRPCRequest[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mCompanyDetailRequest[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3506[0m,
+            [33mLine[0m:     [34m[1m135[0m,
+            [33mColumn[0m:   [34m[1m24[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3527[0m,
+            [33mLine[0m:     [34m[1m135[0m,
+            [33mColumn[0m:   [34m[1m45[0m,
+          },
+        },
+      },
+      [33mRPCResponse[0m: &parser.[32mRPCResponse[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mCompanyDetailResponse[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3537[0m,
+            [33mLine[0m:     [34m[1m135[0m,
+            [33mColumn[0m:   [34m[1m55[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3559[0m,
+            [33mLine[0m:     [34m[1m135[0m,
+            [33mColumn[0m:   [34m[1m77[0m,
+          },
+        },
+      },
+      [33mOptions[0m:                      []*parser.[32mOption[0m([36m[1mnil[0m),
+      [33mComments[0m:                     []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mInlineComment[0m:                (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mInlineCommentBehindLeftCurly[0m: (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mEmbeddedComments[0m:             []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mMeta[0m:                         meta.[32mMeta[0m{
+        [33mPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3485[0m,
+          [33mLine[0m:     [34m[1m135[0m,
+          [33mColumn[0m:   [34m[1m3[0m,
+        },
+        [33mLastPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3560[0m,
+          [33mLine[0m:     [34m[1m135[0m,
+          [33mColumn[0m:   [34m[1m78[0m,
+        },
+      },
+    },
+    &parser.[32mRPC[0m{
+      [33mRPCName[0m:    [31m[1m"[0m[31mGetCompanyDetail[0m[31m[1m"[0m,
+      [33mRPCRequest[0m: &parser.[32mRPCRequest[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mCompanyDetailRequest[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3584[0m,
+            [33mLine[0m:     [34m[1m136[0m,
+            [33mColumn[0m:   [34m[1m23[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3605[0m,
+            [33mLine[0m:     [34m[1m136[0m,
+            [33mColumn[0m:   [34m[1m44[0m,
+          },
+        },
+      },
+      [33mRPCResponse[0m: &parser.[32mRPCResponse[0m{
+        [33mIsStream[0m:    [36m[1mfalse[0m,
+        [33mMessageType[0m: [31m[1m"[0m[31mCompanyDetail[0m[31m[1m"[0m,
+        [33mMeta[0m:        meta.[32mMeta[0m{
+          [33mPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3615[0m,
+            [33mLine[0m:     [34m[1m136[0m,
+            [33mColumn[0m:   [34m[1m54[0m,
+          },
+          [33mLastPos[0m: meta.[32mPosition[0m{
+            [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+            [33mOffset[0m:   [34m[1m3629[0m,
+            [33mLine[0m:     [34m[1m136[0m,
+            [33mColumn[0m:   [34m[1m68[0m,
+          },
+        },
+      },
+      [33mOptions[0m:                      []*parser.[32mOption[0m([36m[1mnil[0m),
+      [33mComments[0m:                     []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mInlineComment[0m:                (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mInlineCommentBehindLeftCurly[0m: (*parser.[32mComment[0m)([36m[1mnil[0m),
+      [33mEmbeddedComments[0m:             []*parser.[32mComment[0m([36m[1mnil[0m),
+      [33mMeta[0m:                         meta.[32mMeta[0m{
+        [33mPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3564[0m,
+          [33mLine[0m:     [34m[1m136[0m,
+          [33mColumn[0m:   [34m[1m3[0m,
+        },
+        [33mLastPos[0m: meta.[32mPosition[0m{
+          [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+          [33mOffset[0m:   [34m[1m3630[0m,
+          [33mLine[0m:     [34m[1m136[0m,
+          [33mColumn[0m:   [34m[1m69[0m,
+        },
+      },
+    },
+  },
+  [33mComments[0m:                     []*parser.[32mComment[0m([36m[1mnil[0m),
+  [33mInlineComment[0m:                (*parser.[32mComment[0m)([36m[1mnil[0m),
+  [33mInlineCommentBehindLeftCurly[0m: (*parser.[32mComment[0m)([36m[1mnil[0m),
+  [33mMeta[0m:                         meta.[32mMeta[0m{
+    [33mPos[0m: meta.[32mPosition[0m{
+      [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+      [33mOffset[0m:   [34m[1m3252[0m,
+      [33mLine[0m:     [34m[1m129[0m,
+      [33mColumn[0m:   [34m[1m1[0m,
+    },
+    [33mLastPos[0m: meta.[32mPosition[0m{
+      [33mFilename[0m: [31m[1m"[0m[31m[1m"[0m,
+      [33mOffset[0m:   [34m[1m3632[0m,
+      [33mLine[0m:     [34m[1m137[0m,
+      [33mColumn[0m:   [34m[1m1[0m,
+    },
+  },
+}

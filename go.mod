@@ -8,14 +8,18 @@ require (
 	github.com/cockroachdb/pebble v1.1.1
 	github.com/dghubble/sling v1.4.2
 	github.com/gocolly/colly v1.2.0
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
+	github.com/iancoleman/strcase v0.3.0
 	github.com/k0kubun/pp/v3 v3.2.0
 	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/mxschmitt/golang-combinations v1.2.0
 	github.com/samber/lo v1.44.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/valyala/fasttemplate v1.2.2
 	github.com/xuri/excelize/v2 v2.8.1
+	github.com/yoheimuta/go-protoparser/v4 v4.11.0
 	google.golang.org/grpc v1.64.1
 	google.golang.org/protobuf v1.34.0
 )
@@ -42,7 +46,6 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
@@ -67,7 +70,6 @@ require (
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect

@@ -135,7 +135,7 @@ func WriteRecordToPage(f *excelize.File, sheetName string, record *request.SeekP
 		"Company-Url":             record.CompanyDetails.Url,
 		"Company-Linkedin":        record.CompanyDetails.Linkedin,
 		"Company-Description":     record.CompanyDetails.Description,
-		"Company-Specialties":     record.CompanyDetails.Specialties,
+		"Company-Specialties":     strings.Join(record.CompanyDetails.Specialties, ", "),
 		"Company-HeadQuarters":    record.CompanyDetails.HeadQuarters,
 		"Company-Location":        record.CompanyDetails.Locations,
 		"Post-HittedKeywords":     strings.Join(record.HittedKeywords, ","),
