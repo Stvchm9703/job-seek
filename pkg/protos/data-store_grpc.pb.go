@@ -19,31 +19,31 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	DataStoreService_SaveUserAccount_FullMethodName                    = "/job_seek.data_store.DataStoreService/SaveUserAccount"
-	DataStoreService_GetUserAccount_FullMethodName                     = "/job_seek.data_store.DataStoreService/GetUserAccount"
-	DataStoreService_SaveUserSearchPerfence_FullMethodName             = "/job_seek.data_store.DataStoreService/SaveUserSearchPerfence"
-	DataStoreService_GetUserSearchPerfence_FullMethodName              = "/job_seek.data_store.DataStoreService/GetUserSearchPerfence"
-	DataStoreService_SaveUserJobSearchPredictedPerfence_FullMethodName = "/job_seek.data_store.DataStoreService/SaveUserJobSearchPredictedPerfence"
-	DataStoreService_GetUserJobSearchPredictedPerfence_FullMethodName  = "/job_seek.data_store.DataStoreService/GetUserJobSearchPredictedPerfence"
-	DataStoreService_SaveJobApply_FullMethodName                       = "/job_seek.data_store.DataStoreService/SaveJobApply"
-	DataStoreService_GetJobApply_FullMethodName                        = "/job_seek.data_store.DataStoreService/GetJobApply"
-	DataStoreService_ListJobApply_FullMethodName                       = "/job_seek.data_store.DataStoreService/ListJobApply"
-	DataStoreService_DeleteJobApply_FullMethodName                     = "/job_seek.data_store.DataStoreService/DeleteJobApply"
-	DataStoreService_SaveBookmarkJob_FullMethodName                    = "/job_seek.data_store.DataStoreService/SaveBookmarkJob"
-	DataStoreService_GetBookmarkJob_FullMethodName                     = "/job_seek.data_store.DataStoreService/GetBookmarkJob"
-	DataStoreService_ListBookmarkJob_FullMethodName                    = "/job_seek.data_store.DataStoreService/ListBookmarkJob"
-	DataStoreService_DeleteBookmarkJob_FullMethodName                  = "/job_seek.data_store.DataStoreService/DeleteBookmarkJob"
-	DataStoreService_SaveJob_FullMethodName                            = "/job_seek.data_store.DataStoreService/SaveJob"
-	DataStoreService_BatchSaveJob_FullMethodName                       = "/job_seek.data_store.DataStoreService/BatchSaveJob"
-	DataStoreService_SearchJob_FullMethodName                          = "/job_seek.data_store.DataStoreService/SearchJob"
-	DataStoreService_DeleteJob_FullMethodName                          = "/job_seek.data_store.DataStoreService/DeleteJob"
-	DataStoreService_DropExpiredJob_FullMethodName                     = "/job_seek.data_store.DataStoreService/DropExpiredJob"
-	DataStoreService_ListCachedJobSearch_FullMethodName                = "/job_seek.data_store.DataStoreService/ListCachedJobSearch"
-	DataStoreService_CreateCachedJobSearchList_FullMethodName          = "/job_seek.data_store.DataStoreService/CreateCachedJobSearchList"
-	DataStoreService_GetCachedJobSearch_FullMethodName                 = "/job_seek.data_store.DataStoreService/GetCachedJobSearch"
-	DataStoreService_SaveCompanyDetail_FullMethodName                  = "/job_seek.data_store.DataStoreService/SaveCompanyDetail"
-	DataStoreService_BatchSaveCompanyDetail_FullMethodName             = "/job_seek.data_store.DataStoreService/BatchSaveCompanyDetail"
-	DataStoreService_GetCompanyDetail_FullMethodName                   = "/job_seek.data_store.DataStoreService/GetCompanyDetail"
+	DataStoreService_SaveUserAccount_FullMethodName                      = "/job_seek.data_store.DataStoreService/SaveUserAccount"
+	DataStoreService_GetUserAccount_FullMethodName                       = "/job_seek.data_store.DataStoreService/GetUserAccount"
+	DataStoreService_SaveUserSearchPreference_FullMethodName             = "/job_seek.data_store.DataStoreService/SaveUserSearchPreference"
+	DataStoreService_GetUserSearchPreference_FullMethodName              = "/job_seek.data_store.DataStoreService/GetUserSearchPreference"
+	DataStoreService_SaveUserJobSearchPredictedPreference_FullMethodName = "/job_seek.data_store.DataStoreService/SaveUserJobSearchPredictedPreference"
+	DataStoreService_GetUserJobSearchPredictedPreference_FullMethodName  = "/job_seek.data_store.DataStoreService/GetUserJobSearchPredictedPreference"
+	DataStoreService_SaveJobApply_FullMethodName                         = "/job_seek.data_store.DataStoreService/SaveJobApply"
+	DataStoreService_GetJobApply_FullMethodName                          = "/job_seek.data_store.DataStoreService/GetJobApply"
+	DataStoreService_ListJobApply_FullMethodName                         = "/job_seek.data_store.DataStoreService/ListJobApply"
+	DataStoreService_DeleteJobApply_FullMethodName                       = "/job_seek.data_store.DataStoreService/DeleteJobApply"
+	DataStoreService_SaveBookmarkJob_FullMethodName                      = "/job_seek.data_store.DataStoreService/SaveBookmarkJob"
+	DataStoreService_GetBookmarkJob_FullMethodName                       = "/job_seek.data_store.DataStoreService/GetBookmarkJob"
+	DataStoreService_ListBookmarkJob_FullMethodName                      = "/job_seek.data_store.DataStoreService/ListBookmarkJob"
+	DataStoreService_DeleteBookmarkJob_FullMethodName                    = "/job_seek.data_store.DataStoreService/DeleteBookmarkJob"
+	DataStoreService_SaveJob_FullMethodName                              = "/job_seek.data_store.DataStoreService/SaveJob"
+	DataStoreService_BatchSaveJob_FullMethodName                         = "/job_seek.data_store.DataStoreService/BatchSaveJob"
+	DataStoreService_SearchJob_FullMethodName                            = "/job_seek.data_store.DataStoreService/SearchJob"
+	DataStoreService_DeleteJob_FullMethodName                            = "/job_seek.data_store.DataStoreService/DeleteJob"
+	DataStoreService_DropExpiredJob_FullMethodName                       = "/job_seek.data_store.DataStoreService/DropExpiredJob"
+	DataStoreService_ListCachedJobSearch_FullMethodName                  = "/job_seek.data_store.DataStoreService/ListCachedJobSearch"
+	DataStoreService_CreateCachedJobSearchList_FullMethodName            = "/job_seek.data_store.DataStoreService/CreateCachedJobSearchList"
+	DataStoreService_GetCachedJobSearch_FullMethodName                   = "/job_seek.data_store.DataStoreService/GetCachedJobSearch"
+	DataStoreService_SaveCompanyDetail_FullMethodName                    = "/job_seek.data_store.DataStoreService/SaveCompanyDetail"
+	DataStoreService_BatchSaveCompanyDetail_FullMethodName               = "/job_seek.data_store.DataStoreService/BatchSaveCompanyDetail"
+	DataStoreService_GetCompanyDetail_FullMethodName                     = "/job_seek.data_store.DataStoreService/GetCompanyDetail"
 )
 
 // DataStoreServiceClient is the client API for DataStoreService service.
@@ -53,10 +53,10 @@ type DataStoreServiceClient interface {
 	// from user management
 	SaveUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error)
 	GetUserAccount(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserAccount, error)
-	SaveUserSearchPerfence(ctx context.Context, in *UserSearchPerfence, opts ...grpc.CallOption) (*UserResponse, error)
-	GetUserSearchPerfence(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPerfence, error)
-	SaveUserJobSearchPredictedPerfence(ctx context.Context, in *UserJobSearchPredictedPerfence, opts ...grpc.CallOption) (*PredictedPerfenceResponse, error)
-	GetUserJobSearchPredictedPerfence(ctx context.Context, in *GetPredictedPerfence, opts ...grpc.CallOption) (*UserJobSearchPredictedPerfence, error)
+	SaveUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error)
+	GetUserSearchPreference(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPreference, error)
+	SaveUserJobSearchPredictedPreference(ctx context.Context, in *UserJobSearchPredictedPreference, opts ...grpc.CallOption) (*PredictedPreferenceResponse, error)
+	GetUserJobSearchPredictedPreference(ctx context.Context, in *GetPredictedPreference, opts ...grpc.CallOption) (*UserJobSearchPredictedPreference, error)
 	SaveJobApply(ctx context.Context, in *JobApply, opts ...grpc.CallOption) (*DataStoreResponse, error)
 	GetJobApply(ctx context.Context, in *GetJobApplyRequest, opts ...grpc.CallOption) (*GetJobApplyResponse, error)
 	ListJobApply(ctx context.Context, in *GetJobApplyRequest, opts ...grpc.CallOption) (*GetJobApplyResponse, error)
@@ -107,40 +107,40 @@ func (c *dataStoreServiceClient) GetUserAccount(ctx context.Context, in *GetUser
 	return out, nil
 }
 
-func (c *dataStoreServiceClient) SaveUserSearchPerfence(ctx context.Context, in *UserSearchPerfence, opts ...grpc.CallOption) (*UserResponse, error) {
+func (c *dataStoreServiceClient) SaveUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserResponse)
-	err := c.cc.Invoke(ctx, DataStoreService_SaveUserSearchPerfence_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, DataStoreService_SaveUserSearchPreference_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dataStoreServiceClient) GetUserSearchPerfence(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPerfence, error) {
+func (c *dataStoreServiceClient) GetUserSearchPreference(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPreference, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UserSearchPerfence)
-	err := c.cc.Invoke(ctx, DataStoreService_GetUserSearchPerfence_FullMethodName, in, out, cOpts...)
+	out := new(UserSearchPreference)
+	err := c.cc.Invoke(ctx, DataStoreService_GetUserSearchPreference_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dataStoreServiceClient) SaveUserJobSearchPredictedPerfence(ctx context.Context, in *UserJobSearchPredictedPerfence, opts ...grpc.CallOption) (*PredictedPerfenceResponse, error) {
+func (c *dataStoreServiceClient) SaveUserJobSearchPredictedPreference(ctx context.Context, in *UserJobSearchPredictedPreference, opts ...grpc.CallOption) (*PredictedPreferenceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PredictedPerfenceResponse)
-	err := c.cc.Invoke(ctx, DataStoreService_SaveUserJobSearchPredictedPerfence_FullMethodName, in, out, cOpts...)
+	out := new(PredictedPreferenceResponse)
+	err := c.cc.Invoke(ctx, DataStoreService_SaveUserJobSearchPredictedPreference_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dataStoreServiceClient) GetUserJobSearchPredictedPerfence(ctx context.Context, in *GetPredictedPerfence, opts ...grpc.CallOption) (*UserJobSearchPredictedPerfence, error) {
+func (c *dataStoreServiceClient) GetUserJobSearchPredictedPreference(ctx context.Context, in *GetPredictedPreference, opts ...grpc.CallOption) (*UserJobSearchPredictedPreference, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UserJobSearchPredictedPerfence)
-	err := c.cc.Invoke(ctx, DataStoreService_GetUserJobSearchPredictedPerfence_FullMethodName, in, out, cOpts...)
+	out := new(UserJobSearchPredictedPreference)
+	err := c.cc.Invoke(ctx, DataStoreService_GetUserJobSearchPredictedPreference_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -388,10 +388,10 @@ type DataStoreServiceServer interface {
 	// from user management
 	SaveUserAccount(context.Context, *UserAccount) (*UserResponse, error)
 	GetUserAccount(context.Context, *GetUserRequest) (*UserAccount, error)
-	SaveUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error)
-	GetUserSearchPerfence(context.Context, *GetUserRequest) (*UserSearchPerfence, error)
-	SaveUserJobSearchPredictedPerfence(context.Context, *UserJobSearchPredictedPerfence) (*PredictedPerfenceResponse, error)
-	GetUserJobSearchPredictedPerfence(context.Context, *GetPredictedPerfence) (*UserJobSearchPredictedPerfence, error)
+	SaveUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error)
+	GetUserSearchPreference(context.Context, *GetUserRequest) (*UserSearchPreference, error)
+	SaveUserJobSearchPredictedPreference(context.Context, *UserJobSearchPredictedPreference) (*PredictedPreferenceResponse, error)
+	GetUserJobSearchPredictedPreference(context.Context, *GetPredictedPreference) (*UserJobSearchPredictedPreference, error)
 	SaveJobApply(context.Context, *JobApply) (*DataStoreResponse, error)
 	GetJobApply(context.Context, *GetJobApplyRequest) (*GetJobApplyResponse, error)
 	ListJobApply(context.Context, *GetJobApplyRequest) (*GetJobApplyResponse, error)
@@ -425,17 +425,17 @@ func (UnimplementedDataStoreServiceServer) SaveUserAccount(context.Context, *Use
 func (UnimplementedDataStoreServiceServer) GetUserAccount(context.Context, *GetUserRequest) (*UserAccount, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserAccount not implemented")
 }
-func (UnimplementedDataStoreServiceServer) SaveUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveUserSearchPerfence not implemented")
+func (UnimplementedDataStoreServiceServer) SaveUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveUserSearchPreference not implemented")
 }
-func (UnimplementedDataStoreServiceServer) GetUserSearchPerfence(context.Context, *GetUserRequest) (*UserSearchPerfence, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserSearchPerfence not implemented")
+func (UnimplementedDataStoreServiceServer) GetUserSearchPreference(context.Context, *GetUserRequest) (*UserSearchPreference, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserSearchPreference not implemented")
 }
-func (UnimplementedDataStoreServiceServer) SaveUserJobSearchPredictedPerfence(context.Context, *UserJobSearchPredictedPerfence) (*PredictedPerfenceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveUserJobSearchPredictedPerfence not implemented")
+func (UnimplementedDataStoreServiceServer) SaveUserJobSearchPredictedPreference(context.Context, *UserJobSearchPredictedPreference) (*PredictedPreferenceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveUserJobSearchPredictedPreference not implemented")
 }
-func (UnimplementedDataStoreServiceServer) GetUserJobSearchPredictedPerfence(context.Context, *GetPredictedPerfence) (*UserJobSearchPredictedPerfence, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserJobSearchPredictedPerfence not implemented")
+func (UnimplementedDataStoreServiceServer) GetUserJobSearchPredictedPreference(context.Context, *GetPredictedPreference) (*UserJobSearchPredictedPreference, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserJobSearchPredictedPreference not implemented")
 }
 func (UnimplementedDataStoreServiceServer) SaveJobApply(context.Context, *JobApply) (*DataStoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveJobApply not implemented")
@@ -543,74 +543,74 @@ func _DataStoreService_GetUserAccount_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DataStoreService_SaveUserSearchPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserSearchPerfence)
+func _DataStoreService_SaveUserSearchPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSearchPreference)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DataStoreServiceServer).SaveUserSearchPerfence(ctx, in)
+		return srv.(DataStoreServiceServer).SaveUserSearchPreference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DataStoreService_SaveUserSearchPerfence_FullMethodName,
+		FullMethod: DataStoreService_SaveUserSearchPreference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataStoreServiceServer).SaveUserSearchPerfence(ctx, req.(*UserSearchPerfence))
+		return srv.(DataStoreServiceServer).SaveUserSearchPreference(ctx, req.(*UserSearchPreference))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DataStoreService_GetUserSearchPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _DataStoreService_GetUserSearchPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DataStoreServiceServer).GetUserSearchPerfence(ctx, in)
+		return srv.(DataStoreServiceServer).GetUserSearchPreference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DataStoreService_GetUserSearchPerfence_FullMethodName,
+		FullMethod: DataStoreService_GetUserSearchPreference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataStoreServiceServer).GetUserSearchPerfence(ctx, req.(*GetUserRequest))
+		return srv.(DataStoreServiceServer).GetUserSearchPreference(ctx, req.(*GetUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DataStoreService_SaveUserJobSearchPredictedPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserJobSearchPredictedPerfence)
+func _DataStoreService_SaveUserJobSearchPredictedPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserJobSearchPredictedPreference)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DataStoreServiceServer).SaveUserJobSearchPredictedPerfence(ctx, in)
+		return srv.(DataStoreServiceServer).SaveUserJobSearchPredictedPreference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DataStoreService_SaveUserJobSearchPredictedPerfence_FullMethodName,
+		FullMethod: DataStoreService_SaveUserJobSearchPredictedPreference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataStoreServiceServer).SaveUserJobSearchPredictedPerfence(ctx, req.(*UserJobSearchPredictedPerfence))
+		return srv.(DataStoreServiceServer).SaveUserJobSearchPredictedPreference(ctx, req.(*UserJobSearchPredictedPreference))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DataStoreService_GetUserJobSearchPredictedPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPredictedPerfence)
+func _DataStoreService_GetUserJobSearchPredictedPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPredictedPreference)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DataStoreServiceServer).GetUserJobSearchPredictedPerfence(ctx, in)
+		return srv.(DataStoreServiceServer).GetUserJobSearchPredictedPreference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DataStoreService_GetUserJobSearchPredictedPerfence_FullMethodName,
+		FullMethod: DataStoreService_GetUserJobSearchPredictedPreference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataStoreServiceServer).GetUserJobSearchPredictedPerfence(ctx, req.(*GetPredictedPerfence))
+		return srv.(DataStoreServiceServer).GetUserJobSearchPredictedPreference(ctx, req.(*GetPredictedPreference))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -989,20 +989,20 @@ var DataStoreService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DataStoreService_GetUserAccount_Handler,
 		},
 		{
-			MethodName: "SaveUserSearchPerfence",
-			Handler:    _DataStoreService_SaveUserSearchPerfence_Handler,
+			MethodName: "SaveUserSearchPreference",
+			Handler:    _DataStoreService_SaveUserSearchPreference_Handler,
 		},
 		{
-			MethodName: "GetUserSearchPerfence",
-			Handler:    _DataStoreService_GetUserSearchPerfence_Handler,
+			MethodName: "GetUserSearchPreference",
+			Handler:    _DataStoreService_GetUserSearchPreference_Handler,
 		},
 		{
-			MethodName: "SaveUserJobSearchPredictedPerfence",
-			Handler:    _DataStoreService_SaveUserJobSearchPredictedPerfence_Handler,
+			MethodName: "SaveUserJobSearchPredictedPreference",
+			Handler:    _DataStoreService_SaveUserJobSearchPredictedPreference_Handler,
 		},
 		{
-			MethodName: "GetUserJobSearchPredictedPerfence",
-			Handler:    _DataStoreService_GetUserJobSearchPredictedPerfence_Handler,
+			MethodName: "GetUserJobSearchPredictedPreference",
+			Handler:    _DataStoreService_GetUserJobSearchPredictedPreference_Handler,
 		},
 		{
 			MethodName: "SaveJobApply",

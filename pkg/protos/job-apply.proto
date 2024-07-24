@@ -56,7 +56,7 @@ message GetJobApplyResponse {
 message BookmarkJob {
   string job_id = 1;
   string user_id = 2;
-  string created_at = 3;
+  optional string created_at = 3;
   optional string updated_at = 4;
   optional string deleted_at = 5;
   optional job_seek.job_search.Job job = 6;

@@ -48,6 +48,15 @@ func Setup() {
 	viper.SetDefault("server.min_time", 5)
 	viper.SetDefault("server.permit_without_stream", true)
 
+
+	// internal services
+	viper.SetDefault("meili_search_service.host", "localhost")
+	viper.SetDefault("meili_search_service.port", 7700)
+	viper.SetDefault("meili_search_service.api_key", "meilisearch")
+
+	viper.SetDefault("surreal_db_service.host", "localhost")
+	viper.SetDefault("surreal_db_service.port", 8654)
+
 	err := viper.ReadInConfig()
 	if err != nil {
 		// t.Fatalf("unable to decode into struct, %v", err)

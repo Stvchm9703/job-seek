@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	UserManagementService_SaveUserAccount_FullMethodName                      = "/job_seek.user_management.UserManagementService/SaveUserAccount"
-	UserManagementService_GetUserAccount_FullMethodName                       = "/job_seek.user_management.UserManagementService/GetUserAccount"
-	UserManagementService_SaveUserSearchPerfence_FullMethodName               = "/job_seek.user_management.UserManagementService/SaveUserSearchPerfence"
-	UserManagementService_UpdateUserSearchPerfence_FullMethodName             = "/job_seek.user_management.UserManagementService/UpdateUserSearchPerfence"
-	UserManagementService_GetUserSearchPerfence_FullMethodName                = "/job_seek.user_management.UserManagementService/GetUserSearchPerfence"
-	UserManagementService_SaveUserJobSearchPredictedPerfence_FullMethodName   = "/job_seek.user_management.UserManagementService/SaveUserJobSearchPredictedPerfence"
-	UserManagementService_GetUserJobSearchPredictedPerfence_FullMethodName    = "/job_seek.user_management.UserManagementService/GetUserJobSearchPredictedPerfence"
-	UserManagementService_CreateUserJobSearchPredictedPerfence_FullMethodName = "/job_seek.user_management.UserManagementService/CreateUserJobSearchPredictedPerfence"
+	UserManagementService_SaveUserAccount_FullMethodName                        = "/job_seek.user_management.UserManagementService/SaveUserAccount"
+	UserManagementService_GetUserAccount_FullMethodName                         = "/job_seek.user_management.UserManagementService/GetUserAccount"
+	UserManagementService_SaveUserSearchPreference_FullMethodName               = "/job_seek.user_management.UserManagementService/SaveUserSearchPreference"
+	UserManagementService_UpdateUserSearchPreference_FullMethodName             = "/job_seek.user_management.UserManagementService/UpdateUserSearchPreference"
+	UserManagementService_GetUserSearchPreference_FullMethodName                = "/job_seek.user_management.UserManagementService/GetUserSearchPreference"
+	UserManagementService_SaveUserJobSearchPredictedPreference_FullMethodName   = "/job_seek.user_management.UserManagementService/SaveUserJobSearchPredictedPreference"
+	UserManagementService_GetUserJobSearchPredictedPreference_FullMethodName    = "/job_seek.user_management.UserManagementService/GetUserJobSearchPredictedPreference"
+	UserManagementService_CreateUserJobSearchPredictedPreference_FullMethodName = "/job_seek.user_management.UserManagementService/CreateUserJobSearchPredictedPreference"
 )
 
 // UserManagementServiceClient is the client API for UserManagementService service.
@@ -36,13 +36,13 @@ type UserManagementServiceClient interface {
 	// from user management
 	SaveUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error)
 	GetUserAccount(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserAccount, error)
-	// store point of user search perfence
-	SaveUserSearchPerfence(ctx context.Context, in *UserSearchPerfence, opts ...grpc.CallOption) (*UserResponse, error)
-	UpdateUserSearchPerfence(ctx context.Context, in *UserSearchPerfence, opts ...grpc.CallOption) (*UserResponse, error)
-	GetUserSearchPerfence(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPerfence, error)
-	SaveUserJobSearchPredictedPerfence(ctx context.Context, in *UserJobSearchPredictedPerfence, opts ...grpc.CallOption) (*PredictedPerfenceResponse, error)
-	GetUserJobSearchPredictedPerfence(ctx context.Context, in *GetPredictedPerfence, opts ...grpc.CallOption) (*UserJobSearchPredictedPerfence, error)
-	CreateUserJobSearchPredictedPerfence(ctx context.Context, opts ...grpc.CallOption) (UserManagementService_CreateUserJobSearchPredictedPerfenceClient, error)
+	// store point of user search Preference
+	SaveUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error)
+	UpdateUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error)
+	GetUserSearchPreference(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPreference, error)
+	SaveUserJobSearchPredictedPreference(ctx context.Context, in *UserJobSearchPredictedPreference, opts ...grpc.CallOption) (*PredictedPreferenceResponse, error)
+	GetUserJobSearchPredictedPreference(ctx context.Context, in *GetPredictedPreference, opts ...grpc.CallOption) (*UserJobSearchPredictedPreference, error)
+	CreateUserJobSearchPredictedPreference(ctx context.Context, opts ...grpc.CallOption) (UserManagementService_CreateUserJobSearchPredictedPreferenceClient, error)
 }
 
 type userManagementServiceClient struct {
@@ -73,82 +73,82 @@ func (c *userManagementServiceClient) GetUserAccount(ctx context.Context, in *Ge
 	return out, nil
 }
 
-func (c *userManagementServiceClient) SaveUserSearchPerfence(ctx context.Context, in *UserSearchPerfence, opts ...grpc.CallOption) (*UserResponse, error) {
+func (c *userManagementServiceClient) SaveUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserResponse)
-	err := c.cc.Invoke(ctx, UserManagementService_SaveUserSearchPerfence_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UserManagementService_SaveUserSearchPreference_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) UpdateUserSearchPerfence(ctx context.Context, in *UserSearchPerfence, opts ...grpc.CallOption) (*UserResponse, error) {
+func (c *userManagementServiceClient) UpdateUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserResponse)
-	err := c.cc.Invoke(ctx, UserManagementService_UpdateUserSearchPerfence_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UserManagementService_UpdateUserSearchPreference_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) GetUserSearchPerfence(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPerfence, error) {
+func (c *userManagementServiceClient) GetUserSearchPreference(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPreference, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UserSearchPerfence)
-	err := c.cc.Invoke(ctx, UserManagementService_GetUserSearchPerfence_FullMethodName, in, out, cOpts...)
+	out := new(UserSearchPreference)
+	err := c.cc.Invoke(ctx, UserManagementService_GetUserSearchPreference_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) SaveUserJobSearchPredictedPerfence(ctx context.Context, in *UserJobSearchPredictedPerfence, opts ...grpc.CallOption) (*PredictedPerfenceResponse, error) {
+func (c *userManagementServiceClient) SaveUserJobSearchPredictedPreference(ctx context.Context, in *UserJobSearchPredictedPreference, opts ...grpc.CallOption) (*PredictedPreferenceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PredictedPerfenceResponse)
-	err := c.cc.Invoke(ctx, UserManagementService_SaveUserJobSearchPredictedPerfence_FullMethodName, in, out, cOpts...)
+	out := new(PredictedPreferenceResponse)
+	err := c.cc.Invoke(ctx, UserManagementService_SaveUserJobSearchPredictedPreference_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) GetUserJobSearchPredictedPerfence(ctx context.Context, in *GetPredictedPerfence, opts ...grpc.CallOption) (*UserJobSearchPredictedPerfence, error) {
+func (c *userManagementServiceClient) GetUserJobSearchPredictedPreference(ctx context.Context, in *GetPredictedPreference, opts ...grpc.CallOption) (*UserJobSearchPredictedPreference, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UserJobSearchPredictedPerfence)
-	err := c.cc.Invoke(ctx, UserManagementService_GetUserJobSearchPredictedPerfence_FullMethodName, in, out, cOpts...)
+	out := new(UserJobSearchPredictedPreference)
+	err := c.cc.Invoke(ctx, UserManagementService_GetUserJobSearchPredictedPreference_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) CreateUserJobSearchPredictedPerfence(ctx context.Context, opts ...grpc.CallOption) (UserManagementService_CreateUserJobSearchPredictedPerfenceClient, error) {
+func (c *userManagementServiceClient) CreateUserJobSearchPredictedPreference(ctx context.Context, opts ...grpc.CallOption) (UserManagementService_CreateUserJobSearchPredictedPreferenceClient, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &UserManagementService_ServiceDesc.Streams[0], UserManagementService_CreateUserJobSearchPredictedPerfence_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &UserManagementService_ServiceDesc.Streams[0], UserManagementService_CreateUserJobSearchPredictedPreference_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &userManagementServiceCreateUserJobSearchPredictedPerfenceClient{ClientStream: stream}
+	x := &userManagementServiceCreateUserJobSearchPredictedPreferenceClient{ClientStream: stream}
 	return x, nil
 }
 
-type UserManagementService_CreateUserJobSearchPredictedPerfenceClient interface {
-	Send(*UserJobSearchPredictedPerfence) error
-	Recv() (*PredictedPerfenceResponse, error)
+type UserManagementService_CreateUserJobSearchPredictedPreferenceClient interface {
+	Send(*UserJobSearchPredictedPreference) error
+	Recv() (*PredictedPreferenceResponse, error)
 	grpc.ClientStream
 }
 
-type userManagementServiceCreateUserJobSearchPredictedPerfenceClient struct {
+type userManagementServiceCreateUserJobSearchPredictedPreferenceClient struct {
 	grpc.ClientStream
 }
 
-func (x *userManagementServiceCreateUserJobSearchPredictedPerfenceClient) Send(m *UserJobSearchPredictedPerfence) error {
+func (x *userManagementServiceCreateUserJobSearchPredictedPreferenceClient) Send(m *UserJobSearchPredictedPreference) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *userManagementServiceCreateUserJobSearchPredictedPerfenceClient) Recv() (*PredictedPerfenceResponse, error) {
-	m := new(PredictedPerfenceResponse)
+func (x *userManagementServiceCreateUserJobSearchPredictedPreferenceClient) Recv() (*PredictedPreferenceResponse, error) {
+	m := new(PredictedPreferenceResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -162,13 +162,13 @@ type UserManagementServiceServer interface {
 	// from user management
 	SaveUserAccount(context.Context, *UserAccount) (*UserResponse, error)
 	GetUserAccount(context.Context, *GetUserRequest) (*UserAccount, error)
-	// store point of user search perfence
-	SaveUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error)
-	UpdateUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error)
-	GetUserSearchPerfence(context.Context, *GetUserRequest) (*UserSearchPerfence, error)
-	SaveUserJobSearchPredictedPerfence(context.Context, *UserJobSearchPredictedPerfence) (*PredictedPerfenceResponse, error)
-	GetUserJobSearchPredictedPerfence(context.Context, *GetPredictedPerfence) (*UserJobSearchPredictedPerfence, error)
-	CreateUserJobSearchPredictedPerfence(UserManagementService_CreateUserJobSearchPredictedPerfenceServer) error
+	// store point of user search Preference
+	SaveUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error)
+	UpdateUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error)
+	GetUserSearchPreference(context.Context, *GetUserRequest) (*UserSearchPreference, error)
+	SaveUserJobSearchPredictedPreference(context.Context, *UserJobSearchPredictedPreference) (*PredictedPreferenceResponse, error)
+	GetUserJobSearchPredictedPreference(context.Context, *GetPredictedPreference) (*UserJobSearchPredictedPreference, error)
+	CreateUserJobSearchPredictedPreference(UserManagementService_CreateUserJobSearchPredictedPreferenceServer) error
 	mustEmbedUnimplementedUserManagementServiceServer()
 }
 
@@ -182,23 +182,23 @@ func (UnimplementedUserManagementServiceServer) SaveUserAccount(context.Context,
 func (UnimplementedUserManagementServiceServer) GetUserAccount(context.Context, *GetUserRequest) (*UserAccount, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserAccount not implemented")
 }
-func (UnimplementedUserManagementServiceServer) SaveUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveUserSearchPerfence not implemented")
+func (UnimplementedUserManagementServiceServer) SaveUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveUserSearchPreference not implemented")
 }
-func (UnimplementedUserManagementServiceServer) UpdateUserSearchPerfence(context.Context, *UserSearchPerfence) (*UserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserSearchPerfence not implemented")
+func (UnimplementedUserManagementServiceServer) UpdateUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserSearchPreference not implemented")
 }
-func (UnimplementedUserManagementServiceServer) GetUserSearchPerfence(context.Context, *GetUserRequest) (*UserSearchPerfence, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserSearchPerfence not implemented")
+func (UnimplementedUserManagementServiceServer) GetUserSearchPreference(context.Context, *GetUserRequest) (*UserSearchPreference, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserSearchPreference not implemented")
 }
-func (UnimplementedUserManagementServiceServer) SaveUserJobSearchPredictedPerfence(context.Context, *UserJobSearchPredictedPerfence) (*PredictedPerfenceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveUserJobSearchPredictedPerfence not implemented")
+func (UnimplementedUserManagementServiceServer) SaveUserJobSearchPredictedPreference(context.Context, *UserJobSearchPredictedPreference) (*PredictedPreferenceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveUserJobSearchPredictedPreference not implemented")
 }
-func (UnimplementedUserManagementServiceServer) GetUserJobSearchPredictedPerfence(context.Context, *GetPredictedPerfence) (*UserJobSearchPredictedPerfence, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserJobSearchPredictedPerfence not implemented")
+func (UnimplementedUserManagementServiceServer) GetUserJobSearchPredictedPreference(context.Context, *GetPredictedPreference) (*UserJobSearchPredictedPreference, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserJobSearchPredictedPreference not implemented")
 }
-func (UnimplementedUserManagementServiceServer) CreateUserJobSearchPredictedPerfence(UserManagementService_CreateUserJobSearchPredictedPerfenceServer) error {
-	return status.Errorf(codes.Unimplemented, "method CreateUserJobSearchPredictedPerfence not implemented")
+func (UnimplementedUserManagementServiceServer) CreateUserJobSearchPredictedPreference(UserManagementService_CreateUserJobSearchPredictedPreferenceServer) error {
+	return status.Errorf(codes.Unimplemented, "method CreateUserJobSearchPredictedPreference not implemented")
 }
 func (UnimplementedUserManagementServiceServer) mustEmbedUnimplementedUserManagementServiceServer() {}
 
@@ -249,116 +249,116 @@ func _UserManagementService_GetUserAccount_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_SaveUserSearchPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserSearchPerfence)
+func _UserManagementService_SaveUserSearchPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSearchPreference)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).SaveUserSearchPerfence(ctx, in)
+		return srv.(UserManagementServiceServer).SaveUserSearchPreference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_SaveUserSearchPerfence_FullMethodName,
+		FullMethod: UserManagementService_SaveUserSearchPreference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).SaveUserSearchPerfence(ctx, req.(*UserSearchPerfence))
+		return srv.(UserManagementServiceServer).SaveUserSearchPreference(ctx, req.(*UserSearchPreference))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_UpdateUserSearchPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserSearchPerfence)
+func _UserManagementService_UpdateUserSearchPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserSearchPreference)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).UpdateUserSearchPerfence(ctx, in)
+		return srv.(UserManagementServiceServer).UpdateUserSearchPreference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_UpdateUserSearchPerfence_FullMethodName,
+		FullMethod: UserManagementService_UpdateUserSearchPreference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).UpdateUserSearchPerfence(ctx, req.(*UserSearchPerfence))
+		return srv.(UserManagementServiceServer).UpdateUserSearchPreference(ctx, req.(*UserSearchPreference))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_GetUserSearchPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UserManagementService_GetUserSearchPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).GetUserSearchPerfence(ctx, in)
+		return srv.(UserManagementServiceServer).GetUserSearchPreference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_GetUserSearchPerfence_FullMethodName,
+		FullMethod: UserManagementService_GetUserSearchPreference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).GetUserSearchPerfence(ctx, req.(*GetUserRequest))
+		return srv.(UserManagementServiceServer).GetUserSearchPreference(ctx, req.(*GetUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_SaveUserJobSearchPredictedPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserJobSearchPredictedPerfence)
+func _UserManagementService_SaveUserJobSearchPredictedPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserJobSearchPredictedPreference)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).SaveUserJobSearchPredictedPerfence(ctx, in)
+		return srv.(UserManagementServiceServer).SaveUserJobSearchPredictedPreference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_SaveUserJobSearchPredictedPerfence_FullMethodName,
+		FullMethod: UserManagementService_SaveUserJobSearchPredictedPreference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).SaveUserJobSearchPredictedPerfence(ctx, req.(*UserJobSearchPredictedPerfence))
+		return srv.(UserManagementServiceServer).SaveUserJobSearchPredictedPreference(ctx, req.(*UserJobSearchPredictedPreference))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_GetUserJobSearchPredictedPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPredictedPerfence)
+func _UserManagementService_GetUserJobSearchPredictedPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPredictedPreference)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).GetUserJobSearchPredictedPerfence(ctx, in)
+		return srv.(UserManagementServiceServer).GetUserJobSearchPredictedPreference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_GetUserJobSearchPredictedPerfence_FullMethodName,
+		FullMethod: UserManagementService_GetUserJobSearchPredictedPreference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).GetUserJobSearchPredictedPerfence(ctx, req.(*GetPredictedPerfence))
+		return srv.(UserManagementServiceServer).GetUserJobSearchPredictedPreference(ctx, req.(*GetPredictedPreference))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_CreateUserJobSearchPredictedPerfence_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(UserManagementServiceServer).CreateUserJobSearchPredictedPerfence(&userManagementServiceCreateUserJobSearchPredictedPerfenceServer{ServerStream: stream})
+func _UserManagementService_CreateUserJobSearchPredictedPreference_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(UserManagementServiceServer).CreateUserJobSearchPredictedPreference(&userManagementServiceCreateUserJobSearchPredictedPreferenceServer{ServerStream: stream})
 }
 
-type UserManagementService_CreateUserJobSearchPredictedPerfenceServer interface {
-	Send(*PredictedPerfenceResponse) error
-	Recv() (*UserJobSearchPredictedPerfence, error)
+type UserManagementService_CreateUserJobSearchPredictedPreferenceServer interface {
+	Send(*PredictedPreferenceResponse) error
+	Recv() (*UserJobSearchPredictedPreference, error)
 	grpc.ServerStream
 }
 
-type userManagementServiceCreateUserJobSearchPredictedPerfenceServer struct {
+type userManagementServiceCreateUserJobSearchPredictedPreferenceServer struct {
 	grpc.ServerStream
 }
 
-func (x *userManagementServiceCreateUserJobSearchPredictedPerfenceServer) Send(m *PredictedPerfenceResponse) error {
+func (x *userManagementServiceCreateUserJobSearchPredictedPreferenceServer) Send(m *PredictedPreferenceResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *userManagementServiceCreateUserJobSearchPredictedPerfenceServer) Recv() (*UserJobSearchPredictedPerfence, error) {
-	m := new(UserJobSearchPredictedPerfence)
+func (x *userManagementServiceCreateUserJobSearchPredictedPreferenceServer) Recv() (*UserJobSearchPredictedPreference, error) {
+	m := new(UserJobSearchPredictedPreference)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -381,30 +381,30 @@ var UserManagementService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserManagementService_GetUserAccount_Handler,
 		},
 		{
-			MethodName: "SaveUserSearchPerfence",
-			Handler:    _UserManagementService_SaveUserSearchPerfence_Handler,
+			MethodName: "SaveUserSearchPreference",
+			Handler:    _UserManagementService_SaveUserSearchPreference_Handler,
 		},
 		{
-			MethodName: "UpdateUserSearchPerfence",
-			Handler:    _UserManagementService_UpdateUserSearchPerfence_Handler,
+			MethodName: "UpdateUserSearchPreference",
+			Handler:    _UserManagementService_UpdateUserSearchPreference_Handler,
 		},
 		{
-			MethodName: "GetUserSearchPerfence",
-			Handler:    _UserManagementService_GetUserSearchPerfence_Handler,
+			MethodName: "GetUserSearchPreference",
+			Handler:    _UserManagementService_GetUserSearchPreference_Handler,
 		},
 		{
-			MethodName: "SaveUserJobSearchPredictedPerfence",
-			Handler:    _UserManagementService_SaveUserJobSearchPredictedPerfence_Handler,
+			MethodName: "SaveUserJobSearchPredictedPreference",
+			Handler:    _UserManagementService_SaveUserJobSearchPredictedPreference_Handler,
 		},
 		{
-			MethodName: "GetUserJobSearchPredictedPerfence",
-			Handler:    _UserManagementService_GetUserJobSearchPredictedPerfence_Handler,
+			MethodName: "GetUserJobSearchPredictedPreference",
+			Handler:    _UserManagementService_GetUserJobSearchPredictedPreference_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "CreateUserJobSearchPredictedPerfence",
-			Handler:       _UserManagementService_CreateUserJobSearchPredictedPerfence_Handler,
+			StreamName:    "CreateUserJobSearchPredictedPreference",
+			Handler:       _UserManagementService_CreateUserJobSearchPredictedPreference_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

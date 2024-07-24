@@ -1,11 +1,14 @@
 package seek_api
 
-import "time"
+import (
+	"time"
+)
 
 type SeekSearchApiParams struct {
 	SiteKey        string `url:"siteKey", json:"sitekey"`
 	Where          string `url:"where", json:"where"`
 	Page           int    `url:"page", json:"page"`
+	PageSize       int    `url:"pageSize", json:"pageSize"`
 	Keywords       string `url:"keywords", json:"keywords"`
 	SalaryType     string `url:"salarytype", json:"salarytype"`
 	SalaryRange    string `url:"salaryrange", json:"salaryrange"`
@@ -13,6 +16,7 @@ type SeekSearchApiParams struct {
 	SeekerId       string `url:"seekerId", json:"seekerId"`
 	Classification string `url:"classification", json:"classification"`
 	AdvertiserId   string `url:"advertiserid", json:"advertiserid"`
+	UserQueryId    string `url:"userQueryId", json:"userQueryId"`
 }
 
 type SeekSearchApiResponse struct {
@@ -81,14 +85,18 @@ type SeekSearchApiResponse struct {
 	} `json:"joraCrossLink"`
 
 	SearchParams struct {
-		Sitekey     string `json:"sitekey"`
-		Where       string `json:"where"`
-		Page        string `json:"page"`
-		Keywords    string `json:"keywords"`
-		Salarytype  string `json:"salarytype"`
-		Salaryrange string `json:"salaryrange"`
-		Locale      string `json:"locale"`
-		Solid       string `json:"solid"`
+		Sitekey      string `json:"sitekey"`
+		Where        string `json:"where"`
+		Page         string `json:"page"`
+		PageSize     string `json:"pageSize"`
+		Keywords     string `json:"keywords"`
+		Salarytype   string `json:"salarytype"`
+		Salaryrange  string `json:"salaryrange"`
+		Locale       string `json:"locale"`
+		Solid        string `json:"solid"`
+		UserId       string `json:"userid"`
+		UserQueryId  string `json:"userQueryId"`
+		Advertiserid string `json:"advertiserid"`
 	} `json:"searchParams"`
 }
 

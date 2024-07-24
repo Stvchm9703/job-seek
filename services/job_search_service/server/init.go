@@ -2,10 +2,13 @@ package server
 
 import (
 	"fmt"
+	"job-seek/pkg/database"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/service_util"
 	runConf "job-seek/services/job_search_service/config"
 	"sync"
+
+	surrealdb "github.com/surrealdb/surrealdb.go"
 
 	logrus "github.com/sirupsen/logrus"
 
@@ -20,17 +23,36 @@ type JobSearchServiceServerImpl struct {
 	config *runConf.ServiceConfig
 
 	mut      *sync.Mutex
-
+	dbClient *surrealdb.DB
 	// other implement here
 }
 
 func (s JobSearchServiceServerImpl) Startup() error {
 	s.log.Info("Startup Produle")
+
+	s.log.Info("Connecting to database")
+	var err error
+	s.dbClient, err = database.InitConnection(&s.config.SurrealDBService, "development")
+	if err != nil {
+		s.log.Fatalf("Failed to connect to database: %v", err)
+		return err
+	}
+	s.log.Info("Connected to database")
+
 	return nil
 }
 
 func (s JobSearchServiceServerImpl) Shutdown() error {
 	s.log.Info("Shutdown")
+
+	s.log.Info("Closing database connection")
+	if s.dbClient != nil {
+		s.dbClient.Close()
+	} else {
+		s.log.Warn("Database connection is nil pointer, check the memmory leak")
+	}
+	s.log.Info("Database connection closed")
+
 	return nil
 }
 
@@ -43,10 +65,11 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) *grpc.Ser
 	opt := service_util.CreateGrpcServerOption(&config.Server, log)
 	grpcServer := grpc.NewServer(opt...)
 	ssi := JobSearchServiceServerImpl{
-		mut:      &sync.Mutex{},
-		log:      log,
-		config:   config,
+		mut:    &sync.Mutex{},
+		log:    log,
+		config: config,
 	}
+	ssi.Startup()
 	protos.RegisterJobSearchServiceServer(grpcServer, ssi)
 
 	go func() {

@@ -1,0 +1,16 @@
+
+
+[seek_service]
+domain = 'https://www.seek.com.au'
+cooldown = 1.2
+site_key = "AU-Main"
+lang_locale = "en-AU"
+
+[yahoo_search]
+domain = 'au.yahoo.com'
+
+[surreal_db_service]
+host = 'localhost'
+port = 8654
+user = "job_search_service"
+password = "jobseek_jobsearch"

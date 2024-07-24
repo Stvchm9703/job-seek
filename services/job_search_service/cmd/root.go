@@ -17,7 +17,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "JSJobSearchService",
 	Short: "JobSearchService service",
-	Long: ``,
+	Long:  ``,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -50,7 +50,6 @@ var serveCmd = &cobra.Command{
 		if test, _ := cmd.Flags().GetBool("test"); test {
 			ServerTestRun(logLevel)
 			return // test mode
-
 		}
 	},
 }
@@ -85,6 +84,12 @@ func init() {
 	serveCmd.Flags().Bool("dry-run", false, "dry-run mode with inputed command and config")
 	serveCmd.Flags().Bool("test", false, "test run all related service with inputed command and config")
 	serveCmd.Flags().BoolP("print", "P", false, "print config in toml format, for other service to use")
+
+	serveCmd.Flags().String("db-address", "localhost", "database address")
+	viper.BindPFlag("surreal_db_service.host", serveCmd.Flags().Lookup("db-address"))
+
+	serveCmd.Flags().Int("db-port", 8654, "database port")
+	viper.BindPFlag("surreal_db_service.port", serveCmd.Flags().Lookup("db-port"))
 
 	rootCmd.AddCommand(serveCmd)
 }

@@ -19,7 +19,7 @@ type JobExtendsionServiceServerImpl struct {
 	log    *logrus.Logger
 	config *runConf.ServiceConfig
 
-	mut      *sync.Mutex
+	mut *sync.Mutex
 
 	// other implement here
 }
@@ -43,9 +43,9 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) *grpc.Ser
 	opt := service_util.CreateGrpcServerOption(&config.Server, log)
 	grpcServer := grpc.NewServer(opt...)
 	ssi := JobExtendsionServiceServerImpl{
-		mut:      &sync.Mutex{},
-		log:      log,
-		config:   config,
+		mut:    &sync.Mutex{},
+		log:    log,
+		config: config,
 	}
 	protos.RegisterJobSearchServiceServer(grpcServer, ssi)
 

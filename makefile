@@ -24,7 +24,9 @@ generate-proto: \
 build-job-search-service:
 	go build -o bin/job-search-service services/job-search-service/main.go
 
-build-
 
 build-service:\
- build-fetch-job-service
+	build-job-search-service
+
+tool-generate-service-template:
+	go run tools/generate-service-template/main.go

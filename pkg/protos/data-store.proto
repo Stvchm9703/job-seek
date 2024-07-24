@@ -11,11 +11,11 @@ service DataStoreService {
   rpc SaveUserAccount (job_seek.user_management.UserAccount) returns (job_seek.user_management.UserResponse);
   rpc GetUserAccount (job_seek.user_management.GetUserRequest) returns (job_seek.user_management.UserAccount);
   // 
-  rpc SaveUserSearchPerfence (job_seek.user_management.UserSearchPerfence) returns (job_seek.user_management.UserResponse);
-  rpc GetUserSearchPerfence (job_seek.user_management.GetUserRequest) returns (job_seek.user_management.UserSearchPerfence);
+  rpc SaveUserSearchPreference (job_seek.user_management.UserSearchPreference) returns (job_seek.user_management.UserResponse);
+  rpc GetUserSearchPreference (job_seek.user_management.GetUserRequest) returns (job_seek.user_management.UserSearchPreference);
   // 
-  rpc SaveUserJobSearchPredictedPerfence (job_seek.user_management.UserJobSearchPredictedPerfence) returns (job_seek.user_management.PredictedPerfenceResponse);
-  rpc GetUserJobSearchPredictedPerfence (job_seek.user_management.GetPredictedPerfence) returns (job_seek.user_management.UserJobSearchPredictedPerfence);
+  rpc SaveUserJobSearchPredictedPreference (job_seek.user_management.UserJobSearchPredictedPreference) returns (job_seek.user_management.PredictedPreferenceResponse);
+  rpc GetUserJobSearchPredictedPreference (job_seek.user_management.GetPredictedPreference) returns (job_seek.user_management.UserJobSearchPredictedPreference);
   
   // 
   rpc SaveJobApply (job_seek.job_apply.JobApply) returns (DataStoreResponse);

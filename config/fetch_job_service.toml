@@ -1,8 +1,0 @@
-
-
-[seek_service]
-domain = 'https://www.seek.com.au'
-cooldown = 1.2
-
-[yahoo_search]
-domain = 'au.yahoo.com'

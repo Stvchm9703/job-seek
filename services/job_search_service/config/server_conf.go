@@ -19,8 +19,14 @@ type ServiceConfig struct {
 	MeiliSearchService config.DatabaseConfig `toml:"meili_search_service" mapstructure:"meili_search_service"`
 	SurrealDBService   config.DatabaseConfig `toml:"surreal_db_service" mapstructure:"surreal_db_service"`
 	// api services
-	SeekService config.ApiService `toml:"seek_service" mapstructure:"seek_service"`
+	SeekService SeekServiceConfig `toml:"seek_service" mapstructure:"seek_service"`
 	YahooSearch config.ApiService `toml:"yahoo_search" mapstructure:"yahoo_search"`
+}
+
+type SeekServiceConfig struct {
+	config.ApiService
+	LanguageLocale string `toml:"lang_locale" mapstructure:"lang_locale"`
+	SiteKey        string `toml:"site_key" mapstructure:"site_key"`
 }
 
 var (
@@ -51,9 +57,17 @@ func Setup() {
 	viper.SetDefault("server.min_time", 5)
 	viper.SetDefault("server.permit_without_stream", true)
 
-	// internal services
+	// api services
 	viper.SetDefault("seek_service.domain", "https://www.seek.com.au")
 	viper.SetDefault("yahoo_search.domain", "https://au.search.yahoo.com")
+
+	// internal services
+	viper.SetDefault("meili_search_service.host", "localhost")
+	viper.SetDefault("meili_search_service.port", 7700)
+	viper.SetDefault("meili_search_service.api_key", "meilisearch")
+
+	viper.SetDefault("surreal_db_service.host", "localhost")
+	viper.SetDefault("surreal_db_service.port", 8654)
 
 	err := viper.ReadInConfig()
 	if err != nil {

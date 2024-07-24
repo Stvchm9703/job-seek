@@ -32,7 +32,7 @@ func (p *SeekPostDetails) ToProto() *protos.Job {
 		Score:          &score,
 		Role:           p.Role,
 		WorkType:       p.WorkType,
-		CompanyDetails: p.CompanyDetails.ToProto(),
+		CompanyDetail:  p.CompanyDetails.ToProto(),
 		Locations:      p.Locations,
 		ExpiringDate:   p.ExpiringDate,
 	}

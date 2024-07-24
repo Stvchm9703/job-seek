@@ -19,14 +19,21 @@ message UserAccount {
   string user_address = 6;
 }
 
-message UserSearchPerfence {
+message UserCVProfile {
+  string user_id = 1;
+  string cv_id = 2;
+  bytes cv_data = 3;
+  repeated PreferenceKeyword cv_keywords = 4;
+}
+
+message UserSearchPreference {
   string record_id = 1;
   string user_id = 2; // seeker-id
   string job_id = 3;  // job-id
-  repeated PerfenceKeyword keywords = 4;
+  repeated PreferenceKeyword keywords = 4;
 }
 
-message PerfenceKeyword {
+message PreferenceKeyword {
   string kw_id = 1;
   string user_id = 2;   // seeker-id
   string keyword = 3;   //
@@ -35,27 +42,27 @@ message PerfenceKeyword {
   bool is_positive = 6; // true: positive, false: negative
 }
 
-message GetPredictedPerfence { string record_id = 1; }
+message GetPredictedPreference { string record_id = 1; }
 
-message PredictedPerfenceResponse {
+message PredictedPreferenceResponse {
   string status = 1;
   string user_id = 2;
   string record_id = 3;
   string message = 4;
 }
 
-message UserJobSearchPredictedPerfence {
+message UserJobSearchPredictedPreference {
   string record_id = 1;
   string user_id = 2; // seeker-id
   string job_id = 3;  // job-id
   string site_key = 4;
   string locale = 5;
-  repeated PerfenceKeyword job_keyword = 6; //
+  repeated PreferenceKeyword job_keyword = 6; //
   int32 score = 7;                          // 0-100
   int32 count = 8;                          // 0-100
 }
 
-message PredictedPerfenceMap {
+message PredictedPreferenceMap {
   string user_id = 1;
   string map_id = 2;
 }
@@ -65,18 +72,18 @@ service UserManagementService {
   rpc SaveUserAccount(UserAccount) returns (UserResponse);
   rpc GetUserAccount(GetUserRequest) returns (UserAccount);
 
-  // store point of user search perfence
-  rpc SaveUserSearchPerfence(UserSearchPerfence) returns (UserResponse);
-  rpc UpdateUserSearchPerfence(UserSearchPerfence) returns (UserResponse);
-  rpc GetUserSearchPerfence(GetUserRequest) returns (UserSearchPerfence);
+  // store point of user search Preference
+  rpc SaveUserSearchPreference(UserSearchPreference) returns (UserResponse);
+  rpc UpdateUserSearchPreference(UserSearchPreference) returns (UserResponse);
+  rpc GetUserSearchPreference(GetUserRequest) returns (UserSearchPreference);
   //
-  rpc SaveUserJobSearchPredictedPerfence(UserJobSearchPredictedPerfence)
-      returns (PredictedPerfenceResponse);
-      
-  rpc GetUserJobSearchPredictedPerfence(GetPredictedPerfence)
-      returns (UserJobSearchPredictedPerfence);
-      
-  rpc CreateUserJobSearchPredictedPerfence(
-      stream UserJobSearchPredictedPerfence)
-      returns (stream PredictedPerfenceResponse);
+  rpc SaveUserJobSearchPredictedPreference(UserJobSearchPredictedPreference)
+      returns (PredictedPreferenceResponse);
+
+  rpc GetUserJobSearchPredictedPreference(GetPredictedPreference)
+      returns (UserJobSearchPredictedPreference);
+
+  rpc CreateUserJobSearchPredictedPreference(
+      stream UserJobSearchPredictedPreference)
+      returns (stream PredictedPreferenceResponse);
 }
