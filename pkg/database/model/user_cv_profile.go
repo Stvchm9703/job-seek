@@ -12,8 +12,8 @@ import (
 )
 
 type UserCVProfileModel struct {
+	Id         string   `json:"id"`
 	UserId     string   `json:"user_id"`
-	CvId       string   `json:"cv_id"`
 	CvData     []byte   `json:"cv_data"`
 	CvKeywords []string `json:"cv_keywords"`
 }
@@ -21,7 +21,7 @@ type UserCVProfileModel struct {
 func (m *UserCVProfileModel) ToProto() protos.UserCVProfile {
 	return protos.UserCVProfile{
 		UserId:     m.UserId,
-		CvId:       m.CvId,
+		CvId:       m.Id,
 		CvData:     m.CvData,
 		CvKeywords: []*protos.PreferenceKeyword{},
 	}
@@ -29,18 +29,15 @@ func (m *UserCVProfileModel) ToProto() protos.UserCVProfile {
 
 func (m *UserCVProfileModel) FromProto(p *protos.UserCVProfile) {
 	m.UserId = p.UserId
-	m.CvId = p.CvId
+	m.Id = p.CvId
 	m.CvData = p.CvData
 	m.CvKeywords = lo.Map(p.CvKeywords, func(x *protos.PreferenceKeyword, _ int) string { return x.KwId })
 }
 
 func (m *UserCVProfileModel) GetModel(db *surrealdb.DB) (*protos.UserCVProfile, error) {
-	result, err := db.Query(`
-	SELECT *, (SELECT * FROM PreferenceKeyword WHERE KwId INSIDE $parent.CvKeywords) AS CvKeywords
-	FROM UserCVProfile:$cv_id;
-	`, map[string]interface{}{
-		"cv_id": m.CvId,
-	})
+	result, err := db.Query(fmt.Sprintf(`
+	SELECT *, (SELECT * FROM PreferenceKeyword WHERE id INSIDE $parent.CvKeywords) AS CvKeywords
+	FROM UserCVProfile:%s;`, m.Id), nil)
 
 	if err != nil {
 		return nil, err
@@ -60,14 +57,11 @@ func (m *UserCVProfileModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	result, err := sd.Query(`
-		LET $cv_id = UserCVProfile:uuid();
-		INSERT INTO UserCVProfile:$cv_id {
-			UserId: $UserId,
-			CvId: $cv_id,
-			CvData: $CvData,
-			CvKeywords: $CvKeywords
-		};`, m)
+	result, err := sd.Create("UserCVProfile", map[string]interface{}{
+		"UserId":     m.UserId,
+		"CvData":     m.CvData,
+		"CvKeywords": m.CvKeywords,
+	})
 	if err != nil {
 		return err
 	}
@@ -76,7 +70,7 @@ func (m *UserCVProfileModel) CreateModel(sd *surrealdb.DB) error {
 	if err != nil {
 		return err
 	}
-	m.CvId = data.CvId
+	m.Id = data.Id
 	return nil
 }
 
@@ -84,6 +78,21 @@ func (m *UserCVProfileModel) UpdateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Update(fmt.Sprintf("UserCVProfile:%s", m.CvId), m)
+	_, err := sd.Update(fmt.Sprintf("UserCVProfile:%s", m.Id), m)
+	return err
+}
+
+func (m *UserCVProfileModel) DefineModel(sd *surrealdb.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	query := `
+DEFINE TABLE IF NOT EXISTS UserCVProfile SCHEMAFULL;
+-- Field definition
+	DEFINE FIELD IF NOT EXISTS	UserId 					ON TABLE UserAccount TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	CvData 					ON TABLE UserAccount TYPE		bytes;
+	DEFINE FIELD IF NOT EXISTS	CvKeywords			ON TABLE UserAccount TYPE		array<record<PreferenceKeyword>>;
+`
+	_, err := sd.Query(query, nil)
 	return err
 }

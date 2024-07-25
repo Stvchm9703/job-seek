@@ -12,7 +12,7 @@ import (
 )
 
 type UserSearchPreferenceModel struct {
-	RecordId string   `json:"record_id"`
+	Id       string   `json:"id"`
 	UserId   string   `json:"user_id"`
 	JobId    string   `json:"job_id"`
 	Keywords []string `json:"keywords"`
@@ -20,7 +20,7 @@ type UserSearchPreferenceModel struct {
 
 func (m *UserSearchPreferenceModel) ToProto() protos.UserSearchPreference {
 	return protos.UserSearchPreference{
-		RecordId: m.RecordId,
+		RecordId: m.Id,
 		UserId:   m.UserId,
 		JobId:    m.JobId,
 		Keywords: []*protos.PreferenceKeyword{},
@@ -28,7 +28,7 @@ func (m *UserSearchPreferenceModel) ToProto() protos.UserSearchPreference {
 }
 
 func (m *UserSearchPreferenceModel) FromProto(p *protos.UserSearchPreference) {
-	m.RecordId = p.RecordId
+	m.Id = p.RecordId
 	m.UserId = p.UserId
 	m.JobId = p.JobId
 	m.Keywords = lo.Map(p.Keywords, func(x *protos.PreferenceKeyword, _ int) string { return x.KwId })
@@ -36,12 +36,8 @@ func (m *UserSearchPreferenceModel) FromProto(p *protos.UserSearchPreference) {
 
 func (m *UserSearchPreferenceModel) GetModel(db *surrealdb.DB) (*protos.UserSearchPreference, error) {
 	result, err := db.Query(
-		`
-	SELECT *, (SELECT * FROM PreferenceKeyword WHERE KwId INSIDE $parent.Keywords) AS Keywords
-	FROM UserSearchPreference:$record_id;
-	`, map[string]interface{}{
-			"record_id": m.RecordId,
-		})
+		fmt.Sprintf(`SELECT *, (SELECT * FROM PreferenceKeyword WHERE KwId INSIDE $parent.Keywords) AS Keywords
+		FROM UserSearchPreference:%s;`, m.Id), nil)
 
 	if err != nil {
 		return nil, err
@@ -60,15 +56,7 @@ func (m *UserSearchPreferenceModel) CreateModel(sd *surrealdb.DB) error {
 		return fmt.Errorf("database connection is nil")
 	}
 
-	result, err := sd.Query(`
-		LET $record_id = UserSearchPreference:uuid();
-		INSERT INTO UserSearchPreference:$record_id {
-			RecordId: $record_id,
-			UserId: $UserId,
-			JobId: $JobId,
-			Keywords: $Keywords,
-		};
-	`, m)
+	result, err := sd.Create("UserSearchPreference", m)
 	if err != nil {
 		return err
 	}
@@ -77,7 +65,9 @@ func (m *UserSearchPreferenceModel) CreateModel(sd *surrealdb.DB) error {
 	if err != nil {
 		return err
 	}
-	m.RecordId = data.RecordId
+	if data != nil {
+		m.Id = data.Id
+	}
 	return nil
 }
 
@@ -85,6 +75,21 @@ func (m *UserSearchPreferenceModel) UpdateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Update(fmt.Sprintf("UserSearchPreference:%s", m.RecordId), m)
+	_, err := sd.Update(fmt.Sprintf("UserSearchPreference:%s", m.Id), m)
+	return err
+}
+
+func (m *UserSearchPreferenceModel) DefineModel(sd *surrealdb.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	query := `
+DEFINE TABLE IF NOT EXISTS  UserSearchPreference SCHEMAFULL;
+-- Field definition
+	DEFINE FIELD IF NOT EXISTS	UserId 		ON TABLE UserSearchPreference TYPE	record<UserAccount>;
+	DEFINE FIELD IF NOT EXISTS	JobId 		ON TABLE UserSearchPreference TYPE	record<Job>;
+	DEFINE FIELD IF NOT EXISTS	Keywords 	ON TABLE UserSearchPreference TYPE	array<record<PreferenceKeyword>>;
+	`
+	_, err := sd.Query(query, nil)
 	return err
 }

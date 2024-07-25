@@ -11,7 +11,7 @@ import (
 )
 
 type PreferenceKeywordModel struct {
-	KwId       string `json:"kw_id"`
+	Id         string `json:"kw_id"`
 	UserId     string `json:"user_id"`
 	Keyword    string `json:"keyword"`
 	Value      string `json:"value"`
@@ -21,7 +21,7 @@ type PreferenceKeywordModel struct {
 
 func (m *PreferenceKeywordModel) ToProto() protos.PreferenceKeyword {
 	return protos.PreferenceKeyword{
-		KwId:       m.KwId,
+		KwId:       m.Id,
 		UserId:     m.UserId,
 		Keyword:    m.Keyword,
 		Value:      m.Value,
@@ -31,7 +31,7 @@ func (m *PreferenceKeywordModel) ToProto() protos.PreferenceKeyword {
 }
 
 func (m *PreferenceKeywordModel) FromProto(p *protos.PreferenceKeyword) {
-	m.KwId = p.KwId
+	m.Id = p.KwId
 	m.UserId = p.UserId
 	m.Keyword = p.Keyword
 	m.Value = p.Value
@@ -40,7 +40,7 @@ func (m *PreferenceKeywordModel) FromProto(p *protos.PreferenceKeyword) {
 }
 
 func (m *PreferenceKeywordModel) GetModel(db *surrealdb.DB) (*protos.PreferenceKeyword, error) {
-	result, err := db.Select(fmt.Sprintf("PreferenceKeyword:%s", m.KwId))
+	result, err := db.Select(fmt.Sprintf("PreferenceKeyword:%s", m.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -60,17 +60,7 @@ func (m *PreferenceKeywordModel) CreateModel(sd *surrealdb.DB) error {
 		return fmt.Errorf("database connection is nil")
 	}
 
-	result, err := sd.Query(`
-		LET $kw_id = PreferenceKeyword:uuid();
-		INSERT INTO PreferenceKeyword:$kw_id {
-			KwId: $kw_id,
-			UserId: $UserId,
-			Keyword: $Keyword,
-			Value: $Value,
-			Type: $Type,
-			IsPositive: $IsPositive
-		};
-	`, m)
+	result, err := sd.Create("PreferenceKeyword", m)
 	if err != nil {
 		return err
 	}
@@ -79,7 +69,7 @@ func (m *PreferenceKeywordModel) CreateModel(sd *surrealdb.DB) error {
 	if err != nil {
 		return err
 	}
-	m.KwId = data.KwId
+	m.Id = data.Id
 	return nil
 }
 
@@ -87,6 +77,24 @@ func (m *PreferenceKeywordModel) UpdateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Update(fmt.Sprintf("PreferenceKeyword:%s", m.KwId), m)
+	_, err := sd.Update(fmt.Sprintf("PreferenceKeyword:%s", m.Id), m)
+	return err
+}
+
+func (m *PreferenceKeywordModel) DefineModel(sd *surrealdb.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	query := `
+DEFINE TABLE IF NOT EXISTS PreferenceKeyword SCHEMAFULL;
+-- Field definition
+	DEFINE FIELD IF NOT EXISTS	UserId 					ON TABLE PreferenceKeyword TYPE		record<UserAccount>;
+	DEFINE FIELD IF NOT EXISTS	Keyword 				ON TABLE PreferenceKeyword TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	Value 					ON TABLE PreferenceKeyword TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	Type 						ON TABLE PreferenceKeyword TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	IsPositive			ON TABLE PreferenceKeyword TYPE		bool;
+
+`
+	_, err := sd.Query(query, nil)
 	return err
 }

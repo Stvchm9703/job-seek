@@ -29,10 +29,10 @@ const (
 	DataStoreService_GetJobApply_FullMethodName                          = "/job_seek.data_store.DataStoreService/GetJobApply"
 	DataStoreService_ListJobApply_FullMethodName                         = "/job_seek.data_store.DataStoreService/ListJobApply"
 	DataStoreService_DeleteJobApply_FullMethodName                       = "/job_seek.data_store.DataStoreService/DeleteJobApply"
-	DataStoreService_SaveBookmarkJob_FullMethodName                      = "/job_seek.data_store.DataStoreService/SaveBookmarkJob"
-	DataStoreService_GetBookmarkJob_FullMethodName                       = "/job_seek.data_store.DataStoreService/GetBookmarkJob"
-	DataStoreService_ListBookmarkJob_FullMethodName                      = "/job_seek.data_store.DataStoreService/ListBookmarkJob"
-	DataStoreService_DeleteBookmarkJob_FullMethodName                    = "/job_seek.data_store.DataStoreService/DeleteBookmarkJob"
+	DataStoreService_SaveJobBookmark_FullMethodName                      = "/job_seek.data_store.DataStoreService/SaveJobBookmark"
+	DataStoreService_GetJobBookmark_FullMethodName                       = "/job_seek.data_store.DataStoreService/GetJobBookmark"
+	DataStoreService_ListJobBookmark_FullMethodName                      = "/job_seek.data_store.DataStoreService/ListJobBookmark"
+	DataStoreService_DeleteJobBookmark_FullMethodName                    = "/job_seek.data_store.DataStoreService/DeleteJobBookmark"
 	DataStoreService_SaveJob_FullMethodName                              = "/job_seek.data_store.DataStoreService/SaveJob"
 	DataStoreService_BatchSaveJob_FullMethodName                         = "/job_seek.data_store.DataStoreService/BatchSaveJob"
 	DataStoreService_SearchJob_FullMethodName                            = "/job_seek.data_store.DataStoreService/SearchJob"
@@ -61,10 +61,10 @@ type DataStoreServiceClient interface {
 	GetJobApply(ctx context.Context, in *GetJobApplyRequest, opts ...grpc.CallOption) (*GetJobApplyResponse, error)
 	ListJobApply(ctx context.Context, in *GetJobApplyRequest, opts ...grpc.CallOption) (*GetJobApplyResponse, error)
 	DeleteJobApply(ctx context.Context, in *JobApply, opts ...grpc.CallOption) (*DataStoreResponse, error)
-	SaveBookmarkJob(ctx context.Context, in *BookmarkJob, opts ...grpc.CallOption) (*DataStoreResponse, error)
-	GetBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*BookmarkJob, error)
-	ListBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*ListBookmarkJobResponse, error)
-	DeleteBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*DataStoreResponse, error)
+	SaveJobBookmark(ctx context.Context, in *JobBookmark, opts ...grpc.CallOption) (*DataStoreResponse, error)
+	GetJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*JobBookmark, error)
+	ListJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*ListJobBookmarkResponse, error)
+	DeleteJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*DataStoreResponse, error)
 	// from job search
 	SaveJob(ctx context.Context, in *Job, opts ...grpc.CallOption) (*DataStoreResponse, error)
 	BatchSaveJob(ctx context.Context, opts ...grpc.CallOption) (DataStoreService_BatchSaveJobClient, error)
@@ -187,40 +187,40 @@ func (c *dataStoreServiceClient) DeleteJobApply(ctx context.Context, in *JobAppl
 	return out, nil
 }
 
-func (c *dataStoreServiceClient) SaveBookmarkJob(ctx context.Context, in *BookmarkJob, opts ...grpc.CallOption) (*DataStoreResponse, error) {
+func (c *dataStoreServiceClient) SaveJobBookmark(ctx context.Context, in *JobBookmark, opts ...grpc.CallOption) (*DataStoreResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DataStoreResponse)
-	err := c.cc.Invoke(ctx, DataStoreService_SaveBookmarkJob_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, DataStoreService_SaveJobBookmark_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dataStoreServiceClient) GetBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*BookmarkJob, error) {
+func (c *dataStoreServiceClient) GetJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*JobBookmark, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BookmarkJob)
-	err := c.cc.Invoke(ctx, DataStoreService_GetBookmarkJob_FullMethodName, in, out, cOpts...)
+	out := new(JobBookmark)
+	err := c.cc.Invoke(ctx, DataStoreService_GetJobBookmark_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dataStoreServiceClient) ListBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*ListBookmarkJobResponse, error) {
+func (c *dataStoreServiceClient) ListJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*ListJobBookmarkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListBookmarkJobResponse)
-	err := c.cc.Invoke(ctx, DataStoreService_ListBookmarkJob_FullMethodName, in, out, cOpts...)
+	out := new(ListJobBookmarkResponse)
+	err := c.cc.Invoke(ctx, DataStoreService_ListJobBookmark_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dataStoreServiceClient) DeleteBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*DataStoreResponse, error) {
+func (c *dataStoreServiceClient) DeleteJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*DataStoreResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DataStoreResponse)
-	err := c.cc.Invoke(ctx, DataStoreService_DeleteBookmarkJob_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, DataStoreService_DeleteJobBookmark_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -396,10 +396,10 @@ type DataStoreServiceServer interface {
 	GetJobApply(context.Context, *GetJobApplyRequest) (*GetJobApplyResponse, error)
 	ListJobApply(context.Context, *GetJobApplyRequest) (*GetJobApplyResponse, error)
 	DeleteJobApply(context.Context, *JobApply) (*DataStoreResponse, error)
-	SaveBookmarkJob(context.Context, *BookmarkJob) (*DataStoreResponse, error)
-	GetBookmarkJob(context.Context, *BookmarkJobRequest) (*BookmarkJob, error)
-	ListBookmarkJob(context.Context, *BookmarkJobRequest) (*ListBookmarkJobResponse, error)
-	DeleteBookmarkJob(context.Context, *BookmarkJobRequest) (*DataStoreResponse, error)
+	SaveJobBookmark(context.Context, *JobBookmark) (*DataStoreResponse, error)
+	GetJobBookmark(context.Context, *JobBookmarkRequest) (*JobBookmark, error)
+	ListJobBookmark(context.Context, *JobBookmarkRequest) (*ListJobBookmarkResponse, error)
+	DeleteJobBookmark(context.Context, *JobBookmarkRequest) (*DataStoreResponse, error)
 	// from job search
 	SaveJob(context.Context, *Job) (*DataStoreResponse, error)
 	BatchSaveJob(DataStoreService_BatchSaveJobServer) error
@@ -449,17 +449,17 @@ func (UnimplementedDataStoreServiceServer) ListJobApply(context.Context, *GetJob
 func (UnimplementedDataStoreServiceServer) DeleteJobApply(context.Context, *JobApply) (*DataStoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteJobApply not implemented")
 }
-func (UnimplementedDataStoreServiceServer) SaveBookmarkJob(context.Context, *BookmarkJob) (*DataStoreResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveBookmarkJob not implemented")
+func (UnimplementedDataStoreServiceServer) SaveJobBookmark(context.Context, *JobBookmark) (*DataStoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveJobBookmark not implemented")
 }
-func (UnimplementedDataStoreServiceServer) GetBookmarkJob(context.Context, *BookmarkJobRequest) (*BookmarkJob, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetBookmarkJob not implemented")
+func (UnimplementedDataStoreServiceServer) GetJobBookmark(context.Context, *JobBookmarkRequest) (*JobBookmark, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetJobBookmark not implemented")
 }
-func (UnimplementedDataStoreServiceServer) ListBookmarkJob(context.Context, *BookmarkJobRequest) (*ListBookmarkJobResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListBookmarkJob not implemented")
+func (UnimplementedDataStoreServiceServer) ListJobBookmark(context.Context, *JobBookmarkRequest) (*ListJobBookmarkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListJobBookmark not implemented")
 }
-func (UnimplementedDataStoreServiceServer) DeleteBookmarkJob(context.Context, *BookmarkJobRequest) (*DataStoreResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteBookmarkJob not implemented")
+func (UnimplementedDataStoreServiceServer) DeleteJobBookmark(context.Context, *JobBookmarkRequest) (*DataStoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteJobBookmark not implemented")
 }
 func (UnimplementedDataStoreServiceServer) SaveJob(context.Context, *Job) (*DataStoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveJob not implemented")
@@ -687,74 +687,74 @@ func _DataStoreService_DeleteJobApply_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DataStoreService_SaveBookmarkJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BookmarkJob)
+func _DataStoreService_SaveJobBookmark_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobBookmark)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DataStoreServiceServer).SaveBookmarkJob(ctx, in)
+		return srv.(DataStoreServiceServer).SaveJobBookmark(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DataStoreService_SaveBookmarkJob_FullMethodName,
+		FullMethod: DataStoreService_SaveJobBookmark_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataStoreServiceServer).SaveBookmarkJob(ctx, req.(*BookmarkJob))
+		return srv.(DataStoreServiceServer).SaveJobBookmark(ctx, req.(*JobBookmark))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DataStoreService_GetBookmarkJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BookmarkJobRequest)
+func _DataStoreService_GetJobBookmark_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobBookmarkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DataStoreServiceServer).GetBookmarkJob(ctx, in)
+		return srv.(DataStoreServiceServer).GetJobBookmark(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DataStoreService_GetBookmarkJob_FullMethodName,
+		FullMethod: DataStoreService_GetJobBookmark_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataStoreServiceServer).GetBookmarkJob(ctx, req.(*BookmarkJobRequest))
+		return srv.(DataStoreServiceServer).GetJobBookmark(ctx, req.(*JobBookmarkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DataStoreService_ListBookmarkJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BookmarkJobRequest)
+func _DataStoreService_ListJobBookmark_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobBookmarkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DataStoreServiceServer).ListBookmarkJob(ctx, in)
+		return srv.(DataStoreServiceServer).ListJobBookmark(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DataStoreService_ListBookmarkJob_FullMethodName,
+		FullMethod: DataStoreService_ListJobBookmark_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataStoreServiceServer).ListBookmarkJob(ctx, req.(*BookmarkJobRequest))
+		return srv.(DataStoreServiceServer).ListJobBookmark(ctx, req.(*JobBookmarkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DataStoreService_DeleteBookmarkJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BookmarkJobRequest)
+func _DataStoreService_DeleteJobBookmark_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobBookmarkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DataStoreServiceServer).DeleteBookmarkJob(ctx, in)
+		return srv.(DataStoreServiceServer).DeleteJobBookmark(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DataStoreService_DeleteBookmarkJob_FullMethodName,
+		FullMethod: DataStoreService_DeleteJobBookmark_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataStoreServiceServer).DeleteBookmarkJob(ctx, req.(*BookmarkJobRequest))
+		return srv.(DataStoreServiceServer).DeleteJobBookmark(ctx, req.(*JobBookmarkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1021,20 +1021,20 @@ var DataStoreService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DataStoreService_DeleteJobApply_Handler,
 		},
 		{
-			MethodName: "SaveBookmarkJob",
-			Handler:    _DataStoreService_SaveBookmarkJob_Handler,
+			MethodName: "SaveJobBookmark",
+			Handler:    _DataStoreService_SaveJobBookmark_Handler,
 		},
 		{
-			MethodName: "GetBookmarkJob",
-			Handler:    _DataStoreService_GetBookmarkJob_Handler,
+			MethodName: "GetJobBookmark",
+			Handler:    _DataStoreService_GetJobBookmark_Handler,
 		},
 		{
-			MethodName: "ListBookmarkJob",
-			Handler:    _DataStoreService_ListBookmarkJob_Handler,
+			MethodName: "ListJobBookmark",
+			Handler:    _DataStoreService_ListJobBookmark_Handler,
 		},
 		{
-			MethodName: "DeleteBookmarkJob",
-			Handler:    _DataStoreService_DeleteBookmarkJob_Handler,
+			MethodName: "DeleteJobBookmark",
+			Handler:    _DataStoreService_DeleteJobBookmark_Handler,
 		},
 		{
 			MethodName: "SaveJob",

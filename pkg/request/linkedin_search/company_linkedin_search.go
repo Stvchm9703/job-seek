@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"job-seek/pkg/config"
 	"job-seek/pkg/request"
 	seekAPI "job-seek/pkg/request/seek_api"
 	seekGQL "job-seek/pkg/request/seek_gql"
@@ -115,6 +116,62 @@ func SearchCompany(c *colly.Collector, companyDetail *request.SeekCompanyDetails
 	return companyDetail
 }
 
+func SearchCompanyForApi(c *colly.Collector, config *config.ApiService, companyDetail *request.SeekCompanyDetails) (*request.SeekCompanyDetails, error) {
+	// form submission
+	companyName := companyDetail.Name
+	if companyDetail.Name == "" {
+		return companyDetail, fmt.Errorf("company name is empty")
+	}
+
+	if checkFieldIsNotEmpty(companyDetail) {
+		return companyDetail, fmt.Errorf("company detail is already filled")
+	}
+
+	link := "https://" + config.Domain + "/search?p=site%3Alinkedin.com%2Fcompany+%22" + strings.ReplaceAll(companyName, " ", "+") + "%22"
+	log.Println("try search link", link)
+
+	var scrapeError error
+	c2 := scrapeLinkedinDetail(c, companyDetail)
+	c2.OnError(func(r *colly.Response, err error) {
+		scrapeError = fmt.Errorf("scraping linkedin error: code : %d, \n error: %s; \n ", r.StatusCode, err)
+	})
+
+	c.OnHTML("li.first a", func(e *colly.HTMLElement) {
+		// pp.Println(e.DOM.Html())
+		resultUrl := e.Attr("href")
+		if strings.Contains(resultUrl, "linkedin.com") && strings.Contains(resultUrl, "r.search.yahoo.com") {
+			// pp.Println(companyName, resultUrl)
+			// companyDetail.Url = resultUrl
+			tmpUrl, _ := ExtractFinalURL(resultUrl)
+			companyDetail.Linkedin = tmpUrl
+			c2.Visit(tmpUrl)
+			c2.Wait()
+
+		} else if strings.Contains(resultUrl, "r.search.yahoo.com") {
+			// log.Println("not linkedin url")
+			tmpUrl, _ := ExtractFinalURL(resultUrl)
+			companyDetail.Linkedin = tmpUrl
+		}
+	})
+
+	c.OnError(func(r *colly.Response, err error) {
+		scrapeError = fmt.Errorf("scraping error: code : %d, \n error: %s; \n ", r.StatusCode, err)
+	})
+
+	// c.OnScraped(func(r *colly.Response) {
+	// 	log.Println("")
+	// 	pp.Println("companyDetail", companyDetail)
+	// })
+	c.Visit(link)
+
+	c.Wait()
+	if scrapeError != nil {
+		return companyDetail, scrapeError
+	}
+
+	return companyDetail, nil
+}
+
 func checkFieldIsNotEmpty(companyDetail *request.SeekCompanyDetails) bool {
 	return companyDetail.Description != "" &&
 		companyDetail.Industry != "" &&
@@ -198,6 +255,25 @@ func GetCompanyPostList(paramsPreset *seekAPI.SeekSearchApiParams, postData *see
 
 	if err != nil {
 		pp.Println(err)
+		return 0, err
+	}
+
+	return responseData.TotalCount, nil
+}
+
+func GetCompanyPostListForApi(config *config.ApiService, company_id string) (int, error) {
+	client := sling.New().Base(config.Domain + "/api/chalice-search/v4/")
+	params := &seekAPI.SeekSearchApiParams{
+		AdvertiserId: company_id,
+	}
+
+	responseData := seekAPI.SeekSearchApiResponse{}
+
+	_, err := client.Get("search").
+		QueryStruct(params).
+		Receive(&responseData, nil)
+
+	if err != nil {
 		return 0, err
 	}
 

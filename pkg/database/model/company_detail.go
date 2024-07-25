@@ -5,14 +5,16 @@ package model
 
 import (
 	"fmt"
+	schema "job-seek/pkg/database/schema"
 	"job-seek/pkg/protos"
 
 	surrealdb "github.com/surrealdb/surrealdb.go"
 )
 
 type CompanyDetailModel struct {
-	ReferenceId  string   `json:"reference_id"`
-	Name         string   `json:"name"`
+	schema.DataModelImpl
+	ReferenceId  string   `json:"reference_id" surrealdb:"mapTo:id,primaryId"`
+	Name         string   `json:"name" surrealdb:"skipUpdate"`
 	Url          string   `json:"url"`
 	Linkedin     string   `json:"linkedin"`
 	Description  string   `json:"description"`
@@ -22,6 +24,7 @@ type CompanyDetailModel struct {
 	HeadQuarters string   `json:"head_quarters"`
 	Specialties  []string `json:"specialties"`
 	Locations    string   `json:"locations"`
+	LastUpdate   string   `json:"last_update" surrealdb:"autoUpdateTime"`
 }
 
 func (m *CompanyDetailModel) ToProto() protos.CompanyDetail {
@@ -38,6 +41,7 @@ func (m *CompanyDetailModel) ToProto() protos.CompanyDetail {
 		HeadQuarters: m.HeadQuarters,
 		Specialties:  m.Specialties,
 		Locations:    m.Locations,
+		LastUpdate:   m.LastUpdate,
 	}
 }
 
@@ -76,6 +80,23 @@ func (m *CompanyDetailModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
+	// 	query := `
+	// INSERT INTO CompanyDetail:$ReferenceId
+	//     (ReferenceId, Name, Url, Linkedin, Description, Industry, JobPosted, GroupSize, HeadQuarters, Specialties, Locations)
+	// VALUES
+	//     ($ReferenceId, $Name, $Url, $Linkedin, $Description, $Industry, $JobPosted, $GroupSize, $HeadQuarters, $Specialties, $Locations )
+	// ON DUPLICATE KEY UPDATE
+	//     Url = $input.Url,
+	//     Linkedin = $input.Linkedin,
+	//     Description = $input.Description,
+	//     Industry = $input.Industry,
+	//     JobsPosted = $input.JobsPosted,
+	//     GroupSize = $input.GroupSize,
+	//     HeadQuarters = $input.HeadQuarters,
+	//     Specialties = $input.Specialties,
+	//     Locations = $input.Locations,
+	// ;;
+	// 	`
 	_, err := sd.Create(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
 	return err
 }
@@ -86,4 +107,37 @@ func (m *CompanyDetailModel) UpdateModel(sd *surrealdb.DB) error {
 	}
 	_, err := sd.Update(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
 	return err
+}
+
+func (m CompanyDetailModel) DefineModel(sd *surrealdb.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
+	query := `
+DEFINE TABLE IF NOT EXISTS CompanyDetail SCHEMAFULL;
+	DEFINE FIELD IF NOT EXISTS	ReferenceId 		ON TABLE CompanyDetail TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	Name						ON TABLE CompanyDetail TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	Url							ON TABLE CompanyDetail TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	Linkedin				ON TABLE CompanyDetail TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	Description			ON TABLE CompanyDetail TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	Industry				ON TABLE CompanyDetail TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	JobPosted				ON TABLE CompanyDetail TYPE		number;
+	DEFINE FIELD IF NOT EXISTS	GroupSize				ON TABLE CompanyDetail TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	HeadQuarters		ON TABLE CompanyDetail TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	Specialties			ON TABLE CompanyDetail TYPE		array<string>;
+	DEFINE FIELD IF NOT EXISTS	Locations				ON TABLE CompanyDetail TYPE		string;
+	DEFINE FIELD IF NOT EXISTS 	LastUpdate			ON TABLE CompanyDetail TYPE		string;
+	DEFINE INDEX IF NOT EXISTS	id							ON TABLE CompanyDetail COLUMNS ReferenceId UNIQUE;
+	DEFINE EVENT IF NOT EXISTS UpdateHook ON TABLE CompanyDetail 
+		WHEN $event = "CREATE" OR $event = "INSERT"
+		THEN (
+			UPDATE CompanyDetail SET LastUpdate = time::format(time::now(),"%+") 
+				WHERE id = $after.post_id
+		);;
+		`
+
+	_, err := sd.Query(query, nil)
+	return err
+
 }

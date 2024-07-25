@@ -23,10 +23,10 @@ service DataStoreService {
   rpc ListJobApply (job_seek.job_apply.GetJobApplyRequest) returns (job_seek.job_apply.GetJobApplyResponse);
   rpc DeleteJobApply (job_seek.job_apply.JobApply) returns (DataStoreResponse);
   // 
-  rpc SaveBookmarkJob (job_seek.job_apply.BookmarkJob) returns (DataStoreResponse);
-  rpc GetBookmarkJob (job_seek.job_apply.BookmarkJobRequest) returns (job_seek.job_apply.BookmarkJob);
-  rpc ListBookmarkJob (job_seek.job_apply.BookmarkJobRequest) returns (job_seek.job_apply.ListBookmarkJobResponse);
-  rpc DeleteBookmarkJob (job_seek.job_apply.BookmarkJobRequest) returns (DataStoreResponse);
+  rpc SaveJobBookmark (job_seek.job_apply.JobBookmark) returns (DataStoreResponse);
+  rpc GetJobBookmark (job_seek.job_apply.JobBookmarkRequest) returns (job_seek.job_apply.JobBookmark);
+  rpc ListJobBookmark (job_seek.job_apply.JobBookmarkRequest) returns (job_seek.job_apply.ListJobBookmarkResponse);
+  rpc DeleteJobBookmark (job_seek.job_apply.JobBookmarkRequest) returns (DataStoreResponse);
 
   // from job search
   rpc SaveJob (job_seek.job_search.Job) returns (DataStoreResponse);

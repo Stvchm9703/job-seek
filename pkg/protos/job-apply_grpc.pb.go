@@ -23,9 +23,9 @@ const (
 	JobExtendsionService_UpdateJobApply_FullMethodName    = "/job_seek.job_apply.JobExtendsionService/UpdateJobApply"
 	JobExtendsionService_ListJobApply_FullMethodName      = "/job_seek.job_apply.JobExtendsionService/ListJobApply"
 	JobExtendsionService_GetJobApply_FullMethodName       = "/job_seek.job_apply.JobExtendsionService/GetJobApply"
-	JobExtendsionService_BookmarkJob_FullMethodName       = "/job_seek.job_apply.JobExtendsionService/BookmarkJob"
-	JobExtendsionService_ListBookmarkJob_FullMethodName   = "/job_seek.job_apply.JobExtendsionService/ListBookmarkJob"
-	JobExtendsionService_DeleteBookmarkJob_FullMethodName = "/job_seek.job_apply.JobExtendsionService/DeleteBookmarkJob"
+	JobExtendsionService_JobBookmark_FullMethodName       = "/job_seek.job_apply.JobExtendsionService/JobBookmark"
+	JobExtendsionService_ListJobBookmark_FullMethodName   = "/job_seek.job_apply.JobExtendsionService/ListJobBookmark"
+	JobExtendsionService_DeleteJobBookmark_FullMethodName = "/job_seek.job_apply.JobExtendsionService/DeleteJobBookmark"
 )
 
 // JobExtendsionServiceClient is the client API for JobExtendsionService service.
@@ -42,11 +42,11 @@ type JobExtendsionServiceClient interface {
 	GetJobApply(ctx context.Context, in *GetJobApplyRequest, opts ...grpc.CallOption) (*JobApply, error)
 	// bookmark job
 	// should at least:   job_id and user_id
-	BookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*BookmarkJobResponse, error)
+	JobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*JobBookmarkResponse, error)
 	// should at least:   user_id
-	ListBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*ListBookmarkJobResponse, error)
+	ListJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*ListJobBookmarkResponse, error)
 	// should at least:   job_id and user_id
-	DeleteBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*BookmarkJobResponse, error)
+	DeleteJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*JobBookmarkResponse, error)
 }
 
 type jobExtendsionServiceClient struct {
@@ -97,30 +97,30 @@ func (c *jobExtendsionServiceClient) GetJobApply(ctx context.Context, in *GetJob
 	return out, nil
 }
 
-func (c *jobExtendsionServiceClient) BookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*BookmarkJobResponse, error) {
+func (c *jobExtendsionServiceClient) JobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*JobBookmarkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BookmarkJobResponse)
-	err := c.cc.Invoke(ctx, JobExtendsionService_BookmarkJob_FullMethodName, in, out, cOpts...)
+	out := new(JobBookmarkResponse)
+	err := c.cc.Invoke(ctx, JobExtendsionService_JobBookmark_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *jobExtendsionServiceClient) ListBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*ListBookmarkJobResponse, error) {
+func (c *jobExtendsionServiceClient) ListJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*ListJobBookmarkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListBookmarkJobResponse)
-	err := c.cc.Invoke(ctx, JobExtendsionService_ListBookmarkJob_FullMethodName, in, out, cOpts...)
+	out := new(ListJobBookmarkResponse)
+	err := c.cc.Invoke(ctx, JobExtendsionService_ListJobBookmark_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *jobExtendsionServiceClient) DeleteBookmarkJob(ctx context.Context, in *BookmarkJobRequest, opts ...grpc.CallOption) (*BookmarkJobResponse, error) {
+func (c *jobExtendsionServiceClient) DeleteJobBookmark(ctx context.Context, in *JobBookmarkRequest, opts ...grpc.CallOption) (*JobBookmarkResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BookmarkJobResponse)
-	err := c.cc.Invoke(ctx, JobExtendsionService_DeleteBookmarkJob_FullMethodName, in, out, cOpts...)
+	out := new(JobBookmarkResponse)
+	err := c.cc.Invoke(ctx, JobExtendsionService_DeleteJobBookmark_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -141,11 +141,11 @@ type JobExtendsionServiceServer interface {
 	GetJobApply(context.Context, *GetJobApplyRequest) (*JobApply, error)
 	// bookmark job
 	// should at least:   job_id and user_id
-	BookmarkJob(context.Context, *BookmarkJobRequest) (*BookmarkJobResponse, error)
+	JobBookmark(context.Context, *JobBookmarkRequest) (*JobBookmarkResponse, error)
 	// should at least:   user_id
-	ListBookmarkJob(context.Context, *BookmarkJobRequest) (*ListBookmarkJobResponse, error)
+	ListJobBookmark(context.Context, *JobBookmarkRequest) (*ListJobBookmarkResponse, error)
 	// should at least:   job_id and user_id
-	DeleteBookmarkJob(context.Context, *BookmarkJobRequest) (*BookmarkJobResponse, error)
+	DeleteJobBookmark(context.Context, *JobBookmarkRequest) (*JobBookmarkResponse, error)
 	mustEmbedUnimplementedJobExtendsionServiceServer()
 }
 
@@ -165,14 +165,14 @@ func (UnimplementedJobExtendsionServiceServer) ListJobApply(context.Context, *Ge
 func (UnimplementedJobExtendsionServiceServer) GetJobApply(context.Context, *GetJobApplyRequest) (*JobApply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJobApply not implemented")
 }
-func (UnimplementedJobExtendsionServiceServer) BookmarkJob(context.Context, *BookmarkJobRequest) (*BookmarkJobResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BookmarkJob not implemented")
+func (UnimplementedJobExtendsionServiceServer) JobBookmark(context.Context, *JobBookmarkRequest) (*JobBookmarkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JobBookmark not implemented")
 }
-func (UnimplementedJobExtendsionServiceServer) ListBookmarkJob(context.Context, *BookmarkJobRequest) (*ListBookmarkJobResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListBookmarkJob not implemented")
+func (UnimplementedJobExtendsionServiceServer) ListJobBookmark(context.Context, *JobBookmarkRequest) (*ListJobBookmarkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListJobBookmark not implemented")
 }
-func (UnimplementedJobExtendsionServiceServer) DeleteBookmarkJob(context.Context, *BookmarkJobRequest) (*BookmarkJobResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteBookmarkJob not implemented")
+func (UnimplementedJobExtendsionServiceServer) DeleteJobBookmark(context.Context, *JobBookmarkRequest) (*JobBookmarkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteJobBookmark not implemented")
 }
 func (UnimplementedJobExtendsionServiceServer) mustEmbedUnimplementedJobExtendsionServiceServer() {}
 
@@ -259,56 +259,56 @@ func _JobExtendsionService_GetJobApply_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _JobExtendsionService_BookmarkJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BookmarkJobRequest)
+func _JobExtendsionService_JobBookmark_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobBookmarkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(JobExtendsionServiceServer).BookmarkJob(ctx, in)
+		return srv.(JobExtendsionServiceServer).JobBookmark(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: JobExtendsionService_BookmarkJob_FullMethodName,
+		FullMethod: JobExtendsionService_JobBookmark_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JobExtendsionServiceServer).BookmarkJob(ctx, req.(*BookmarkJobRequest))
+		return srv.(JobExtendsionServiceServer).JobBookmark(ctx, req.(*JobBookmarkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _JobExtendsionService_ListBookmarkJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BookmarkJobRequest)
+func _JobExtendsionService_ListJobBookmark_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobBookmarkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(JobExtendsionServiceServer).ListBookmarkJob(ctx, in)
+		return srv.(JobExtendsionServiceServer).ListJobBookmark(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: JobExtendsionService_ListBookmarkJob_FullMethodName,
+		FullMethod: JobExtendsionService_ListJobBookmark_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JobExtendsionServiceServer).ListBookmarkJob(ctx, req.(*BookmarkJobRequest))
+		return srv.(JobExtendsionServiceServer).ListJobBookmark(ctx, req.(*JobBookmarkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _JobExtendsionService_DeleteBookmarkJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BookmarkJobRequest)
+func _JobExtendsionService_DeleteJobBookmark_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobBookmarkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(JobExtendsionServiceServer).DeleteBookmarkJob(ctx, in)
+		return srv.(JobExtendsionServiceServer).DeleteJobBookmark(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: JobExtendsionService_DeleteBookmarkJob_FullMethodName,
+		FullMethod: JobExtendsionService_DeleteJobBookmark_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JobExtendsionServiceServer).DeleteBookmarkJob(ctx, req.(*BookmarkJobRequest))
+		return srv.(JobExtendsionServiceServer).DeleteJobBookmark(ctx, req.(*JobBookmarkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -337,16 +337,16 @@ var JobExtendsionService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _JobExtendsionService_GetJobApply_Handler,
 		},
 		{
-			MethodName: "BookmarkJob",
-			Handler:    _JobExtendsionService_BookmarkJob_Handler,
+			MethodName: "JobBookmark",
+			Handler:    _JobExtendsionService_JobBookmark_Handler,
 		},
 		{
-			MethodName: "ListBookmarkJob",
-			Handler:    _JobExtendsionService_ListBookmarkJob_Handler,
+			MethodName: "ListJobBookmark",
+			Handler:    _JobExtendsionService_ListJobBookmark_Handler,
 		},
 		{
-			MethodName: "DeleteBookmarkJob",
-			Handler:    _JobExtendsionService_DeleteBookmarkJob_Handler,
+			MethodName: "DeleteJobBookmark",
+			Handler:    _JobExtendsionService_DeleteJobBookmark_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

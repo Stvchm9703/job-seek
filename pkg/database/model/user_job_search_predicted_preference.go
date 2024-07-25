@@ -12,7 +12,7 @@ import (
 )
 
 type UserJobSearchPredictedPreferenceModel struct {
-	RecordId   string   `json:"record_id"`
+	Id         string   `json:"id"`
 	UserId     string   `json:"user_id"`
 	JobId      string   `json:"job_id"`
 	SiteKey    string   `json:"site_key"`
@@ -24,7 +24,7 @@ type UserJobSearchPredictedPreferenceModel struct {
 
 func (m *UserJobSearchPredictedPreferenceModel) ToProto() protos.UserJobSearchPredictedPreference {
 	return protos.UserJobSearchPredictedPreference{
-		RecordId:   m.RecordId,
+		RecordId:   m.Id,
 		UserId:     m.UserId,
 		JobId:      m.JobId,
 		SiteKey:    m.SiteKey,
@@ -36,7 +36,7 @@ func (m *UserJobSearchPredictedPreferenceModel) ToProto() protos.UserJobSearchPr
 }
 
 func (m *UserJobSearchPredictedPreferenceModel) FromProto(p *protos.UserJobSearchPredictedPreference) {
-	m.RecordId = p.RecordId
+	m.Id = p.RecordId
 	m.UserId = p.UserId
 	m.JobId = p.JobId
 	m.SiteKey = p.SiteKey
@@ -47,14 +47,11 @@ func (m *UserJobSearchPredictedPreferenceModel) FromProto(p *protos.UserJobSearc
 }
 
 func (m *UserJobSearchPredictedPreferenceModel) GetModel(db *surrealdb.DB) (*protos.UserJobSearchPredictedPreference, error) {
-	result, err := db.Query(`
+	result, err := db.Query(fmt.Sprintf(`
 	SELECT 
 		*, 
 		(SELECT * FROM PreferenceKeyword WHERE KwId INSIDE $parent.JobKeyword) AS JobKeyword
-	FROM UserJobSearchPredictedPreference:$record_id;
-	`, map[string]interface{}{
-		"record_id": m.RecordId,
-	})
+	FROM UserJobSearchPredictedPreference:%s;`, m.Id), nil)
 
 	if err != nil {
 		return nil, err
@@ -74,22 +71,18 @@ func (m *UserJobSearchPredictedPreferenceModel) CreateModel(sd *surrealdb.DB) er
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	// _, err := sd.Create(
-	// 	fmt.Sprintf("BookmarkJob:[%s,%s]", m.UserId, m.JobId),
-	// 	m)
-	result, err := sd.Query(`
-		LET $record_id = UserJobSearchPredictedPreference:uuid();
-		INSERT INTO UserJobSearchPredictedPreference:$record_id {
-			RecordId: $record_id,
-			UserId: $UserId,
-			JobId: $JobId,
-			SiteKey: $SiteKey,
-			Locale: $Locale,
-			JobKeyword: $JobKeyword,
-			Score: $Score,
-			Count: $Count
-		};
-	`, m)
+	result, err := sd.Create(
+		"UserJobSearchPredictedPreference",
+		map[string]interface{}{
+			"UserId":     m.UserId,
+			"JobId":      m.JobId,
+			"SiteKey":    m.SiteKey,
+			"Locale":     m.Locale,
+			"JobKeyword": m.JobKeyword,
+			"Score":      m.Score,
+			"Count":      m.Count,
+		})
+
 	if err != nil {
 		return err
 	}
@@ -98,7 +91,7 @@ func (m *UserJobSearchPredictedPreferenceModel) CreateModel(sd *surrealdb.DB) er
 	if err != nil {
 		return err
 	}
-	m.RecordId = data.RecordId
+	m.Id = data.Id
 	return nil
 }
 
@@ -106,6 +99,25 @@ func (m *UserJobSearchPredictedPreferenceModel) UpdateModel(sd *surrealdb.DB) er
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Update(fmt.Sprintf("UserJobSearchPredictedPreference:%s", m.RecordId), m)
+	_, err := sd.Update(fmt.Sprintf("UserJobSearchPredictedPreference:%s", m.Id), m)
+	return err
+}
+
+func (m *UserJobSearchPredictedPreferenceModel) DefineModel(sd *surrealdb.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	query := `
+DEFINE TABLE IF NOT EXISTS UserJobSearchPredictedPreference SCHEMAFULL;
+-- Field definition
+	DEFINE FIELD IF NOT EXISTS	UserId 				ON TABLE UserJobSearchPredictedPreference TYPE		record<UserAccount>;
+	DEFINE FIELD IF NOT EXISTS	JobId 				ON TABLE UserJobSearchPredictedPreference TYPE		record<Job>;
+	DEFINE FIELD IF NOT EXISTS	SiteKey 			ON TABLE UserJobSearchPredictedPreference TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	Locale 				ON TABLE UserJobSearchPredictedPreference TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	JobKeyword		ON TABLE UserJobSearchPredictedPreference TYPE		record<PreferenceKeyword>;
+	DEFINE FIELD IF NOT EXISTS	Score					ON TABLE UserJobSearchPredictedPreference TYPE		number;
+	DEFINE FIELD IF NOT EXISTS	Count					ON TABLE UserJobSearchPredictedPreference TYPE		number;
+	`
+	_, err := sd.Query(query, nil)
 	return err
 }

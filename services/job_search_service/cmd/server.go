@@ -38,7 +38,6 @@ func ServerDryRun(verboseLevel int) {
 	log.Info("Created context")
 
 	runtimeServer = server.InitGrpcServer(&config.RuntimeConfig, log)
-
 }
 
 func ServerTestRun(verboseLevel int) {
@@ -49,5 +48,4 @@ func ServerTestRun(verboseLevel int) {
 func ServerRun(verboseLevel int) {
 	initLogger(0, verboseLevel)
 	log.Info("Start Server")
-
 }

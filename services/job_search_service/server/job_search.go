@@ -8,12 +8,9 @@ import (
 	"fmt"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/request/seek_api"
-	"job-seek/pkg/store"
 	"time"
 
-	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
-	"github.com/surrealdb/surrealdb.go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -93,13 +90,13 @@ func (s JobSearchServiceServerImpl) getPostPobsList(combinedKeywords []string, s
 
 		// check the exist data in cache
 		// todo implement to the meilisearch
-		for _, post := range tempPostData {
-			isExist, _ := store.CheckKeyPostDetailCache(fmt.Sprintf("%d", post.ID))
-			if !isExist {
-				postData = append(postData, post)
-			}
-			// }
-		}
+		// for _, post := range tempPostData {
+		// 	isExist, _ := store.CheckKeyPostDetailCache(fmt.Sprintf("%d", post.ID))
+		// 	if !isExist {
+		// 		postData = append(postData, post)
+		// 	}
+		// 	// }
+		// }
 	}
 	s.log.Infof("Total jobs fetched: %d", len(postData))
 
@@ -140,113 +137,3 @@ func (s JobSearchServiceServerImpl) fetchJobs(preset *seek_api.SeekSearchApiPara
 	}
 	return postData, nil
 }
-
-func (s JobSearchServiceServerImpl) storePageCache(cacheRef string, preset *seek_api.SeekSearchApiParams, response *seek_api.SeekSearchApiResponse) error {
-	// store the cache to the meilisearch
-	jobCache := JobCacheList{
-		CacheRef:    cacheRef,
-		UserQueryId: response.SearchParams.UserQueryId,
-		Job: lo.Map(response.Data, func(data seek_api.SeekSearchApiResponseData, _ int) string {
-			return fmt.Sprintf("job:%d", data.ID)
-		}),
-		PageNumber:   response.SolMetadata.PageNumber,
-		TotalCount:   response.TotalCount,
-		TotalPage:    response.TotalPages,
-		SearchParams: *preset,
-	}
-
-	if s.dbClient == nil {
-		return fmt.Errorf("database connection is nil")
-	}
-
-	s.dbClient.Query(
-		`INSERT INTO job_cache_list {
-      cache_ref: $CacheRef,
-      user_query_id: $UserQueryId,
-      job: $Job
-      page_number: $PageNumber,
-      total_count: $TotalCount,
-      total_page: $TotalPage,
-      current_keyword: $CurrentKeyword,
-      search_params: $SearchParams
-    }`,
-		jobCache,
-	)
-	return nil
-}
-
-func (s JobSearchServiceServerImpl) getJobList(cacheRef string, pageNumber int) ([]*protos.Job, error) {
-	if s.dbClient == nil {
-		return nil, fmt.Errorf("database connection is nil")
-	}
-
-	result, err := s.dbClient.Query(
-		`SELECT job[*] FROM job_cache_ref WHERE cache_ref = $cache_ref AND page_number = $page_number;;`,
-		map[string]interface{}{
-			"cache_ref":   cacheRef,
-			"page_number": pageNumber,
-		},
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var jobCache []*protos.Job
-	err = surrealdb.Unmarshal(result, jobCache)
-	if err != nil {
-		return nil, err
-	}
-
-	return jobCache, nil
-}
-
-func toStoreJob(p *protos.Job) map[string]interface{} {
-	return map[string]interface{}{
-		"id":              p.PostId,
-		"post_id":         p.PostId,
-		"post_title":      p.PostTitle,
-		"post_url":        p.PostUrl,
-		"pay_range":       p.PayRange,
-		"debug_text":      p.DebugText,
-		"hitted_keywords": p.HittedKeywords,
-		"score":           p.Score,
-		"role":            p.Role,
-		"work_type":       p.WorkType,
-		"company_details": fmt.Sprintf("company_detail:%s", p.CompanyDetail.ReferenceId),
-		"locations":       p.Locations,
-		"expiring_date":   p.ExpiringDate,
-	}
-}
-
-func (s JobSearchServiceServerImpl) storeJob(job *protos.Job) error {
-	if s.dbClient == nil {
-		return fmt.Errorf("database connection is nil")
-	}
-
-	_, err := s.dbClient.Create(fmt.Sprintf("job:%s", job.PostId), toStoreJob(job))
-	return err
-}
-
-func (s JobSearchServiceServerImpl) getJob(postId string) (*protos.Job, error) {
-	if s.dbClient == nil {
-		return nil, fmt.Errorf("database connection is nil")
-	}
-
-	result, err := s.dbClient.Query(
-		`SELECT *, (SELECT * FROM company_details WHERE id = $parent.company_details) AS company_details FROM $1;`,
-		fmt.Sprintf("job:%s", postId))
-	if err != nil {
-		return nil, err
-	}
-
-	var job *protos.Job
-	err = surrealdb.Unmarshal(result, job)
-	if err != nil {
-		return nil, err
-	}
-
-	return job, nil
-}
-
-// get company detail : see in get_company_detail.go

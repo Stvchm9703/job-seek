@@ -24,9 +24,10 @@ var rootCmd = &cobra.Command{
 }
 
 var serveCmd = &cobra.Command{
-	Use:   "serve",
-	Short: "Start the fetch job service",
-	Long:  `Start the fetch job service`,
+	Use:     "serve",
+	Aliases: []string{"server", "run"},
+	Short:   "Start the fetch job service",
+	Long:    `Start the fetch job service`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
 		logLevel, _ := cmd.Flags().GetInt("verbose")
@@ -51,6 +52,17 @@ var serveCmd = &cobra.Command{
 			ServerTestRun(logLevel)
 			return // test mode
 		}
+	},
+}
+
+var dbCmd = &cobra.Command{
+	Use:     "database",
+	Aliases: []string{"db"},
+	Short:   "Database related command",
+	Long:    `Database related command, with check connection, create table, drop table, etc`,
+	Run: func(cmd *cobra.Command, args []string) {
+		logLevel, _ := cmd.Flags().GetInt("verbose")
+
 	},
 }
 
@@ -92,4 +104,5 @@ func init() {
 	viper.BindPFlag("surreal_db_service.port", serveCmd.Flags().Lookup("db-port"))
 
 	rootCmd.AddCommand(serveCmd)
+	rootCmd.AddCommand(dbCmd)
 }

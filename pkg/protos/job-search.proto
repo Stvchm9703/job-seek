@@ -102,6 +102,7 @@ message CompanyDetail {
   string head_quarters = 9;
   repeated string specialties = 10;
   string locations = 11;
+  string last_update = 12;
 }
 
 message CompanyDetailRequest {

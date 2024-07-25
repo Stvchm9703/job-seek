@@ -53,7 +53,7 @@ message GetJobApplyResponse {
 //   rpc GetJobApply (GetJobApplyRequest) returns (GetJobApplyResponse) ;
 // }
 
-message BookmarkJob {
+message JobBookmark {
   string job_id = 1;
   string user_id = 2;
   optional string created_at = 3;
@@ -62,17 +62,17 @@ message BookmarkJob {
   optional job_seek.job_search.Job job = 6;
 }
 
-message BookmarkJobRequest {
+message JobBookmarkRequest {
   optional string job_id = 1;
   optional string user_id = 2;
   optional bool is_deleted = 3;
   optional bool should_show_all = 4;
 }
 
-message BookmarkJobResponse { string message = 1; }
+message JobBookmarkResponse { string message = 1; }
 
-message ListBookmarkJobResponse {
-  repeated BookmarkJob bookmarked_jobs = 1;
+message ListJobBookmarkResponse {
+  repeated JobBookmark bookmarked_jobs = 1;
   optional int32 total_count = 2;
   optional int32 page_number = 3;
   optional int32 total_page = 4;
@@ -94,9 +94,9 @@ service JobExtendsionService {
 
   // bookmark job
   // should at least:   job_id and user_id
-  rpc BookmarkJob(BookmarkJobRequest) returns (BookmarkJobResponse);
+  rpc JobBookmark(JobBookmarkRequest) returns (JobBookmarkResponse);
   // should at least:   user_id
-  rpc ListBookmarkJob(BookmarkJobRequest) returns (ListBookmarkJobResponse);
+  rpc ListJobBookmark(JobBookmarkRequest) returns (ListJobBookmarkResponse);
   // should at least:   job_id and user_id
-  rpc DeleteBookmarkJob(BookmarkJobRequest) returns (BookmarkJobResponse);
+  rpc DeleteJobBookmark(JobBookmarkRequest) returns (JobBookmarkResponse);
 }

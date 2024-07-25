@@ -76,6 +76,7 @@ var (
 		"fmt"
 		"job-seek/pkg/config"
 		"job-seek/pkg/database"
+		"job-seek/pkg/database/schema"
 		"job-seek/pkg/protos"	
 		surrealdb "github.com/surrealdb/surrealdb.go"
 	)
@@ -123,7 +124,9 @@ func generateSurrealQueryModel(message parser.Message) string {
 
 	var modelStructDefined string = fmt.Sprintf("type %sModel struct {\n", message.MessageName)
 
-	var fieldDef []string = []string{}
+	var fieldDef []string = []string{
+		"schema.Model",
+	}
 
 	for _, v := range message.MessageBody {
 		if field, ok := v.(*parser.Field); ok {

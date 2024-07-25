@@ -16,11 +16,10 @@ type JobApplyModel struct {
 	Status      string `json:"status,omitempty"`
 	CreatedAt   string `json:"created_at,omitempty"`
 	UpdatedAt   string `json:"updated_at,omitempty"`
+	DeletedAt   string `json:"deleted_at,omitempty"`
 	CoverLetter string `json:"cover_letter,omitempty"`
 	CvContent   string `json:"cv_content,omitempty"`
 	CvFile      []byte `json:"cv_file,omitempty"`
-	Job         string `json:"job,omitempty"`
-	DeletedAt   string `json:"deleted_at,omitempty"`
 	Message     string `json:"message,omitempty"`
 }
 
@@ -51,7 +50,6 @@ func (m *JobApplyModel) FromProto(p *protos.JobApply) {
 	m.CoverLetter = p.GetCoverLetter()
 	m.CvContent = p.GetCvContent()
 	m.CvFile = p.GetCvFile()
-	m.Job = p.GetJob().PostId
 	m.DeletedAt = p.GetDeletedAt()
 	m.Message = p.GetMessage()
 }
@@ -92,5 +90,45 @@ func (m *JobApplyModel) UpdateModel(sd *surrealdb.DB) error {
 		return fmt.Errorf("database connection is nil")
 	}
 	_, err := sd.Update(fmt.Sprintf("JobApply:[%s,%s]", m.UserId, m.JobId), m)
+	return err
+}
+
+func (m JobApplyModel) DefineModel(sd *surrealdb.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
+	query := `
+-- Table definition
+DEFINE TABLE IF NOT EXISTS JobApply SCHEMAFULL;
+-- Field definition
+	DEFINE FIELD IF NOT EXISTS	JobId 					ON TABLE JobApply TYPE		record<Job>;
+	DEFINE FIELD IF NOT EXISTS	UserId					ON TABLE JobApply TYPE		record<UserAccount>;
+	DEFINE FIELD IF NOT EXISTS	Status					ON TABLE JobApply TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	CreatedAt 			ON TABLE JobApply TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	UpdatedAt 			ON TABLE JobApply TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	DeletedAt 			ON TABLE JobApply TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	CoverLetter			ON TABLE JobApply TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	CVContent				ON TABLE JobApply TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	CvFile					ON TABLE JobApply TYPE		bytes;
+	DEFINE FIELD IF NOT EXISTS	Message					ON TABLE JobApply TYPE		string;
+-- Index definition
+	DEFINE INDEX IF NOT EXISTS	Id							ON TABLE JobApply COLUMNS ReferenceId UNIQUE;
+-- Event definition
+	DEFINE EVENT IF NOT EXISTS CreateHook ON TABLE JobBookmark 
+		WHEN $event = "CREATE" OR $event = "INSERT"
+		THEN (
+			UPDATE JobBookmark SET CreatedAt = time::format(time::now(),"%+") 
+				WHERE JobId = $after.JobId AND UserId = $after.UserId
+		);
+	DEFINE EVENT IF NOT EXISTS UpdateHook ON TABLE JobBookmark 
+		WHEN $event = "CREATE" OR $event = "INSERT"
+		THEN (
+			UPDATE JobBookmark SET UpdatedAt = time::format(time::now(),"%+") 
+				WHERE JobId = $after.JobId AND UserId = $after.UserId
+		);
+-- END OF table definition
+`
+	_, err := sd.Query(query, nil)
 	return err
 }

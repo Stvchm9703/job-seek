@@ -70,3 +70,21 @@ func (m *UserAccountModel) UpdateModel(sd *surrealdb.DB) error {
 	_, err := sd.Update(fmt.Sprintf("UserAccount:%s", m.UserId), m)
 	return err
 }
+
+func (m *UserAccountModel) DefineModel(sd *surrealdb.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	query := `
+DEFINE  TABLE IF NOT EXISTS UserAccount SCHEMAFULL;
+-- Field definition
+	DEFINE FIELD IF NOT EXISTS	UserId 					ON TABLE UserAccount TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	UserName 				ON TABLE UserAccount TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	UserPassword		ON TABLE UserAccount TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	UserEmail 			ON TABLE UserAccount TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	UserPhone 			ON TABLE UserAccount TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	UserAddress 		ON TABLE UserAccount TYPE		string;
+`
+	_, err := sd.Query(query, nil)
+	return err
+}

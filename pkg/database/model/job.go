@@ -61,10 +61,9 @@ func (m *JobModel) FromProto(p *protos.Job) {
 }
 
 func (m *JobModel) GetModel(db *surrealdb.DB) (*protos.Job, error) {
-	result, err := db.Query(`
+	result, err := db.Query(fmt.Sprintf(`
 	SELECT *, (SELECT * FROM CompanyDetail WHERE ReferenceId = $parent.CompanyDetail) AS CompanyDetail
-	FROM Job:$1;
-	`, m.PostId)
+	FROM Job:%s;`, m.PostId), nil)
 
 	if err != nil {
 		return nil, err
@@ -94,4 +93,34 @@ func (m *JobModel) UpdateModel(sd *surrealdb.DB) error {
 	}
 	_, err := sd.Update(fmt.Sprintf("Job:%s", m.PostId), m)
 	return err
+}
+
+func (m *JobModel) DefineModel(sd *surrealdb.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
+	query := `
+-- Table definition
+DEFINE TABLE IF NOT EXISTS Job SCHEMAFULL;
+-- Field definition
+	DEFINE FIELD IF NOT EXISTS	PostId 					ON TABLE Job TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	PostTitle				ON TABLE Job TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	PostUrl 				ON TABLE Job TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	PayRange 				ON TABLE Job TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	DebugText 			ON TABLE Job TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	HittedKeywords 	ON TABLE Job TYPE		array<string>;
+	DEFINE FIELD IF NOT EXISTS	Score 					ON TABLE Job TYPE		number;
+	DEFINE FIELD IF NOT EXISTS	Role 					ON TABLE Job TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	WorkType 				ON TABLE Job TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	CompanyDetail 	ON TABLE Job TYPE		record<CompanyDetail>;
+	DEFINE FIELD IF NOT EXISTS	Locations 			ON TABLE Job TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	ExpiringDate 		ON TABLE Job TYPE		string;
+-- Index definition
+	DEFINE INDEX IF NOT EXISTS	id							ON TABLE Job COLUMNS PostId UNIQUE;
+-- END OF table definition
+		`
+	_, err := sd.Query(query, nil)
+	return err
+
 }
