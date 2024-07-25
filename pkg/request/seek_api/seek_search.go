@@ -100,8 +100,8 @@ type SeekApiTokenRequest struct {
 func SeekSearchApiWithPreset(paramsPreset *SeekSearchApiParams, searchKeyWord string, pageNumber int, userId string, userQueryId string) (SeekSearchApiResponse, error) {
 
 	client := sling.New().Base("https://www.seek.com.au/api/chalice-search/v4/").
-		Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3").
-		Set("Authorization", fmt.Sprintf("%s %s", SeekToken.TokenType, SeekToken.AccessToken))
+		Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+		// Set("Authorization", fmt.Sprintf("%s %s", SeekToken.TokenType, SeekToken.AccessToken))
 
 	params := paramsPreset
 	params.Page = pageNumber
@@ -121,6 +121,26 @@ func SeekSearchApiWithPreset(paramsPreset *SeekSearchApiParams, searchKeyWord st
 		// 	SeekRefreshToken(SeekToken)
 		// 	return SeekSearchApiWithPreset(paramsPreset, searchKeyWord, pageNumber)
 		// }
+		return responseData, err
+	}
+
+	return responseData, nil
+}
+
+func SeekSearchApiForApi(paramsPreset *SeekSearchApiParams, config *jsConfig.ApiService) (SeekSearchApiResponse, error) {
+
+	client := sling.New().Base(config.Domain+"/api/chalice-search/v4/").
+		Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+
+	params := paramsPreset
+	params.PageSize = 100
+	responseData := SeekSearchApiResponse{}
+
+	_, err := client.Get("search").
+		QueryStruct(params).
+		Receive(&responseData, nil)
+
+	if err != nil {
 		return responseData, err
 	}
 

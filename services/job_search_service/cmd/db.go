@@ -45,6 +45,15 @@ func InitDB(verboseLevel int) {
 		}).Fatal("Failed to connect to database")
 	}
 
-	log.Info("Check JobPostDetailModel")
+	log.Info("Check JobCacheModel")
+	jobCache := &model.JobCacheListModel{}
+	err = jobCache.DefineModel(dbClient)
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"config": runConf.RuntimeConfig,
+			"model":  "JobCacheListModel",
+			"error":  err,
+		}).Fatal("Failed to connect to database")
+	}
 
 }

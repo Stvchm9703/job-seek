@@ -62,7 +62,7 @@ var dbCmd = &cobra.Command{
 	Long:    `Database related command, with check connection, create table, drop table, etc`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logLevel, _ := cmd.Flags().GetInt("verbose")
-
+		InitDB(logLevel)
 	},
 }
 

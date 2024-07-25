@@ -5,6 +5,9 @@ domain = 'https://www.seek.com.au'
 cooldown = 1.2
 site_key = "AU-Main"
 lang_locale = "en-AU"
+country_code = "AU"
+timezone = "Australia/Sydney"
+zone = "anz-1"
 
 [yahoo_search]
 domain = 'au.yahoo.com'

@@ -248,7 +248,7 @@ func generateSurrealQueryModelFromProto(message parser.Message) string {
 }
 
 func generateSurrealQueryModeCreateQuery(message parser.Message) string {
-	var funcDefined string = fmt.Sprintf("\nfunc(m *%sModel) Create(sd *surrealdb.DB) error {\n", message.MessageName, message.MessageName)
+	var funcDefined string = fmt.Sprintf("\nfunc(m *%sModel) Create%s(sd *surrealdb.DB) error {\n", message.MessageName, message.MessageName)
 
 	funcDefined += `
 	if sd == nil {

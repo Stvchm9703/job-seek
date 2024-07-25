@@ -5,6 +5,8 @@ import (
 	"log"
 	"strings"
 
+	"job-seek/pkg/config"
+	"job-seek/pkg/protos"
 	"job-seek/pkg/request"
 
 	mdConv "github.com/JohannesKaufmann/html-to-markdown"
@@ -166,6 +168,38 @@ func GetPostDetail(jobId string) *JobDetailResponse {
 
 }
 
+func GetPostDetailForApi(jobId string, config *config.SeekServiceConfig) (*JobDetailResponse, error) {
+	url := config.Domain + "/graphql"
+
+	requestData := &GQLRequest{
+		Query: JobDetailQuery,
+		Variables: JobDetailVariable{
+			CountryCode:  config.CountryCode,
+			JobID:        jobId,
+			LanguageCode: "en",
+			Locale:       config.LanguageLocale,
+			Timezone:     config.Timezone,
+			Zone:         config.Zone,
+		},
+	}
+
+	responseData := new(JobDetailResponse)
+
+	_, err := sling.New().Post(url).
+		Set("Accept", "*/*").
+		Set("Content-Type", "application/json").
+		BodyJSON(requestData).
+		Receive(responseData, nil)
+
+	if err != nil {
+		// log.Println("GQL error", err)
+		return nil, err
+	}
+
+	return responseData, nil
+
+}
+
 func ConvertPostGQLToPostDetail(postGQL *JobDetailResponse) *request.SeekPostDetails {
 	// postId, _ := strconv.Atoi(postGQL.Data.JobDetails.Job.ID)
 	converter := mdConv.NewConverter("", true, nil)
@@ -189,6 +223,41 @@ func ConvertPostGQLToPostDetail(postGQL *JobDetailResponse) *request.SeekPostDet
 	}
 
 	return &request.SeekPostDetails{
+		PostTitle:    postGQL.Data.JobDetails.Job.Title,
+		PayRange:     postGQL.Data.JobDetails.Job.Salary.Label,
+		PostUrl:      fmt.Sprintf("https://www.seek.com.au/job/%s", postGQL.Data.JobDetails.Job.ID),
+		PostId:       postGQL.Data.JobDetails.Job.ID,
+		DebugText:    mdString,
+		Role:         strings.Join(RoleDisplay, ", "),
+		WorkType:     workType,
+		Locations:    location,
+		ExpiringDate: postGQL.Data.JobDetails.Job.ExpiresAt.DateTimeUTC,
+	}
+}
+
+func ConvertPostGQLToProto(postGQL *JobDetailResponse) *protos.Job {
+	// postId, _ := strconv.Atoi(postGQL.Data.JobDetails.Job.ID)
+	converter := mdConv.NewConverter("", true, nil)
+	mdString, _ := converter.ConvertString(postGQL.Data.JobDetails.Job.Content)
+	mdString = strings.ReplaceAll(mdString, "\u00a0", "\n")
+
+	RoleDisplay := lo.Map(postGQL.Data.JobDetails.Job.Classifications, func(item RestrictedApplication, index int) string {
+		return *item.Label
+	})
+
+	// companyProfile := postGQL.Data.JobDetails.CompanyProfile
+
+	workType := ""
+	if postGQL.Data.JobDetails.Job.WorkTypes.Label != nil {
+		workType = *postGQL.Data.JobDetails.Job.WorkTypes.Label
+	}
+
+	location := ""
+	if postGQL.Data.JobDetails.Job.Location.Label != nil {
+		location = *postGQL.Data.JobDetails.Job.Location.Label
+	}
+
+	return &protos.Job{
 		PostTitle:    postGQL.Data.JobDetails.Job.Title,
 		PayRange:     postGQL.Data.JobDetails.Job.Salary.Label,
 		PostUrl:      fmt.Sprintf("https://www.seek.com.au/job/%s", postGQL.Data.JobDetails.Job.ID),

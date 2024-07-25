@@ -8,6 +8,7 @@ require (
 	github.com/cockroachdb/pebble v1.1.1
 	github.com/dghubble/sling v1.4.2
 	github.com/gocolly/colly v1.2.0
+	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/k0kubun/pp/v3 v3.2.0
@@ -47,7 +48,6 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

@@ -19,14 +19,8 @@ type ServiceConfig struct {
 	MeiliSearchService config.DatabaseConfig `toml:"meili_search_service" mapstructure:"meili_search_service"`
 	SurrealDBService   config.DatabaseConfig `toml:"surreal_db_service" mapstructure:"surreal_db_service"`
 	// api services
-	SeekService SeekServiceConfig `toml:"seek_service" mapstructure:"seek_service"`
-	YahooSearch config.ApiService `toml:"yahoo_search" mapstructure:"yahoo_search"`
-}
-
-type SeekServiceConfig struct {
-	config.ApiService
-	LanguageLocale string `toml:"lang_locale" mapstructure:"lang_locale"`
-	SiteKey        string `toml:"site_key" mapstructure:"site_key"`
+	SeekService config.SeekServiceConfig `toml:"seek_service" mapstructure:"seek_service"`
+	YahooSearch config.ApiService        `toml:"yahoo_search" mapstructure:"yahoo_search"`
 }
 
 var (
@@ -59,6 +53,7 @@ func Setup() {
 
 	// api services
 	viper.SetDefault("seek_service.domain", "https://www.seek.com.au")
+	viper.SetDefault("seek_service.max_job_count", 500)
 	viper.SetDefault("yahoo_search.domain", "https://au.search.yahoo.com")
 
 	// internal services

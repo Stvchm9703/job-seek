@@ -21,4 +21,15 @@ type DatabaseConfig struct {
 type ApiService struct {
 	Domain   string `toml:"domain" mapstructure:"domain"`
 	CoolDown int    `toml:"cool_down" mapstructure:"cool_down"`
+	Locale   string `toml:"locale" mapstructure:"locale"`
+}
+
+type SeekServiceConfig struct {
+	ApiService
+	LanguageLocale string `toml:"lang_locale" mapstructure:"lang_locale"`
+	SiteKey        string `toml:"site_key" mapstructure:"site_key"`
+	MaxJobCount    int    `toml:"max_job_count" mapstructure:"max_job_count"`
+	CountryCode    string `toml:"country_code" mapstructure:"country_code"`
+	Timezone       string `toml:"timezone" mapstructure:"timezone"`
+	Zone           string `toml:"zone" mapstructure:"zone"`
 }

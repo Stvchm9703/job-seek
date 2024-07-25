@@ -7,25 +7,9 @@ import (
 	"job-seek/pkg/protos"
 	"job-seek/pkg/request/seek_api"
 
-	"github.com/google/uuid"
 	"github.com/samber/lo"
 	surrealdb "github.com/surrealdb/surrealdb.go"
 )
-
-// type JobModel struct {
-// 	PostId         string   `json:"post_id"`
-// 	PostTitle      string   `json:"post_title"`
-// 	PostUrl        string   `json:"post_url"`
-// 	PayRange       string   `json:"pay_range"`
-// 	DebugText      string   `json:"debug_text"`
-// 	HittedKeywords []string `json:"hitted_keywords"`
-// 	Score          int      `json:"score,omitempty"`
-// 	Role           string   `json:"role"`
-// 	WorkType       string   `json:"work_type"`
-// 	CompanyDetail  string   `json:"company_detail,omitempty"`
-// 	Locations      string   `json:"locations"`
-// 	ExpiringDate   string   `json:"expiring_date"`
-// }
 
 type JobCacheListModel struct {
 	CacheRef       string
@@ -74,8 +58,9 @@ func (m *JobCacheListModel) CreateJobCacheList(db *surrealdb.DB) error {
 		return fmt.Errorf("database connection is nil")
 	}
 	if m.CacheRef == "" {
-		m.CacheRef = uuid.NewUUID().String()
+		return fmt.Errorf("cache ref is empty")
 	}
+
 	_, err := db.Create(
 		fmt.Sprintf("JobCacheList[%s,%s,%d]", m.CacheRef, m.UserQueryId, m.PageNumber),
 		m)
