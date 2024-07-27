@@ -5,8 +5,10 @@ package model
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"text/template"
 
@@ -35,22 +37,26 @@ type JobModel struct {
 
 type JobUnmarshalModel struct {
 	Id             string              `json:"id"`
-	PostId         string              `json:"post_id"`
-	PostTitle      string              `json:"post_title"`
-	PostUrl        string              `json:"post_url"`
-	PayRange       string              `json:"pay_range"`
-	DebugText      string              `json:"debug_text"`
-	HittedKeywords []string            `json:"hitted_keywords"`
-	Score          int                 `json:"score,omitempty"`
-	Role           string              `json:"role"`
-	WorkType       string              `json:"work_type"`
-	CompanyDetail  *CompanyDetailModel `json:"company_detail,omitempty"`
-	Locations      string              `json:"locations"`
-	ExpiringDate   string              `json:"expiring_date"`
+	PostId         string              `json:"PostId"`
+	PostTitle      string              `json:"PostTitle"`
+	PostUrl        string              `json:"PostUrl"`
+	PayRange       string              `json:"PayRange"`
+	DebugText      string              `json:"DebugText"`
+	HittedKeywords []string            `json:"HittedKeywords"`
+	Score          int                 `json:"Score,omitempty"`
+	Role           string              `json:"Role"`
+	WorkType       string              `json:"WorkType"`
+	CompanyDetail  *CompanyDetailModel `json:"CompanyDetail,omitempty"`
+	Locations      string              `json:"Locations"`
+	ExpiringDate   string              `json:"ExpiringDate"`
 }
 
 func (m *JobUnmarshalModel) ToProto() *protos.Job {
 	score := int32(m.Score)
+	var companyProto *protos.CompanyDetail = nil
+	if m.CompanyDetail != nil {
+		companyProto = m.CompanyDetail.ToProto()
+	}
 	return &protos.Job{
 		PostId:         m.PostId,
 		PostTitle:      m.PostTitle,
@@ -61,7 +67,7 @@ func (m *JobUnmarshalModel) ToProto() *protos.Job {
 		Score:          &score,
 		Role:           m.Role,
 		WorkType:       m.WorkType,
-		CompanyDetail:  m.CompanyDetail.ToProto(),
+		CompanyDetail:  companyProto,
 		Locations:      m.Locations,
 		ExpiringDate:   m.ExpiringDate,
 	}
@@ -123,12 +129,20 @@ FROM Job:%s;`, m.PostId)
 	// resultMap := result.([]map[string]map[string][]interface{})
 
 	var jobqueryResult []JobQueryResult
-	err = surrealdb.Unmarshal(result, jobqueryResult)
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &jobqueryResult)
 	if err != nil {
-		return nil, errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("raw", result))
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		log.Fatalf("error: %v", errorWrap)
+		return nil, errorWrap
 		// return nil, err
 	}
 	// pp.Println("jobs:", jobqueryResult)
+	if len(jobqueryResult) == 0 || len(jobqueryResult[0].Result) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+	// pp.Println("jobs:", jobqueryResult[0].Result[0])
 	return jobqueryResult[0].Result[0].ToProto(), nil
 
 }
@@ -141,7 +155,8 @@ func (m *JobModel) CreateModel(sd *surrealdb.DB) error {
 	// pp.Println(m)
 
 	queryTemplate, _ := template.New("createJob").Parse(`
-CREATE Job:{{.PostId}} CONTENT {
+INSERT INTO Job {
+	id : 						{{.PostId}},
   PostId:         s"{{.PostId}}",
   PostTitle:      s"{{.PostTitle}}",
   PostUrl:        s"{{.PostUrl}}",
@@ -166,7 +181,7 @@ CREATE Job:{{.PostId}} CONTENT {
 	query = strings.ReplaceAll(query, "\t", " ")
 	query = strings.ReplaceAll(query, "\r", " ")
 	query = strings.ReplaceAll(query, `\"`, `"`)
-	query = strings.TrimSpace(query)
+	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
 	debugContent := strings.ReplaceAll(m.DebugText, "'", " %%U+0027%% ")
 	debugContent = strings.ReplaceAll(debugContent, "\"", " %%U+0022%% ")
 	debugContent = strings.ReplaceAll(debugContent, "\\|", " %%U+007C%% ")
@@ -176,10 +191,10 @@ CREATE Job:{{.PostId}} CONTENT {
 	result, err := sd.Query(query, m)
 	var message map[string]interface{}
 	surrealdb.Unmarshal(result, message)
-	// if err != nil {
-	// 	fmt.Println("query:", query)
-	// 	pp.Println("message:", message)
-	// }
+	if err != nil {
+		fmt.Println("query:", query)
+		pp.Println("message:", message)
+	}
 	return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
 }
 

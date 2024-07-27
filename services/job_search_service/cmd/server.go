@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"job-seek/services/job_search_service/config"
+	databatch "job-seek/services/job_search_service/data_batch"
 	"job-seek/services/job_search_service/server"
 	"job-seek/services/job_search_service/server_test"
 
@@ -60,4 +61,18 @@ func ServerRun(verboseLevel int) {
 	initLogger(0, verboseLevel)
 	log.Info("Start Server")
 	runtimeServer, _ = server.InitGrpcServer(&config.RuntimeConfig, log)
+}
+
+func ServerDumpingData(verboseLevel int) {
+	initLogger(3, verboseLevel)
+	log.Info("Start Server Dumping Data")
+	fmt.Println("Start Server Dumping Data")
+	// var manualShutdown func()
+	service := server.InitService(&config.RuntimeConfig, log)
+
+	log.Info("Server Start Test Run")
+	log.Info("run JobSearch")
+	databatch.JobDumping(&service, log)
+	// manualShutdown()
+	log.Info("Server Test Run End")
 }

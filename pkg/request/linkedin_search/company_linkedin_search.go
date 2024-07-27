@@ -33,6 +33,14 @@ func ExtractCompanyProfile(postData *seekAPI.SeekSearchApiResponseData) *request
 }
 
 func ExtractCompanyProfileGQL(post *seekGQL.JobDetails) *request.SeekCompanyDetails {
+	if post.Job.Advertiser.ID == "Private Advertiser" || post.Job.Advertiser.Name == "Private Advertiser" {
+		return &request.SeekCompanyDetails{
+			ReferenceId: "pa_" + post.Job.ID,
+			Name:        post.Job.Advertiser.Name,
+			// Description: post.Advertiser.Description,
+		}
+	}
+
 	if post.CompanyProfile == nil {
 		return &request.SeekCompanyDetails{
 			ReferenceId: post.Job.Advertiser.ID,
@@ -154,7 +162,8 @@ func SearchCompanyForApi(c *colly.Collector, config *config.ApiService, companyD
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
-		log.Fatalf("error: code : %d, \n %s; \n ", r.StatusCode, err)
+		fmt.Printf("error: code : %d, \n %s; \n ", r.StatusCode, err)
+		fmt.Printf("url : %s", r.Request.URL.String())
 		scrapeError = fmt.Errorf("scraping error: code : %d, \n error: %s; \n ", r.StatusCode, err)
 	})
 

@@ -12,9 +12,11 @@ import (
 	"job-seek/pkg/request/seek_api"
 	"job-seek/pkg/request/seek_gql"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	pp "github.com/k0kubun/pp/v3"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -42,10 +44,10 @@ func FromProtoToRequest(req *protos.JobSearchRequest) *seek_api.SeekSearchApiPar
 		SalaryType:  req.SalaryType.String(),
 		SalaryRange: salaryRange,
 		// Locale:    inherit from the domain config,
-		SeekerId: req.UserId,
-		// Classification: todo(),
-		AdvertiserId: req.GetCompanyId(),
-		UserQueryId:  req.GetCacheRef(),
+		SeekerId:       req.UserId,
+		Classification: fmt.Sprintf("%d", req.GetClassification()),
+		AdvertiserId:   req.GetCompanyId(),
+		UserQueryId:    req.GetCacheRef(),
 	}
 }
 
@@ -128,6 +130,12 @@ func (s JobSearchServiceServerImpl) getPostJobsList(combinedKeywords []string, s
 	}).Trace("gernerated the batch search params")
 
 	firstPatch, _ := s.fetchJobs(cacheRef.String(), &firstPatchList[0])
+	s.log.WithFields(logrus.Fields{
+		"method": "getPostJobsList",
+		// "firstPatch": firstPatch,
+		"total": firstPatch.TotalCount,
+		"meta":  firstPatch.SolMetadata,
+	}).Debug("fetched the first patch ")
 
 	for _, job := range firstPatch.Data {
 		jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
@@ -149,6 +157,7 @@ func (s JobSearchServiceServerImpl) getPostJobsList(combinedKeywords []string, s
 		resp, _ := s.fetchJobs(cacheRef.String(), &searchParams)
 		pendingJobList = append(pendingJobList, resp.Data...)
 	}
+
 	for _, job := range pendingJobList {
 		jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
 		postData = append(postData, jobDetail)
@@ -163,28 +172,42 @@ func generateSearchParamsBatch(preset *seek_api.SeekSearchApiParams, keywords []
 	var searchParamsBatch []seek_api.SeekSearchApiParams
 	for _, keyword := range keywords {
 		searchParamsBatch = append(searchParamsBatch, seek_api.SeekSearchApiParams{
-			SeekerId:     preset.SeekerId,
-			AdvertiserId: preset.AdvertiserId,
-			Keywords:     keyword,
-			Page:         1,
-			SalaryType:   preset.SalaryType,
-			SalaryRange:  preset.SalaryRange,
-			Where:        preset.Where,
+			SeekerId:       preset.SeekerId,
+			AdvertiserId:   preset.AdvertiserId,
+			Keywords:       keyword,
+			Page:           1,
+			PageSize:       100,
+			SalaryType:     preset.SalaryType,
+			SalaryRange:    preset.SalaryRange,
+			Where:          preset.Where,
+			Classification: preset.Classification,
 		})
 	}
 	return searchParamsBatch
 }
 func generateSearchParamsBatchFromFirstBatch(firstSearch *seek_api.SeekSearchApiParams, response *seek_api.SeekSearchApiResponse) []seek_api.SeekSearchApiParams {
 	var searchParamsBatch []seek_api.SeekSearchApiParams
+	totalPage := response.SolMetadata.PageSize / response.TotalCount
+	pp.Println("paging", map[string]interface{}{
+		"category":        firstSearch.Classification,
+		"calculation":     totalPage,
+		"totalPage":       totalPage,
+		"apiTotalPage":    response.TotalPages,
+		"apiPageSize":     response.SolMetadata.PageSize,
+		"acturalPageSize": len(response.Data),
+		"totalCount":      response.TotalCount,
+	})
 	for i := 2; i <= response.TotalPages; i++ {
 		searchParamsBatch = append(searchParamsBatch, seek_api.SeekSearchApiParams{
-			SeekerId:    firstSearch.SeekerId,
-			Keywords:    firstSearch.Keywords,
-			Page:        i,
-			SalaryType:  firstSearch.SalaryType,
-			SalaryRange: firstSearch.SalaryRange,
-			Where:       firstSearch.Where,
-			UserQueryId: response.SearchParams.UserQueryId,
+			SeekerId:       firstSearch.SeekerId,
+			Keywords:       firstSearch.Keywords,
+			Page:           i,
+			PageSize:       100,
+			SalaryType:     firstSearch.SalaryType,
+			SalaryRange:    firstSearch.SalaryRange,
+			Where:          firstSearch.Where,
+			UserQueryId:    response.SearchParams.UserQueryId,
+			Classification: firstSearch.Classification,
 		})
 	}
 	return searchParamsBatch
@@ -286,46 +309,55 @@ func (s JobSearchServiceServerImpl) getJobDetail(jobId string) (*protos.Job, err
 		"jobId":            jobId,
 		"tmpCompantDetail": tmpCompantDetail,
 	}).Trace("before get the company detail")
-	compantDetail, err := s.getCompanyDetailFromDB(tmpCompantDetail.ReferenceId)
-	if err != nil {
+	if tmpCompantDetail.Name == "Private Advertiser" && strings.HasPrefix(tmpCompantDetail.ReferenceId, "pa") {
 		s.log.WithFields(logrus.Fields{
-			"method":    "getJobDetail",
-			"error":     err,
-			"jobId":     jobId,
-			"companyId": tmpCompantDetail.ReferenceId,
-		}).Warn("fail to fetch company detail from db")
-		s.log.Trace("fetch company detail from api")
-		err = nil
-		compantDetail, err = s.getCompanyDetailFromAPICreate(tmpCompantDetail)
+			"method":        "getJobDetail",
+			"companyDetail": tmpCompantDetail,
+		}).Trace("resolved the company detail, it is private advertiser")
+		jobDetail.CompanyDetail = tmpCompantDetail.ToProto()
+	} else {
+		compantDetail, err := s.getCompanyDetailFromDB(tmpCompantDetail.ReferenceId)
 		if err != nil {
 			s.log.WithFields(logrus.Fields{
 				"method":    "getJobDetail",
 				"error":     err,
 				"jobId":     jobId,
-				"companyId": compantDetail.ReferenceId,
-			}).Warn("fail to fetch company detail via api")
-			jobDetail.CompanyDetail = tmpCompantDetail.ToProto()
+				"companyId": tmpCompantDetail.ReferenceId,
+			}).Warn("fail to fetch company detail from db")
+			s.log.Trace("fetch company detail from api")
+			err = nil
+
+			compantDetail, err = s.getCompanyDetailFromAPICreate(tmpCompantDetail)
+			if err != nil {
+				s.log.WithFields(logrus.Fields{
+					"method":    "getJobDetail",
+					"error":     err,
+					"jobId":     jobId,
+					"companyId": tmpCompantDetail.ReferenceId,
+				}).Warn("fail to fetch company detail via api")
+				jobDetail.CompanyDetail = tmpCompantDetail.ToProto()
+			} else {
+				s.log.WithFields(logrus.Fields{
+					"method":        "getJobDetail",
+					"companyDetail": compantDetail,
+				}).Trace("fail to fetch company detail via api")
+				jobDetail.CompanyDetail = compantDetail
+			}
+			// since it is not in the db, insert it
+			go func() {
+				s.log.WithFields(logrus.Fields{
+					"method":        "getJobDetail",
+					"companyDetail": jobDetail.CompanyDetail,
+				}).Trace("try to insert company detail to db")
+				s.storeCompanyDetailToDB(jobDetail.CompanyDetail)
+			}()
 		} else {
 			s.log.WithFields(logrus.Fields{
 				"method":        "getJobDetail",
 				"companyDetail": compantDetail,
-			}).Trace("fail to fetch company detail via api")
+			}).Trace("resolved the company detail from db")
 			jobDetail.CompanyDetail = compantDetail
 		}
-		// since it is not in the db, insert it
-		go func() {
-			s.log.WithFields(logrus.Fields{
-				"method":        "getJobDetail",
-				"companyDetail": jobDetail.CompanyDetail,
-			}).Trace("try to insert company detail to db")
-			s.storeCompanyDetailToDB(jobDetail.CompanyDetail)
-		}()
-	} else {
-		s.log.WithFields(logrus.Fields{
-			"method":        "getJobDetail",
-			"companyDetail": compantDetail,
-		}).Trace("resolved the company detail from db")
-		jobDetail.CompanyDetail = compantDetail
 	}
 
 	// store job detail to db

@@ -53,6 +53,12 @@ var serveCmd = &cobra.Command{
 			return // test mode
 		}
 
+		if dumpIn, _ := cmd.Flags().GetBool("dump-in"); dumpIn {
+			// dumpIn
+			ServerDumpingData(logLevel)
+			return
+		}
+
 		ServerRun(logLevel)
 	},
 }

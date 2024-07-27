@@ -104,13 +104,17 @@ func (m *CompanyDetailModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
+	if m.ReferenceId == "" {
+		return fmt.Errorf("ReferenceId is empty")
+	}
 
 	spSpecialties := strings.Join(lo.Map(m.Specialties, func(s string, _ int) string {
 		return fmt.Sprintf(`s"%s"`, s)
 	}), ",")
 
 	queryTemplate, _ := template.New("createCompanyDetail").Parse(`
-CREATE CompanyDetail:{{.ReferenceId}} CONTENT {
+INSERT INTO CompanyDetail  {
+	id: {{.ReferenceId}},
 	ReferenceId: s"{{.ReferenceId}}",
 	Name: s"{{.Name}}",
 	Url: s"{{.Url}}",
@@ -136,7 +140,7 @@ CREATE CompanyDetail:{{.ReferenceId}} CONTENT {
 	query = strings.ReplaceAll(query, "\t", " ")
 	query = strings.ReplaceAll(query, "\r", " ")
 	// query = strings.ReplaceAll(query, "\"", "'")
-	query = strings.TrimSpace(query)
+	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
 
 	query = strings.ReplaceAll(query, "$Specialties", spSpecialties)
 	debugContent := strings.ReplaceAll(m.Description, "'", " %%U+0027%% ")
@@ -146,14 +150,17 @@ CREATE CompanyDetail:{{.ReferenceId}} CONTENT {
 	// pp.Println("query:", query)
 
 	result, err := sd.Query(query, m)
+	if err != nil {
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message:", result))
+	}
 	var message map[string]interface{}
 	surrealdb.Unmarshal(result, message)
-	if err != nil {
-		fmt.Println("query:", query)
-		pp.Println("message:", message)
-	}
-
-	return err
+	// if err != nil {
+	// 	fmt.Println("query:", query)
+	// 	pp.Println("message:", message)
+	// }
+	return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	// return err
 }
 
 func (m *CompanyDetailModel) UpdateModel(sd *surrealdb.DB) error {

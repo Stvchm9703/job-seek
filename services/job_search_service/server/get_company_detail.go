@@ -5,11 +5,13 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"job-seek/pkg/database/model"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/request"
 	linkedin "job-seek/pkg/request/linkedin_search"
 
+	"github.com/google/uuid"
 	logrus "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -68,6 +70,9 @@ func (s JobSearchServiceServerImpl) GetCompanyDetail(ctx context.Context, req *p
 	return companyDetail, nil
 
 }
+func v5UUID(data string) uuid.UUID {
+	return uuid.NewSHA1(uuid.NameSpaceURL, []byte(data))
+}
 
 func (s JobSearchServiceServerImpl) getCompanyDetailFromDB(company_id string) (*protos.CompanyDetail, error) {
 	companyModel := model.CompanyDetailModel{
@@ -78,6 +83,9 @@ func (s JobSearchServiceServerImpl) getCompanyDetailFromDB(company_id string) (*
 		"model":      companyModel,
 		"method":     "getCompanyDetailFromDB",
 	}).Trace("called getCompanyDetailFromDB")
+	if company_id == "Private Advertiser" {
+		return nil, fmt.Errorf("company_id is Private Advertiser")
+	}
 	data, err := companyModel.GetModel(s.dbClient)
 	if err != nil {
 		s.log.WithFields(map[string]interface{}{
@@ -160,6 +168,7 @@ func (s JobSearchServiceServerImpl) storeCompanyDetailToDB(companyDetail *protos
 	companyModel := model.CompanyDetailModel{}
 
 	companyModel.FromProto(companyDetail)
+
 	s.log.WithFields(map[string]interface{}{
 		"company_detail": companyDetail,
 		"model":          companyModel,
