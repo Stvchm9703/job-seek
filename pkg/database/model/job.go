@@ -4,9 +4,15 @@
 package model
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"strings"
+	"text/template"
 
+	"github.com/k0kubun/pp/v3"
 	surrealdb "github.com/surrealdb/surrealdb.go"
+
 	// "job-seek/pkg/config"
 	// "job-seek/pkg/database"
 	"job-seek/pkg/protos"
@@ -27,9 +33,49 @@ type JobModel struct {
 	ExpiringDate   string   `json:"expiring_date"`
 }
 
-func (m *JobModel) ToProto() protos.Job {
+type JobUnmarshalModel struct {
+	Id             string              `json:"id"`
+	PostId         string              `json:"post_id"`
+	PostTitle      string              `json:"post_title"`
+	PostUrl        string              `json:"post_url"`
+	PayRange       string              `json:"pay_range"`
+	DebugText      string              `json:"debug_text"`
+	HittedKeywords []string            `json:"hitted_keywords"`
+	Score          int                 `json:"score,omitempty"`
+	Role           string              `json:"role"`
+	WorkType       string              `json:"work_type"`
+	CompanyDetail  *CompanyDetailModel `json:"company_detail,omitempty"`
+	Locations      string              `json:"locations"`
+	ExpiringDate   string              `json:"expiring_date"`
+}
+
+func (m *JobUnmarshalModel) ToProto() *protos.Job {
 	score := int32(m.Score)
-	return protos.Job{
+	return &protos.Job{
+		PostId:         m.PostId,
+		PostTitle:      m.PostTitle,
+		PostUrl:        m.PostUrl,
+		PayRange:       m.PayRange,
+		DebugText:      m.DebugText,
+		HittedKeywords: m.HittedKeywords,
+		Score:          &score,
+		Role:           m.Role,
+		WorkType:       m.WorkType,
+		CompanyDetail:  m.CompanyDetail.ToProto(),
+		Locations:      m.Locations,
+		ExpiringDate:   m.ExpiringDate,
+	}
+}
+
+type JobQueryResult struct {
+	Result []JobUnmarshalModel `json:"result"`
+	Status string              `json:"status"`
+	Time   string              `json:"time"`
+}
+
+func (m *JobModel) ToProto() *protos.Job {
+	score := int32(m.Score)
+	return &protos.Job{
 		PostId:         m.PostId,
 		PostTitle:      m.PostTitle,
 		PostUrl:        m.PostUrl,
@@ -55,27 +101,35 @@ func (m *JobModel) FromProto(p *protos.Job) {
 	m.Score = int(p.GetScore())
 	m.Role = p.Role
 	m.WorkType = p.WorkType
-	m.CompanyDetail = p.CompanyDetail.ReferenceId
+	m.CompanyDetail = "CompanyDetail:" + p.CompanyDetail.ReferenceId
 	m.Locations = p.Locations
 	m.ExpiringDate = p.ExpiringDate
 }
 
 func (m *JobModel) GetModel(db *surrealdb.DB) (*protos.Job, error) {
-	result, err := db.Query(fmt.Sprintf(`
-	SELECT *, (SELECT * FROM CompanyDetail WHERE ReferenceId = $parent.CompanyDetail) AS CompanyDetail
-	FROM Job:%s;`, m.PostId), nil)
-
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	query := fmt.Sprintf(`
+SELECT *, 
+(SELECT * FROM CompanyDetail  WHERE id = $parent.CompanyDetail Limit 1)[0] AS CompanyDetail 
+FROM Job:%s;`, m.PostId)
+	// fmt.Printf("run query : %s \n", query)
+	result, err := db.Query(query, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var job *protos.Job
-	err = surrealdb.Unmarshal(result, job)
-	if err != nil {
-		return nil, err
-	}
+	// resultMap := result.([]map[string]map[string][]interface{})
 
-	return job, nil
+	var jobqueryResult []JobQueryResult
+	err = surrealdb.Unmarshal(result, jobqueryResult)
+	if err != nil {
+		return nil, errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("raw", result))
+		// return nil, err
+	}
+	// pp.Println("jobs:", jobqueryResult)
+	return jobqueryResult[0].Result[0].ToProto(), nil
 
 }
 
@@ -83,8 +137,50 @@ func (m *JobModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Create(fmt.Sprintf("Job:%s", m.PostId), m)
-	return err
+	// fmt.Println("CreateModel")
+	// pp.Println(m)
+
+	queryTemplate, _ := template.New("createJob").Parse(`
+CREATE Job:{{.PostId}} CONTENT {
+  PostId:         s"{{.PostId}}",
+  PostTitle:      s"{{.PostTitle}}",
+  PostUrl:        s"{{.PostUrl}}",
+  PayRange:       s"{{.PayRange}}",
+  DebugText:      s"$DebugText",
+  HittedKeywords: [],
+  Score:          0,
+  Role:           s"{{.Role}}",
+  WorkType:       s"{{.WorkType}}",
+  CompanyDetail:  r"{{.CompanyDetail}}",
+  Locations:      s"{{.Locations}}",
+  ExpiringDate:   s"{{.ExpiringDate}}",
+}	`)
+	var doc bytes.Buffer
+	var err error
+	err = queryTemplate.Execute(&doc, m)
+	if err != nil {
+		return err
+	}
+	// _, err := sd.Create(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
+	query := strings.ReplaceAll(doc.String(), "\n", " ")
+	query = strings.ReplaceAll(query, "\t", " ")
+	query = strings.ReplaceAll(query, "\r", " ")
+	query = strings.ReplaceAll(query, `\"`, `"`)
+	query = strings.TrimSpace(query)
+	debugContent := strings.ReplaceAll(m.DebugText, "'", " %%U+0027%% ")
+	debugContent = strings.ReplaceAll(debugContent, "\"", " %%U+0022%% ")
+	debugContent = strings.ReplaceAll(debugContent, "\\|", " %%U+007C%% ")
+	debugContent = strings.ReplaceAll(debugContent, "\\", "")
+	query = strings.ReplaceAll(query, "$DebugText", debugContent)
+
+	result, err := sd.Query(query, m)
+	var message map[string]interface{}
+	surrealdb.Unmarshal(result, message)
+	// if err != nil {
+	// 	fmt.Println("query:", query)
+	// 	pp.Println("message:", message)
+	// }
+	return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
 }
 
 func (m *JobModel) UpdateModel(sd *surrealdb.DB) error {
@@ -104,22 +200,22 @@ func (m *JobModel) DefineModel(sd *surrealdb.DB) error {
 -- Table definition
 DEFINE TABLE IF NOT EXISTS Job SCHEMAFULL;
 -- Field definition
-	DEFINE FIELD IF NOT EXISTS	PostId 					ON TABLE Job TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	PostTitle				ON TABLE Job TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	PostUrl 				ON TABLE Job TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	PayRange 				ON TABLE Job TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	DebugText 			ON TABLE Job TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	HittedKeywords 	ON TABLE Job TYPE		array<string>;
-	DEFINE FIELD IF NOT EXISTS	Score 					ON TABLE Job TYPE		number;
-	DEFINE FIELD IF NOT EXISTS	Role 					ON TABLE Job TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	WorkType 				ON TABLE Job TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	CompanyDetail 	ON TABLE Job TYPE		record<CompanyDetail>;
-	DEFINE FIELD IF NOT EXISTS	Locations 			ON TABLE Job TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	ExpiringDate 		ON TABLE Job TYPE		string;
+ DEFINE FIELD IF NOT EXISTS PostId      ON TABLE Job TYPE  string;
+ DEFINE FIELD IF NOT EXISTS PostTitle    ON TABLE Job TYPE  string;
+ DEFINE FIELD IF NOT EXISTS PostUrl     ON TABLE Job TYPE  string;
+ DEFINE FIELD IF NOT EXISTS PayRange     ON TABLE Job TYPE  string;
+ DEFINE FIELD IF NOT EXISTS DebugText    ON TABLE Job TYPE  string;
+ DEFINE FIELD IF NOT EXISTS HittedKeywords  ON TABLE Job TYPE  array<string>;
+ DEFINE FIELD IF NOT EXISTS Score      ON TABLE Job TYPE  number;
+ DEFINE FIELD IF NOT EXISTS Role      ON TABLE Job TYPE  string;
+ DEFINE FIELD IF NOT EXISTS WorkType     ON TABLE Job TYPE  string;
+ DEFINE FIELD IF NOT EXISTS CompanyDetail  ON TABLE Job TYPE  record<CompanyDetail>;
+ DEFINE FIELD IF NOT EXISTS Locations    ON TABLE Job TYPE  string;
+ DEFINE FIELD IF NOT EXISTS ExpiringDate   ON TABLE Job TYPE  string;
 -- Index definition
-	DEFINE INDEX IF NOT EXISTS	id							ON TABLE Job COLUMNS PostId UNIQUE;
+ DEFINE INDEX IF NOT EXISTS id       ON TABLE Job COLUMNS PostId UNIQUE;
 -- END OF table definition
-		`
+  `
 	_, err := sd.Query(query, nil)
 	return err
 

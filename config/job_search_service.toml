@@ -2,7 +2,7 @@
 
 [seek_service]
 domain = 'https://www.seek.com.au'
-cooldown = 1.2
+cooldown = 2.25
 site_key = "AU-Main"
 lang_locale = "en-AU"
 country_code = "AU"
@@ -10,7 +10,7 @@ timezone = "Australia/Sydney"
 zone = "anz-1"
 
 [yahoo_search]
-domain = 'au.yahoo.com'
+domain = 'https://au.search.yahoo.com/'
 
 [surreal_db_service]
 host = 'localhost'

@@ -25,7 +25,9 @@ type ApiService struct {
 }
 
 type SeekServiceConfig struct {
-	ApiService
+	Domain         string `toml:"domain" mapstructure:"domain"`
+	CoolDown       int    `toml:"cool_down" mapstructure:"cool_down"`
+	Locale         string `toml:"locale" mapstructure:"locale"`
 	LanguageLocale string `toml:"lang_locale" mapstructure:"lang_locale"`
 	SiteKey        string `toml:"site_key" mapstructure:"site_key"`
 	MaxJobCount    int    `toml:"max_job_count" mapstructure:"max_job_count"`

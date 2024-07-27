@@ -127,8 +127,8 @@ func SeekSearchApiWithPreset(paramsPreset *SeekSearchApiParams, searchKeyWord st
 	return responseData, nil
 }
 
-func SeekSearchApiForApi(paramsPreset *SeekSearchApiParams, config *jsConfig.ApiService) (SeekSearchApiResponse, error) {
-
+func SeekSearchApiForApi(paramsPreset *SeekSearchApiParams, config *jsConfig.SeekServiceConfig) (SeekSearchApiResponse, error) {
+	// pp.Println("SeekSearchApiForApi", config)
 	client := sling.New().Base(config.Domain+"/api/chalice-search/v4/").
 		Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
 
@@ -183,6 +183,13 @@ func CreateSearchCombinations(keywords []string) []string {
 	// log.Println("combinedKeywords  ", combinedKeywords)
 
 	casualKW = []string{}
+	if len(importantKW) == 0 {
+		for _, kw := range combinedKeywords {
+			casualKW = append(casualKW, strings.Join(kw, " "))
+		}
+
+		return casualKW
+	}
 	for _, kw := range combinedKeywords {
 		for _, imp := range importantKW {
 			kw := append(kw, imp)

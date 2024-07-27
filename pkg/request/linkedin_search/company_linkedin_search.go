@@ -80,7 +80,7 @@ func SearchCompany(c *colly.Collector, companyDetail *request.SeekCompanyDetails
 	}
 
 	link := "https://au.search.yahoo.com/search?p=site%3Alinkedin.com%2Fcompany+%22" + strings.ReplaceAll(companyName, " ", "+") + "%22"
-	log.Println("try search link", link)
+	// log.Println("try search link", link)
 
 	c2 := scrapeLinkedinDetail(c, companyDetail)
 
@@ -127,8 +127,8 @@ func SearchCompanyForApi(c *colly.Collector, config *config.ApiService, companyD
 		return companyDetail, fmt.Errorf("company detail is already filled")
 	}
 
-	link := "https://" + config.Domain + "/search?p=site%3Alinkedin.com%2Fcompany+%22" + strings.ReplaceAll(companyName, " ", "+") + "%22"
-	log.Println("try search link", link)
+	link := config.Domain + "/search?p=site%3Alinkedin.com%2Fcompany+%22" + strings.ReplaceAll(companyName, " ", "+") + "%22"
+	// log.Println("try search link", link)
 
 	var scrapeError error
 	c2 := scrapeLinkedinDetail(c, companyDetail)
@@ -137,7 +137,6 @@ func SearchCompanyForApi(c *colly.Collector, config *config.ApiService, companyD
 	})
 
 	c.OnHTML("li.first a", func(e *colly.HTMLElement) {
-		// pp.Println(e.DOM.Html())
 		resultUrl := e.Attr("href")
 		if strings.Contains(resultUrl, "linkedin.com") && strings.Contains(resultUrl, "r.search.yahoo.com") {
 			// pp.Println(companyName, resultUrl)
@@ -155,6 +154,7 @@ func SearchCompanyForApi(c *colly.Collector, config *config.ApiService, companyD
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
+		log.Fatalf("error: code : %d, \n %s; \n ", r.StatusCode, err)
 		scrapeError = fmt.Errorf("scraping error: code : %d, \n error: %s; \n ", r.StatusCode, err)
 	})
 
@@ -169,6 +169,7 @@ func SearchCompanyForApi(c *colly.Collector, config *config.ApiService, companyD
 		return companyDetail, scrapeError
 	}
 
+	// pp.Println("companyDetail", companyDetail)
 	return companyDetail, nil
 }
 
@@ -226,7 +227,7 @@ func scrapeLinkedinDetail(c *colly.Collector, companyDetail *request.SeekCompany
 	}
 
 	c2.OnScraped(func(r *colly.Response) {
-		log.Println("finished scraping post details for post id")
+		// log.Println("finished scraping post details for post id")
 		companyDetail.Linkedin = r.Request.URL.String()
 		// tmpC2Content := strings.Join(c2Content, "\n")
 		// mdString, _ := converter.ConvertString(tmpC2Content)
@@ -261,7 +262,7 @@ func GetCompanyPostList(paramsPreset *seekAPI.SeekSearchApiParams, postData *see
 	return responseData.TotalCount, nil
 }
 
-func GetCompanyPostListForApi(config *config.ApiService, company_id string) (int, error) {
+func GetCompanyPostListForApi(config *config.SeekServiceConfig, company_id string) (int, error) {
 	client := sling.New().Base(config.Domain + "/api/chalice-search/v4/")
 	params := &seekAPI.SeekSearchApiParams{
 		AdvertiserId: company_id,
@@ -297,7 +298,7 @@ func GetCompanyPostListByCompanySearchURL(url string) (int, error) {
 		Receive(&responseData, nil)
 
 	if err != nil {
-		pp.Println("GetCompanyPostListByCompanySearchURL", err)
+		// pp.Println("GetCompanyPostListByCompanySearchURL", err)
 		return 0, err
 	}
 

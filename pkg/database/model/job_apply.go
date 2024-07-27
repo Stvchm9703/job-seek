@@ -56,9 +56,9 @@ func (m *JobApplyModel) FromProto(p *protos.JobApply) {
 
 func (m *JobApplyModel) GetModel(db *surrealdb.DB) (*protos.JobApply, error) {
 	result, err := db.Query(`
-	SELECT *, (SELECT * FROM Job WHERE PostId = $parent.JobId) AS Job
-	FROM JobApply:[$user_id,$job_id];
-	`, map[string]interface{}{
+  SELECT *, (SELECT * FROM Job WHERE PostId = $parent.JobId) AS Job
+  FROM JobApply:[$user_id,$job_id];
+  `, map[string]interface{}{
 		"user_id": m.UserId,
 		"job_id":  m.JobId,
 	})
@@ -102,31 +102,31 @@ func (m JobApplyModel) DefineModel(sd *surrealdb.DB) error {
 -- Table definition
 DEFINE TABLE IF NOT EXISTS JobApply SCHEMAFULL;
 -- Field definition
-	DEFINE FIELD IF NOT EXISTS	JobId 					ON TABLE JobApply TYPE		record<Job>;
-	DEFINE FIELD IF NOT EXISTS	UserId					ON TABLE JobApply TYPE		record<UserAccount>;
-	DEFINE FIELD IF NOT EXISTS	Status					ON TABLE JobApply TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	CreatedAt 			ON TABLE JobApply TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	UpdatedAt 			ON TABLE JobApply TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	DeletedAt 			ON TABLE JobApply TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	CoverLetter			ON TABLE JobApply TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	CVContent				ON TABLE JobApply TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	CvFile					ON TABLE JobApply TYPE		bytes;
-	DEFINE FIELD IF NOT EXISTS	Message					ON TABLE JobApply TYPE		string;
+  DEFINE FIELD IF NOT EXISTS JobId      ON TABLE JobApply TYPE  record<Job>;
+  DEFINE FIELD IF NOT EXISTS UserId     ON TABLE JobApply TYPE  record<UserAccount>;
+  DEFINE FIELD IF NOT EXISTS Status     ON TABLE JobApply TYPE  string;
+  DEFINE FIELD IF NOT EXISTS CreatedAt    ON TABLE JobApply TYPE  string;
+  DEFINE FIELD IF NOT EXISTS UpdatedAt    ON TABLE JobApply TYPE  string;
+  DEFINE FIELD IF NOT EXISTS DeletedAt    ON TABLE JobApply TYPE  string;
+  DEFINE FIELD IF NOT EXISTS CoverLetter   ON TABLE JobApply TYPE  string;
+  DEFINE FIELD IF NOT EXISTS CVContent    ON TABLE JobApply TYPE  string;
+  DEFINE FIELD IF NOT EXISTS CvFile     ON TABLE JobApply TYPE  bytes;
+  DEFINE FIELD IF NOT EXISTS Message     ON TABLE JobApply TYPE  string;
 -- Index definition
-	DEFINE INDEX IF NOT EXISTS	Id							ON TABLE JobApply COLUMNS ReferenceId UNIQUE;
+  DEFINE INDEX IF NOT EXISTS id       ON TABLE JobApply COLUMNS ReferenceId UNIQUE;
 -- Event definition
-	DEFINE EVENT IF NOT EXISTS CreateHook ON TABLE JobBookmark 
-		WHEN $event = "CREATE" OR $event = "INSERT"
-		THEN (
-			UPDATE JobBookmark SET CreatedAt = time::format(time::now(),"%+") 
-				WHERE JobId = $after.JobId AND UserId = $after.UserId
-		);
-	DEFINE EVENT IF NOT EXISTS UpdateHook ON TABLE JobBookmark 
-		WHEN $event = "CREATE" OR $event = "INSERT"
-		THEN (
-			UPDATE JobBookmark SET UpdatedAt = time::format(time::now(),"%+") 
-				WHERE JobId = $after.JobId AND UserId = $after.UserId
-		);
+  DEFINE EVENT IF NOT EXISTS CreateHook ON TABLE JobBookmark 
+    WHEN $event = "CREATE" OR $event = "INSERT"
+    THEN (
+      UPDATE JobBookmark SET CreatedAt = time::format(time::now(),"%+") 
+        WHERE JobId = $after.JobId AND UserId = $after.UserId
+    );
+  DEFINE EVENT IF NOT EXISTS UpdateHook ON TABLE JobBookmark 
+    WHEN $event = "CREATE" OR $event = "INSERT"
+    THEN (
+      UPDATE JobBookmark SET UpdatedAt = time::format(time::now(),"%+") 
+        WHERE JobId = $after.JobId AND UserId = $after.UserId
+    );
 -- END OF table definition
 `
 	_, err := sd.Query(query, nil)
