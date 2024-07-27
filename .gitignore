@@ -1,6 +1,6 @@
 vendor
 bin
-log
+log/**/*.log
 outputs
 db
 meilisearch
