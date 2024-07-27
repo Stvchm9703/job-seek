@@ -34,7 +34,7 @@ func InitDB(verboseLevel int) {
 		}).Fatal("Failed to connect to database")
 	}
 
-	log.Info("Check JobModel")
+	// log.Info("Check JobModel")
 	jobPost := &model.JobModel{}
 	err = jobPost.DefineModel(dbClient)
 	if err != nil {

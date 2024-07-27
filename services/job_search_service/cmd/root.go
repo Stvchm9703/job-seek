@@ -52,6 +52,8 @@ var serveCmd = &cobra.Command{
 			ServerTestRun(logLevel)
 			return // test mode
 		}
+
+		ServerRun(logLevel)
 	},
 }
 
@@ -102,6 +104,8 @@ func init() {
 
 	serveCmd.Flags().Int("db-port", 8654, "database port")
 	viper.BindPFlag("surreal_db_service.port", serveCmd.Flags().Lookup("db-port"))
+
+	serveCmd.Flags().BoolP("dump-in", "d", false, "with dumpping apu data")
 
 	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(dbCmd)

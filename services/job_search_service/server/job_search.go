@@ -21,18 +21,31 @@ import (
 )
 
 func FromProtoToRequest(req *protos.JobSearchRequest) *seek_api.SeekSearchApiParams {
+	var minSalary, maxSalary int
+	if req.GetMinSalary() > 0 {
+		minSalary = int(req.GetMinSalary())
+	}
+	if req.GetMaxSalary() > req.GetMinSalary() {
+		maxSalary = int(req.GetMaxSalary())
+	}
+	salaryRange := fmt.Sprintf("%d-", minSalary)
+	if maxSalary != 0 {
+		salaryRange = fmt.Sprintf("%d-%d", minSalary, maxSalary)
+
+	}
+
 	return &seek_api.SeekSearchApiParams{
 		// SiteKey : inherit from the domain config
-		Where: *req.WorkLocale,
-		Page:  int(*req.PageNumber),
+		Where: req.GetWorkLocale(),
+		Page:  int(req.GetPageNumber()),
 		// Keywords:    implement in CreateSearchCombinations
 		SalaryType:  req.SalaryType.String(),
-		SalaryRange: fmt.Sprintf("%v-%v", req.MinSalary, req.MaxSalary),
+		SalaryRange: salaryRange,
 		// Locale:    inherit from the domain config,
 		SeekerId: req.UserId,
 		// Classification: todo(),
-		AdvertiserId: *req.CompanyId,
-		UserQueryId:  *req.CacheRef,
+		AdvertiserId: req.GetCompanyId(),
+		UserQueryId:  req.GetCacheRef(),
 	}
 }
 
@@ -41,6 +54,10 @@ func FromProtoToRequest(req *protos.JobSearchRequest) *seek_api.SeekSearchApiPar
 func (s JobSearchServiceServerImpl) JobSearch(ctx context.Context, req *protos.JobSearchRequest) (*protos.JobSearchResponse, error) {
 	s.mut.TryLock()
 	defer s.mut.Unlock()
+	s.log.WithFields(logrus.Fields{
+		"method": "JobSearch",
+		"req":    req,
+	}).Info("JobSearch called")
 	if req.PageNumber != nil && req.CacheRef != nil {
 		// continue to fetch the next page
 		// get the search params from the cache
@@ -56,7 +73,10 @@ func (s JobSearchServiceServerImpl) JobSearch(ctx context.Context, req *protos.J
 			}).Error("fail to fetch jobs from cache")
 			return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
 		}
-
+		s.log.WithFields(logrus.Fields{
+			"method":   "JobSearch",
+			"response": protosJob,
+		}).Info("JobSearch response with exist cache called")
 		return protosJob, nil
 	}
 
@@ -64,13 +84,19 @@ func (s JobSearchServiceServerImpl) JobSearch(ctx context.Context, req *protos.J
 	// from the config
 	jobRequest.SiteKey = s.config.SeekService.SiteKey
 	jobRequest.Locale = s.config.SeekService.LanguageLocale
-
+	// pp.Println("jobRequest", jobRequest)
+	// pp.Println("jobRequest keyword", req.Keywords)
 	combinedKeywords := seek_api.CreateSearchCombinations(req.Keywords)
+	// pp.Println("combinedKeywords", combinedKeywords)
 
 	sort.Slice(combinedKeywords, func(i, j int) bool {
 		return len(combinedKeywords[i]) > len(combinedKeywords[j])
 	})
-
+	s.log.WithFields(logrus.Fields{
+		"method":           "JobSearch",
+		"combinedKeywords": combinedKeywords,
+		"jobRequest":       jobRequest,
+	}).Trace("JobSearch call API")
 	postData, err := s.getPostJobsList(combinedKeywords, jobRequest)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
@@ -84,7 +110,11 @@ func (s JobSearchServiceServerImpl) JobSearch(ctx context.Context, req *protos.J
 }
 
 func (s JobSearchServiceServerImpl) getPostJobsList(combinedKeywords []string, searchParamsPreset *seek_api.SeekSearchApiParams) ([]*protos.Job, error) {
-
+	s.log.WithFields(logrus.Fields{
+		"method":             "getPostJobsList",
+		"combinedKeywords":   combinedKeywords,
+		"searchParamsPreset": searchParamsPreset,
+	}).Trace("getPostJobsList ")
 	cacheRef, _ := uuid.NewV7()
 
 	postData := []*protos.Job{}
@@ -92,33 +122,38 @@ func (s JobSearchServiceServerImpl) getPostJobsList(combinedKeywords []string, s
 
 	firstPatchList := generateSearchParamsBatch(searchParamsPreset, combinedKeywords)
 
-	firstPatch, err := seek_api.SeekSearchApiForApi(&firstPatchList[0], &s.config.SeekService.ApiService)
-	if err != nil {
-		s.log.WithFields(logrus.Fields{
-			"error":      err,
-			"preset":     searchParamsPreset,
-			"keyword":    searchParamsPreset.Keywords,
-			"pageNumber": searchParamsPreset.Page,
-		}).Errorf("fail to fetch seek api in first page")
-		return nil, err
-	}
+	s.log.WithFields(logrus.Fields{
+		"method":         "getPostJobsList",
+		"firstPatchList": firstPatchList,
+	}).Trace("gernerated the batch search params")
+
+	firstPatch, _ := s.fetchJobs(cacheRef.String(), &firstPatchList[0])
+
 	for _, job := range firstPatch.Data {
 		jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
 		postData = append(postData, jobDetail)
 	}
 
-	go func() {
-		//continue to fetch the next page
-
-		for _, searchParams := range firstPatchList[1:6] {
-			// fetch jobs
-			resp, err := seek_api.SeekSearchApiForApi(&searchParams, &s.config.SeekService.ApiService)
-			if err != nil {
-				continue
-			}
-
-		}
-	}()
+	// go func() {
+	//continue to fetch the next page
+	secondTierPatchList := generateSearchParamsBatchFromFirstBatch(&firstPatchList[0], firstPatch)
+	pendingJobList := []seek_api.SeekSearchApiResponseData{}
+	for _, searchParams := range firstPatchList[1:] {
+		// fetch jobs
+		resp, _ := s.fetchJobs(cacheRef.String(), &searchParams)
+		pendingJobList = append(pendingJobList, resp.Data...)
+		secondTierPatchList = append(secondTierPatchList, generateSearchParamsBatchFromFirstBatch(&searchParams, resp)...)
+	}
+	for _, searchParams := range secondTierPatchList {
+		// fetch jobs
+		resp, _ := s.fetchJobs(cacheRef.String(), &searchParams)
+		pendingJobList = append(pendingJobList, resp.Data...)
+	}
+	for _, job := range pendingJobList {
+		jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
+		postData = append(postData, jobDetail)
+	}
+	// }()
 	s.log.Infof("Total jobs fetched: %d", len(postData))
 
 	return postData, nil
@@ -155,10 +190,10 @@ func generateSearchParamsBatchFromFirstBatch(firstSearch *seek_api.SeekSearchApi
 	return searchParamsBatch
 }
 
-func (s JobSearchServiceServerImpl) fetchJobs(cacheRef string, preset *seek_api.SeekSearchApiParams) ([]seek_api.SeekSearchApiResponseData, error) {
+func (s JobSearchServiceServerImpl) fetchJobs(cacheRef string, preset *seek_api.SeekSearchApiParams) (*seek_api.SeekSearchApiResponse, error) {
 	// postData := []seek_api.SeekSearchApiResponseData{}
-
-	data, err := seek_api.SeekSearchApiForApi(preset, &s.config.SeekService.ApiService)
+	timeStart := time.Now()
+	data, err := seek_api.SeekSearchApiForApi(preset, &s.config.SeekService)
 	if err != nil {
 		s.log.WithFields(logrus.Fields{
 			"error":      err,
@@ -168,16 +203,41 @@ func (s JobSearchServiceServerImpl) fetchJobs(cacheRef string, preset *seek_api.
 		}).Errorf("fail to fetch seek api in first page")
 		return nil, err
 	}
-	// time.waitSecond(s.config.SeekService.ApiService.CoolDown * 1000)
-	time.Sleep(time.Duration(s.config.SeekService.ApiService.CoolDown) * time.Second)
-	return data.Data, nil
+	go func() {
+		jobCacheList := model.JobCacheListModel{}
+		jobCacheList.FromSearchResult(preset, &data)
+		jobCacheList.CacheRef = cacheRef
+
+		s.log.WithFields(logrus.Fields{
+			"method":        "fetchJobs",
+			"jobCacheModel": jobCacheList,
+		}).Trace("fail to store job cache list")
+
+		storeErr := jobCacheList.CreateJobCacheList(s.dbClient)
+		if storeErr != nil {
+			s.log.WithFields(logrus.Fields{
+				"error": storeErr,
+			}).Error("fail to store job cache list")
+		}
+	}()
+	timeTook := time.Since(timeStart)
+	time.Sleep(time.Duration(s.config.SeekService.CoolDown)*time.Second - timeTook)
+	return &data, nil
 }
 
 func (s JobSearchServiceServerImpl) getJobDetail(jobId string) (*protos.Job, error) {
 	// jobDetail := new(protos.Job)
+
+	s.log.WithFields(logrus.Fields{
+		"method": "getJobDetail",
+		"jobId":  jobId,
+	}).Trace("get Job Detail, before the request db cache")
+
 	var err error
 	var instJobs *protos.Job
+
 	instJobs, err = s.getJobDetailFromDB(jobId)
+
 	if err != nil {
 		s.log.WithFields(logrus.Fields{
 			"error": err,
@@ -185,6 +245,12 @@ func (s JobSearchServiceServerImpl) getJobDetail(jobId string) (*protos.Job, err
 		}).Warn("fail to fetch job detail from db")
 	}
 	if instJobs != nil {
+		s.log.WithFields(logrus.Fields{
+			"method": "getJobDetail",
+			"jobId":  jobId,
+			"job":    instJobs,
+		}).Trace("get Job Detail from the request db cache")
+
 		return instJobs, nil
 	}
 	startTime := time.Now()
@@ -192,43 +258,92 @@ func (s JobSearchServiceServerImpl) getJobDetail(jobId string) (*protos.Job, err
 	jobDetailData, err = seek_gql.GetPostDetailForApi(jobId, &s.config.SeekService)
 	if err != nil {
 		s.log.WithFields(logrus.Fields{
+			"method": "getJobDetail",
+
 			"error": err,
 			"jobId": jobId,
-		}).Error("fail to fetch job detail")
+		}).Error("fail to fetch job detail from graphql")
 		return nil, err
 	}
+
+	s.log.WithFields(logrus.Fields{
+		"method":        "getJobDetail",
+		"jobDetailData": jobId,
+	}).Trace("get Job Detail from the api")
+
 	jobDetail := seek_gql.ConvertPostGQLToProto(jobDetailData)
+
+	s.log.WithFields(logrus.Fields{
+		"method":       "getJobDetail",
+		"jobId":        jobId,
+		"job":          jobDetailData,
+		"jobConverted": jobDetail,
+	}).Trace("job detail fetched")
+
 	tmpCompantDetail := linkedin_search.ExtractCompanyProfileGQL(&jobDetailData.Data.JobDetails)
+	s.log.WithFields(logrus.Fields{
+		"method":           "getJobDetail",
+		"jobId":            jobId,
+		"tmpCompantDetail": tmpCompantDetail,
+	}).Trace("before get the company detail")
 	compantDetail, err := s.getCompanyDetailFromDB(tmpCompantDetail.ReferenceId)
 	if err != nil {
 		s.log.WithFields(logrus.Fields{
+			"method":    "getJobDetail",
 			"error":     err,
 			"jobId":     jobId,
 			"companyId": tmpCompantDetail.ReferenceId,
 		}).Warn("fail to fetch company detail from db")
-		jobDetail.CompanyDetail, err = s.getCompanyDetailFromAPI(tmpCompantDetail.Name)
+		s.log.Trace("fetch company detail from api")
+		err = nil
+		compantDetail, err = s.getCompanyDetailFromAPICreate(tmpCompantDetail)
 		if err != nil {
+			s.log.WithFields(logrus.Fields{
+				"method":    "getJobDetail",
+				"error":     err,
+				"jobId":     jobId,
+				"companyId": compantDetail.ReferenceId,
+			}).Warn("fail to fetch company detail via api")
 			jobDetail.CompanyDetail = tmpCompantDetail.ToProto()
+		} else {
+			s.log.WithFields(logrus.Fields{
+				"method":        "getJobDetail",
+				"companyDetail": compantDetail,
+			}).Trace("fail to fetch company detail via api")
+			jobDetail.CompanyDetail = compantDetail
 		}
 		// since it is not in the db, insert it
 		go func() {
+			s.log.WithFields(logrus.Fields{
+				"method":        "getJobDetail",
+				"companyDetail": jobDetail.CompanyDetail,
+			}).Trace("try to insert company detail to db")
 			s.storeCompanyDetailToDB(jobDetail.CompanyDetail)
 		}()
 	} else {
+		s.log.WithFields(logrus.Fields{
+			"method":        "getJobDetail",
+			"companyDetail": compantDetail,
+		}).Trace("resolved the company detail from db")
 		jobDetail.CompanyDetail = compantDetail
 	}
 
 	// store job detail to db
 	go func() {
+		s.log.WithFields(logrus.Fields{
+			"method": "getJobDetail",
+			"job":    jobDetail,
+		}).Trace("try to insert company detail to db")
 		s.storeJobDetailToDB(jobDetail)
 	}()
 
 	timeTook := time.Since(startTime)
 	s.log.Info("Time took to fetch job detail: ", timeTook)
-	waitTime := time.Duration(s.config.SeekService.ApiService.CoolDown)*time.Second - timeTook
-	s.log.Infof("and wait for %d seconds", waitTime)
-
-	time.Sleep(waitTime)
+	waitTime := time.Duration(s.config.SeekService.CoolDown)*time.Second - timeTook
+	if waitTime > 0 {
+		s.log.Infof("and wait for %d seconds", waitTime)
+		time.Sleep(waitTime)
+	}
 	return jobDetail, nil
 }
 
