@@ -9,6 +9,7 @@ import (
 	jsConfig "job-seek/pkg/config"
 
 	"github.com/dghubble/sling"
+	"github.com/k0kubun/pp/v3"
 	combinations "github.com/mxschmitt/golang-combinations"
 	lo "github.com/samber/lo"
 )
@@ -135,10 +136,14 @@ func SeekSearchApiForApi(paramsPreset *SeekSearchApiParams, config *jsConfig.See
 	params := paramsPreset
 	params.PageSize = 100
 	responseData := SeekSearchApiResponse{}
-
-	_, err := client.Get("search").
+	if params.Locale == "" {
+		params.Locale = "en"
+	}
+	res, err := client.Get("search").
 		QueryStruct(params).
 		Receive(&responseData, nil)
+	fmt.Printf("req url: %s \n", res.Request.URL)
+	pp.Println("query", res.Request.URL.Query())
 
 	if err != nil {
 		return responseData, err

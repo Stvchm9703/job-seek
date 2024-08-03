@@ -147,6 +147,9 @@ func (m *JobModel) CreateModel(sd *surrealdb.DB) error {
 	}
 	// fmt.Println("CreateModel")
 	// pp.Println(m)
+	if m.PostId == "" || m.PostTitle == "" {
+		return fmt.Errorf("empty data")
+	}
 
 	queryTemplate, _ := template.New("createJob").Parse(`
 INSERT INTO Job {
