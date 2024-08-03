@@ -4,13 +4,21 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
+	"strings"
+	"text/template"
 
+	"github.com/k0kubun/pp/v3"
+	"github.com/samber/lo"
 	surrealdb "github.com/surrealdb/surrealdb.go"
 )
 
 type JobApplyModel struct {
+	Id          string `json:"id,omitempty"`
 	JobId       string `json:"job_id"`
 	UserId      string `json:"user_id"`
 	Status      string `json:"status,omitempty"`
@@ -32,11 +40,11 @@ func (m *JobApplyModel) ToProto() protos.JobApply {
 		Status:      &status,
 		CreatedAt:   &m.CreatedAt,
 		UpdatedAt:   &m.UpdatedAt,
+		DeletedAt:   &m.DeletedAt,
 		CoverLetter: &m.CoverLetter,
 		CvContent:   &m.CvContent,
 		CvFile:      m.CvFile,
 		Job:         nil,
-		DeletedAt:   &m.DeletedAt,
 		Message:     &m.Message,
 	}
 }
@@ -54,42 +62,151 @@ func (m *JobApplyModel) FromProto(p *protos.JobApply) {
 	m.Message = p.GetMessage()
 }
 
+type JobApplyUnmarshalModel struct {
+	Id          string             `json:"id,omitempty"`
+	JobId       string             `json:"job_id"`
+	UserId      string             `json:"user_id"`
+	Status      string             `json:"status,omitempty"`
+	CreatedAt   string             `json:"created_at"`
+	UpdatedAt   string             `json:"updated_at,omitempty"`
+	DeletedAt   string             `json:"deleted_at,omitempty"`
+	CoverLetter string             `json:"cover_letter,omitempty"`
+	CvContent   string             `json:"cv_content,omitempty"`
+	CvFile      []byte             `json:"cv_file,omitempty"`
+	Message     string             `json:"message,omitempty"`
+	Job         *JobUnmarshalModel `json:"job,omitempty"`
+}
+
+func (m *JobApplyUnmarshalModel) ToProto() *protos.JobApply {
+	var jobProto *protos.Job = nil
+	if m.Job != nil {
+		jobProto = m.Job.ToProto()
+	}
+	status := protos.JobStatus(protos.JobStatus_value[m.Status])
+
+	return &protos.JobApply{
+		JobId:       m.JobId,
+		UserId:      m.UserId,
+		CreatedAt:   &m.CreatedAt,
+		UpdatedAt:   &m.UpdatedAt,
+		DeletedAt:   &m.DeletedAt,
+		Job:         jobProto,
+		Status:      &status,
+		CoverLetter: &m.CoverLetter,
+		CvContent:   &m.CvContent,
+		CvFile:      m.CvFile,
+		Message:     &m.Message,
+	}
+}
+
 func (m *JobApplyModel) GetModel(db *surrealdb.DB) (*protos.JobApply, error) {
-	result, err := db.Query(`
-  SELECT *, (SELECT * FROM Job WHERE PostId = $parent.JobId) AS Job
-  FROM JobApply:[$user_id,$job_id];
-  `, map[string]interface{}{
-		"user_id": m.UserId,
-		"job_id":  m.JobId,
+	query := fmt.Sprintf(`
+	SELECT *, (SELECT * FROM Job WHERE PostId = $parent.JobId) AS Job
+	FROM JobApply WHERE UserId = $1 AND JobId = $2
+	ORDER BY CreatedAt DESC LIMIT 1;
+	`, m.UserId, m.JobId)
+
+	result, err := db.Query(query, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var queryResult []QueryResult[JobApplyUnmarshalModel]
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
+	if err != nil {
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		return nil, errorWrap
+		// return nil, err
+	}
+	// pp.Println("jobs:", jobqueryResult)
+	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+	// pp.Println("jobs:", jobqueryResult[0].Result[0])
+	return queryResult[0].Result[0].ToProto(), nil
+}
+
+func (m *JobApplyModel) GetModelList(db *surrealdb.DB) ([]*protos.JobApply, error) {
+	query := fmt.Sprintf(`
+	SELECT *, (SELECT * FROM Job WHERE PostId = $parent.JobId) AS Job
+	FROM JobApply WHERE UserId = $1 
+	ORDER BY CreatedAt DESC;
+	`, m.UserId)
+
+	result, err := db.Query(query, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var queryResult []QueryResult[JobApplyUnmarshalModel]
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
+	if err != nil {
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		return nil, errorWrap
+		// return nil, err
+	}
+	// pp.Println("jobs:", jobqueryResult)
+	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+	// pp.Println("jobs:", jobqueryResult[0].Result[0])
+	protoResult := lo.Map(queryResult[0].Result, func(item JobApplyUnmarshalModel, _ int) *protos.JobApply {
+		return item.ToProto()
 	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	var job *protos.JobApply
-	err = surrealdb.Unmarshal(result, job)
-	if err != nil {
-		return nil, err
-	}
-
-	return job, nil
-
+	return protoResult, nil
 }
 
 func (m *JobApplyModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Create(fmt.Sprintf("JobApply:[%s,%s]", m.UserId, m.JobId), m)
-	return err
+
+	queryTemplate, _ := template.New("createJobApply").Parse(`
+INSERT INTO JobApply {
+	JobId       : r"{{.JobId}}",
+	UserId      : r"{{.UserId}}",
+	Status      : s"{{.Status}}",
+	CreatedAt   : s"",
+	UpdatedAt   : s"",
+	DeletedAt   : s"",
+	CoverLetter : s"{{.CoverLetter}}",
+	CvContent   : s"{{.CvContent}}",
+	CvFile      : b"{{.CvFile}}",
+	Message 		: s"{{.Message}}",
+}	`)
+	var doc bytes.Buffer
+	var err error
+	err = queryTemplate.Execute(&doc, m)
+	if err != nil {
+		return err
+	}
+	// _, err := sd.Create(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
+	query := strings.ReplaceAll(doc.String(), "\n", " ")
+	query = strings.ReplaceAll(query, "\t", " ")
+	query = strings.ReplaceAll(query, "\r", " ")
+	query = strings.ReplaceAll(query, `\"`, `"`)
+	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
+
+	result, err := sd.Query(query, m)
+	var message map[string]interface{}
+	surrealdb.Unmarshal(result, message)
+	if err != nil {
+		fmt.Println("query:", query)
+		pp.Println("message:", message)
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	}
+	return nil
 }
 
 func (m *JobApplyModel) UpdateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Update(fmt.Sprintf("JobApply:[%s,%s]", m.UserId, m.JobId), m)
+	_, err := sd.Update(fmt.Sprintf("JobApply:%s", m.Id), m)
 	return err
 }
 

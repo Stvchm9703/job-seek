@@ -155,11 +155,12 @@ INSERT INTO CompanyDetail  {
 	}
 	var message map[string]interface{}
 	surrealdb.Unmarshal(result, message)
-	// if err != nil {
-	// 	fmt.Println("query:", query)
-	// 	pp.Println("message:", message)
-	// }
-	return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	if err != nil {
+		fmt.Println("query:", query)
+		pp.Println("message:", message)
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	}
+	return nil
 	// return err
 }
 
@@ -189,7 +190,7 @@ DEFINE TABLE IF NOT EXISTS CompanyDetail SCHEMAFULL;
   DEFINE FIELD IF NOT EXISTS  HeadQuarters    ON TABLE CompanyDetail TYPE    string;
   DEFINE FIELD IF NOT EXISTS  Specialties      ON TABLE CompanyDetail TYPE    array<string>;
   DEFINE FIELD IF NOT EXISTS  Locations        ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS   LastUpdate      ON TABLE CompanyDetail TYPE    string;
+  DEFINE FIELD IF NOT EXISTS  LastUpdate      ON TABLE CompanyDetail TYPE    string;
   DEFINE INDEX IF NOT EXISTS  id              ON TABLE CompanyDetail COLUMNS ReferenceId UNIQUE;
   DEFINE EVENT IF NOT EXISTS UpdateHook ON TABLE CompanyDetail 
     WHEN $event = "CREATE" OR $event = "INSERT"
@@ -197,6 +198,8 @@ DEFINE TABLE IF NOT EXISTS CompanyDetail SCHEMAFULL;
       UPDATE CompanyDetail SET LastUpdate = time::format(time::now(),"%+") 
         WHERE id = $after.post_id
     );;
+	DEFINE INDEX  NameSearch ON TABLE CompanyDetail COLUMNS Name SEARCH ANALYZER ContentSearch BM25 HIGHLIGHTS;
+  DEFINE INDEX IF NOT EXISTS DescriptionSearch ON TABLE CompanyDetail COLUMNS Description SEARCH ANALYZER ContentSearch BM25 HIGHLIGHTS;
     `
 
 	_, err := sd.Query(query, nil)

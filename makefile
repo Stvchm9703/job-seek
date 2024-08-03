@@ -1,6 +1,6 @@
 current_dir := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 rust_dir := $(current_dir)../job-seek-v2
-
+python_dir := $(current_dir)../job-seek-v3
 generate-go-proto:
 	protoc \
 	--proto_path=pkg/protos \
@@ -9,7 +9,8 @@ generate-go-proto:
 		pkg/protos/*.proto
 
 sync-proto:
-	cp -r pkg/protos/* $(rust_dir)/packages/protos/defines/
+	# cp -r pkg/protos/*.proto $(rust_dir)/packages/protos/defines/
+	cp -r pkg/protos/*.proto $(python_dir)/protos/
 
 check-rust-protos:
 	cd $(rust_dir)/packages/protos && \
@@ -29,4 +30,4 @@ build-service:\
 	build-job-search-service
 
 tool-generate-service-template:
-	go run tools/generate-service-template/main.go
+	go run tools/generate-service-template/main.g

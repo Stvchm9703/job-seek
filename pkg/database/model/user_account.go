@@ -4,13 +4,19 @@
 package model
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
+	"strings"
+	"text/template"
 
+	"github.com/k0kubun/pp/v3"
 	surrealdb "github.com/surrealdb/surrealdb.go"
 )
 
 type UserAccountModel struct {
+	ID           string `json:"id,omitempty"`
 	UserId       string `json:"user_id"`
 	UserName     string `json:"user_name"`
 	UserPassword string `json:"user_password"`
@@ -19,8 +25,8 @@ type UserAccountModel struct {
 	UserAddress  string `json:"user_address"`
 }
 
-func (m *UserAccountModel) ToProto() protos.UserAccount {
-	return protos.UserAccount{
+func (m *UserAccountModel) ToProto() *protos.UserAccount {
+	return &protos.UserAccount{
 		UserId:       m.UserId,
 		UserName:     m.UserName,
 		UserPassword: m.UserPassword,
@@ -40,27 +46,60 @@ func (m *UserAccountModel) FromProto(p *protos.UserAccount) {
 }
 
 func (m *UserAccountModel) GetModel(db *surrealdb.DB) (*protos.UserAccount, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
 	result, err := db.Select(fmt.Sprintf("UserAccount:%s", m.UserId))
 	if err != nil {
 		return nil, err
 	}
 
-	var data *protos.UserAccount
+	data := new(UserAccountModel)
 	err = surrealdb.Unmarshal(result, data)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(fmt.Errorf("failed to unmarshal UserAccountModel"), err, pp.Errorf("result", result))
 	}
-
-	return data, nil
-
+	return data.ToProto(), nil
 }
 
 func (m *UserAccountModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Create(fmt.Sprintf("UserAccount:%s", m.UserId), m)
-	return err
+	// _, err := sd.Create(fmt.Sprintf("UserAccount:%s", m.UserId), m)
+	queryTemplate, _ := template.New("createUserAccount").Parse(`
+INSERT INTO UserAccount  {
+	id: {{.UserId}},
+	UserId       : s"{{.UserId}}",
+	UserName     : s"{{.UserName}}",
+	UserPassword : s"{{.UserPassword}}",
+	UserEmail    : s"{{.UserEmail}}",
+	UserPhone    : s"{{.UserPhone}}",
+	UserAddress  : s"{{.UserAddress}}",
+};
+	`)
+	var doc bytes.Buffer
+	var err error
+	err = queryTemplate.Execute(&doc, m)
+	if err != nil {
+		return err
+	}
+	query := strings.ReplaceAll(doc.String(), "\n", " ")
+	query = strings.ReplaceAll(query, "\t", " ")
+	query = strings.ReplaceAll(query, "\r", " ")
+	result, err := sd.Query(query, m)
+	if err != nil {
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message:", result))
+	}
+	var message map[string]interface{}
+	surrealdb.Unmarshal(result, message)
+	if err != nil {
+		fmt.Println("query:", query)
+		pp.Println("message:", message)
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	}
+	return nil
+
 }
 
 func (m *UserAccountModel) UpdateModel(sd *surrealdb.DB) error {

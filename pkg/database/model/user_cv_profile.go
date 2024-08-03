@@ -4,9 +4,15 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
+	"strings"
+	"text/template"
 
+	"github.com/k0kubun/pp/v3"
 	"github.com/samber/lo"
 	surrealdb "github.com/surrealdb/surrealdb.go"
 )
@@ -18,12 +24,19 @@ type UserCVProfileModel struct {
 	CvKeywords []string `json:"cv_keywords"`
 }
 
-func (m *UserCVProfileModel) ToProto() protos.UserCVProfile {
-	return protos.UserCVProfile{
+type UserCVProfileUnmarshalModel struct {
+	Id         string                   `json:"id"`
+	UserId     string                   `json:"user_id"`
+	CvData     []byte                   `json:"cv_data"`
+	CvKeywords []PreferenceKeywordModel `json:"cv_keywords"`
+}
+
+func (m *UserCVProfileUnmarshalModel) ToProto() *protos.UserCVProfile {
+	return &protos.UserCVProfile{
 		UserId:     m.UserId,
 		CvId:       m.Id,
 		CvData:     m.CvData,
-		CvKeywords: []*protos.PreferenceKeyword{},
+		CvKeywords: lo.Map(m.CvKeywords, func(x PreferenceKeywordModel, _ int) *protos.PreferenceKeyword { return x.ToProto() }),
 	}
 }
 
@@ -35,42 +48,68 @@ func (m *UserCVProfileModel) FromProto(p *protos.UserCVProfile) {
 }
 
 func (m *UserCVProfileModel) GetModel(db *surrealdb.DB) (*protos.UserCVProfile, error) {
-	result, err := db.Query(fmt.Sprintf(`
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	query := fmt.Sprintf(`
 	SELECT *, (SELECT * FROM PreferenceKeyword WHERE id INSIDE $parent.CvKeywords) AS CvKeywords
-	FROM UserCVProfile:%s;`, m.Id), nil)
-
+	FROM UserCVProfile:%s;`, m.Id)
+	result, err := db.Query(query, nil)
 	if err != nil {
+
 		return nil, err
 	}
 
-	var data *protos.UserCVProfile
-	err = surrealdb.Unmarshal(result, data)
+	var queryResult []QueryResult[UserCVProfileUnmarshalModel]
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
 	if err != nil {
-		return nil, err
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		// log.Fatalf("error: %v", errorWrap)
+		return nil, errorWrap
+		// return nil, err
 	}
-
-	return data, nil
-
+	// pp.Println("jobs:", jobqueryResult)
+	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+	// pp.Println("jobs:", jobqueryResult[0].Result[0])
+	return queryResult[0].Result[0].ToProto(), nil
 }
 
 func (m *UserCVProfileModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	result, err := sd.Create("UserCVProfile", map[string]interface{}{
-		"UserId":     m.UserId,
-		"CvData":     m.CvData,
-		"CvKeywords": m.CvKeywords,
-	})
+
+	queryTemplate, _ := template.New("createUserCVProfile").Parse(`
+INSERT INTO UserCVProfile {
+	UserId   : r"{{.UserId}}",   
+	CvData     : b"{{.CvData}}",   
+	CvKeywords : r"{{.CvKeywords}}",
+}	`)
+	var doc bytes.Buffer
+	var err error
+	err = queryTemplate.Execute(&doc, m)
 	if err != nil {
 		return err
 	}
-	var data *UserCVProfileModel
-	err = surrealdb.Unmarshal(result, data)
+	// _, err := sd.Create(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
+	query := strings.ReplaceAll(doc.String(), "\n", " ")
+	query = strings.ReplaceAll(query, "\t", " ")
+	query = strings.ReplaceAll(query, "\r", " ")
+	query = strings.ReplaceAll(query, `\"`, `"`)
+	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
+
+	result, err := sd.Query(query, m)
+	var message map[string]interface{}
+	surrealdb.Unmarshal(result, message)
 	if err != nil {
-		return err
+		fmt.Println("query:", query)
+		pp.Println("message:", message)
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
 	}
-	m.Id = data.Id
 	return nil
 }
 

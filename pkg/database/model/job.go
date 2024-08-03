@@ -73,12 +73,6 @@ func (m *JobUnmarshalModel) ToProto() *protos.Job {
 	}
 }
 
-type JobQueryResult struct {
-	Result []JobUnmarshalModel `json:"result"`
-	Status string              `json:"status"`
-	Time   string              `json:"time"`
-}
-
 func (m *JobModel) ToProto() *protos.Job {
 	score := int32(m.Score)
 	return &protos.Job{
@@ -128,7 +122,7 @@ FROM Job:%s;`, m.PostId)
 
 	// resultMap := result.([]map[string]map[string][]interface{})
 
-	var jobqueryResult []JobQueryResult
+	var jobqueryResult []QueryResult[JobUnmarshalModel]
 	// err = surrealdb.Unmarshal(result, jobqueryResult)
 	jsonResult, _ := json.Marshal(result)
 	err = json.Unmarshal(jsonResult, &jobqueryResult)
@@ -156,7 +150,7 @@ func (m *JobModel) CreateModel(sd *surrealdb.DB) error {
 
 	queryTemplate, _ := template.New("createJob").Parse(`
 INSERT INTO Job {
-	id : 						{{.PostId}},
+  id : 						{{.PostId}},
   PostId:         s"{{.PostId}}",
   PostTitle:      s"{{.PostTitle}}",
   PostUrl:        s"{{.PostUrl}}",
@@ -194,8 +188,9 @@ INSERT INTO Job {
 	if err != nil {
 		fmt.Println("query:", query)
 		pp.Println("message:", message)
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
 	}
-	return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	return nil
 }
 
 func (m *JobModel) UpdateModel(sd *surrealdb.DB) error {
@@ -215,20 +210,23 @@ func (m *JobModel) DefineModel(sd *surrealdb.DB) error {
 -- Table definition
 DEFINE TABLE IF NOT EXISTS Job SCHEMAFULL;
 -- Field definition
- DEFINE FIELD IF NOT EXISTS PostId      ON TABLE Job TYPE  string;
- DEFINE FIELD IF NOT EXISTS PostTitle    ON TABLE Job TYPE  string;
- DEFINE FIELD IF NOT EXISTS PostUrl     ON TABLE Job TYPE  string;
- DEFINE FIELD IF NOT EXISTS PayRange     ON TABLE Job TYPE  string;
- DEFINE FIELD IF NOT EXISTS DebugText    ON TABLE Job TYPE  string;
- DEFINE FIELD IF NOT EXISTS HittedKeywords  ON TABLE Job TYPE  array<string>;
- DEFINE FIELD IF NOT EXISTS Score      ON TABLE Job TYPE  number;
- DEFINE FIELD IF NOT EXISTS Role      ON TABLE Job TYPE  string;
- DEFINE FIELD IF NOT EXISTS WorkType     ON TABLE Job TYPE  string;
- DEFINE FIELD IF NOT EXISTS CompanyDetail  ON TABLE Job TYPE  record<CompanyDetail>;
- DEFINE FIELD IF NOT EXISTS Locations    ON TABLE Job TYPE  string;
- DEFINE FIELD IF NOT EXISTS ExpiringDate   ON TABLE Job TYPE  string;
+  DEFINE FIELD IF NOT EXISTS PostId      ON TABLE Job TYPE  string;
+  DEFINE FIELD IF NOT EXISTS PostTitle    ON TABLE Job TYPE  string;
+  DEFINE FIELD IF NOT EXISTS PostUrl     ON TABLE Job TYPE  string;
+  DEFINE FIELD IF NOT EXISTS PayRange     ON TABLE Job TYPE  string;
+  DEFINE FIELD IF NOT EXISTS DebugText    ON TABLE Job TYPE  string;
+  DEFINE FIELD IF NOT EXISTS HittedKeywords  ON TABLE Job TYPE  array<string>;
+  DEFINE FIELD IF NOT EXISTS Score      ON TABLE Job TYPE  number;
+  DEFINE FIELD IF NOT EXISTS Role      ON TABLE Job TYPE  string;
+  DEFINE FIELD IF NOT EXISTS WorkType     ON TABLE Job TYPE  string;
+  DEFINE FIELD IF NOT EXISTS CompanyDetail  ON TABLE Job TYPE  record<CompanyDetail>;
+  DEFINE FIELD IF NOT EXISTS Locations    ON TABLE Job TYPE  string;
+  DEFINE FIELD IF NOT EXISTS ExpiringDate   ON TABLE Job TYPE  string;  
 -- Index definition
- DEFINE INDEX IF NOT EXISTS id       ON TABLE Job COLUMNS PostId UNIQUE;
+  DEFINE INDEX IF NOT EXISTS id       ON TABLE Job COLUMNS PostId UNIQUE;
+  DEFINE ANALYZER IF NOT EXISTS  ContentSearch TOKENIZERS blank  FILTERS snowball(english), edgengram(3,5);
+  DEFINE INDEX  ContentSearch ON TABLE Job COLUMNS DebugText SEARCH ANALYZER ContentSearch BM25 HIGHLIGHTS;
+  DEFINE INDEX IF NOT EXISTS TitleSearch ON TABLE Job COLUMNS PostTitle SEARCH ANALYZER ContentSearch BM25 HIGHLIGHTS;
 -- END OF table definition
   `
 	_, err := sd.Query(query, nil)

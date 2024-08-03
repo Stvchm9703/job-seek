@@ -4,9 +4,15 @@
 package model
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
+	"strings"
+	"text/template"
 
+	"github.com/k0kubun/pp/v3"
+	"github.com/samber/lo"
 	surrealdb "github.com/surrealdb/surrealdb.go"
 )
 
@@ -19,8 +25,8 @@ type PreferenceKeywordModel struct {
 	IsPositive bool   `json:"is_positive"`
 }
 
-func (m *PreferenceKeywordModel) ToProto() protos.PreferenceKeyword {
-	return protos.PreferenceKeyword{
+func (m *PreferenceKeywordModel) ToProto() *protos.PreferenceKeyword {
+	return &protos.PreferenceKeyword{
 		KwId:       m.Id,
 		UserId:     m.UserId,
 		Keyword:    m.Keyword,
@@ -40,36 +46,85 @@ func (m *PreferenceKeywordModel) FromProto(p *protos.PreferenceKeyword) {
 }
 
 func (m *PreferenceKeywordModel) GetModel(db *surrealdb.DB) (*protos.PreferenceKeyword, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+
 	result, err := db.Select(fmt.Sprintf("PreferenceKeyword:%s", m.Id))
 	if err != nil {
 		return nil, err
 	}
 
-	var data *protos.PreferenceKeyword
+	data := new(PreferenceKeywordModel)
 	err = surrealdb.Unmarshal(result, data)
+	if err != nil {
+		return nil, errors.Join(fmt.Errorf("failed to unmarshal PreferenceKeywordModel"), err, pp.Errorf("result", result))
+		// return nil, err
+	}
+
+	return data.ToProto(), nil
+
+}
+
+func (m *PreferenceKeywordModel) ListModel(db *surrealdb.DB) ([]*protos.PreferenceKeyword, error) {
+	query := fmt.Sprintf(`
+	SELECT * , search::score(1) as score FROM PreferenceKeyword WHERE Value @1@ "%s" ORDER BY score DESC;
+	`, m.Value)
+	result, err := db.Query(query, nil)
 	if err != nil {
 		return nil, err
 	}
+	details := []*PreferenceKeywordModel{}
+	err = surrealdb.Unmarshal(result, details)
 
-	return data, nil
-
+	if err != nil {
+		return nil, errors.Join(fmt.Errorf("failed to unmarshal CompanyDetailModel"), err, pp.Errorf("result", result))
+	}
+	fun := lo.Map(details, func(item *PreferenceKeywordModel, index int) *protos.PreferenceKeyword {
+		return item.ToProto()
+	})
+	return fun, nil
 }
 
 func (m *PreferenceKeywordModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
+	if m.UserId == "" {
+		return fmt.Errorf("UserId is empty")
+	}
 
-	result, err := sd.Create("PreferenceKeyword", m)
+	// result, err := sd.Create("PreferenceKeyword", m)
+
+	queryTemplate, _ := template.New("createCompanyDetail").Parse(`
+INSERT INTO CompanyDetail  {
+	UserId: r"{{.UserId}}",
+	Keyword: s"{{.Keyword}}",
+	Value: s"{{.Value}}",
+	Type: s"{{.Type}}",
+	IsPositive {{.IsPositive}},
+};
+	`)
+	var doc bytes.Buffer
+	var err error
+	err = queryTemplate.Execute(&doc, m)
 	if err != nil {
 		return err
 	}
-	var data *PreferenceKeywordModel
-	err = surrealdb.Unmarshal(result, data)
+	// _, err := sd.Create(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
+	query := strings.ReplaceAll(doc.String(), "\n", " ")
+	query = strings.ReplaceAll(query, "\t", " ")
+	query = strings.ReplaceAll(query, "\r", " ")
+	// query = strings.ReplaceAll(query, "\"", "'")
+	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
+	result, err := sd.Query(query, m)
+	var message map[string]interface{}
+	surrealdb.Unmarshal(result, message)
 	if err != nil {
-		return err
+		fmt.Println("query:", query)
+		pp.Println("message:", message)
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
 	}
-	m.Id = data.Id
 	return nil
 }
 

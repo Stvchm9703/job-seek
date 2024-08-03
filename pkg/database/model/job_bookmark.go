@@ -4,9 +4,17 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
+	"log"
+	"strings"
+	"text/template"
 
+	"github.com/k0kubun/pp/v3"
+	"github.com/samber/lo"
 	surrealdb "github.com/surrealdb/surrealdb.go"
 )
 
@@ -39,61 +47,149 @@ func (m *JobBookmarkModel) FromProto(p *protos.JobBookmark) {
 	// m.Job = p.GetJob().PostId
 }
 
+type JobBookmarkUnmarshalModel struct {
+	Id        string             `json:"id"`
+	JobId     string             `json:"job_id"`
+	UserId    string             `json:"user_id"`
+	CreatedAt string             `json:"created_at"`
+	UpdatedAt string             `json:"updated_at,omitempty"`
+	DeletedAt string             `json:"deleted_at,omitempty"`
+	Job       *JobUnmarshalModel `json:"job,omitempty"`
+}
+
+func (m *JobBookmarkUnmarshalModel) ToProto() *protos.JobBookmark {
+	var jobProto *protos.Job = nil
+	if m.Job != nil {
+		jobProto = m.Job.ToProto()
+	}
+	return &protos.JobBookmark{
+		JobId:     m.JobId,
+		UserId:    m.UserId,
+		CreatedAt: &m.CreatedAt,
+		UpdatedAt: &m.UpdatedAt,
+		DeletedAt: &m.DeletedAt,
+		Job:       jobProto,
+	}
+}
+
 func (m *JobBookmarkModel) GetModel(db *surrealdb.DB) (*protos.JobBookmark, error) {
-	result, err := db.Query(
-		`
-	SELECT *, (SELECT * FROM Job WHERE PostId = $parent.JobId) AS Job
-	FROM JobBookmark:[$user_id,$job_id];
-	`, map[string]interface{}{
-			"job_id":  m.JobId,
-			"user_id": m.UserId,
-		})
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+
+	query := fmt.Sprintf(`
+	SELECT *, 
+		(SELECT *, 
+			(SELECT * FROM CompanyDetail  WHERE id = $parent.CompanyDetail Limit 1)[0] AS CompanyDetail 
+			FROM Job 
+			WHERE PostId = $parent.JobId
+		)[0] AS Job
+	FROM JobBookmark:[%s, %s];
+	`, m.UserId, m.JobId)
+	result, err := db.Query(query, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var data *protos.JobBookmark
-	err = surrealdb.Unmarshal(result, data)
-	if err != nil {
-		return nil, err
-	}
+	// resultMap := result.([]map[string]map[string][]interface{})
 
-	return data, nil
+	var queryResult []QueryResult[JobBookmarkUnmarshalModel]
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
+	if err != nil {
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		log.Fatalf("error: %v", errorWrap)
+		return nil, errorWrap
+		// return nil, err
+	}
+	// pp.Println("jobs:", jobqueryResult)
+	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+	// pp.Println("jobs:", jobqueryResult[0].Result[0])
+	return queryResult[0].Result[0].ToProto(), nil
 }
 
 func (m *JobBookmarkModel) GetModelByUser(db *surrealdb.DB) ([]*protos.JobBookmark, error) {
-	result, err := db.Query(
-		`
-	SELECT *, (SELECT * FROM Job WHERE PostId = $parent.JobId) AS Job
+	query := `
+	SELECT 
+		*, 
+		(SELECT *, 
+			(SELECT * FROM CompanyDetail  WHERE id = $parent.CompanyDetail Limit 1)[0] AS CompanyDetail 
+			FROM Job 
+			WHERE PostId = $parent.JobId
+		)[0] AS Job
 	FROM JobBookmark 
 	WHERE UserId = $user_id
 	;
-	`, map[string]interface{}{
-			"user_id": m.UserId,
-		})
+	`
+
+	result, err := db.Query(query, map[string]interface{}{
+		"user_id": m.UserId,
+	})
 
 	if err != nil {
 		return nil, err
 	}
-
-	var data []*protos.JobBookmark
-	err = surrealdb.Unmarshal(result, data)
+	var queryResult []QueryResult[JobBookmarkUnmarshalModel]
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
 	if err != nil {
-		return nil, err
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		log.Fatalf("error: %v", errorWrap)
+		return nil, errorWrap
+		// return nil, err
 	}
+	// pp.Println("jobs:", jobqueryResult)
+	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+	// pp.Println("jobs:", jobqueryResult[0].Result[0])
 
-	return data, nil
+	protoed := lo.Map(queryResult[0].Result, func(x JobBookmarkUnmarshalModel, _ int) *protos.JobBookmark {
+		return x.ToProto()
+	})
+	return protoed, nil
 }
 
 func (m *JobBookmarkModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Create(
-		fmt.Sprintf("JobBookmark:[%s,%s]", m.UserId, m.JobId),
-		m)
-	return err
+
+	queryTemplate, _ := template.New("createJobBookmark").Parse(`
+INSERT INTO JobBookmark {
+JobId     : r"{{.JobId}}",
+UserId    : r"{{.UserId}}",
+CreatedAt : s"",
+UpdatedAt : s"",
+DeletedAt : s"",
+}	`)
+	var doc bytes.Buffer
+	var err error
+	err = queryTemplate.Execute(&doc, m)
+	if err != nil {
+		return err
+	}
+	// _, err := sd.Create(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
+	query := strings.ReplaceAll(doc.String(), "\n", " ")
+	query = strings.ReplaceAll(query, "\t", " ")
+	query = strings.ReplaceAll(query, "\r", " ")
+	query = strings.ReplaceAll(query, `\"`, `"`)
+	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
+
+	result, err := sd.Query(query, m)
+	var message map[string]interface{}
+	surrealdb.Unmarshal(result, message)
+	if err != nil {
+		fmt.Println("query:", query)
+		pp.Println("message:", message)
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	}
+	return nil
 }
 
 func (m *JobBookmarkModel) UpdateModel(sd *surrealdb.DB) error {

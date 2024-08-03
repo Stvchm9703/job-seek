@@ -43,8 +43,12 @@ func JobDumping(serviceProxy *server.JobSearchServiceServerImpl, log *logrus.Log
 	for _, classification := range classificationList {
 		req := &protos.JobSearchRequest{
 			// UserId:     "32130c50-7afc-4130-9491-4caddc30f81d",
-			SalaryType:     &salaryType,
-			Keywords:       []string{""},
+			SalaryType: &salaryType,
+			Keywords: []string{
+				"manager", "officer", "assistant", "developer", "programer",
+				"agent", "consultant", "engineer", "analyst", "specialist",
+				"coordinator", "designer", "architect", "planner", "technician",
+				"administrator", "support"},
 			Classification: &classification,
 			// WorkLocale:     &workLocale,
 			AllowMixCache: &allowMixCache,
