@@ -5,19 +5,21 @@ package model
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
+	"log"
 	"strings"
 	"text/template"
 
 	"github.com/k0kubun/pp/v3"
+	"github.com/samber/lo"
 	surrealdb "github.com/surrealdb/surrealdb.go"
 )
 
 type UserAccountModel struct {
 	ID           string `json:"id,omitempty"`
-	UserId       string `json:"user_id"`
 	UserName     string `json:"user_name"`
 	UserPassword string `json:"user_password"`
 	UserEmail    string `json:"user_email"`
@@ -27,7 +29,7 @@ type UserAccountModel struct {
 
 func (m *UserAccountModel) ToProto() *protos.UserAccount {
 	return &protos.UserAccount{
-		UserId:       m.UserId,
+		Id:           m.ID,
 		UserName:     m.UserName,
 		UserPassword: m.UserPassword,
 		UserEmail:    m.UserEmail,
@@ -37,7 +39,7 @@ func (m *UserAccountModel) ToProto() *protos.UserAccount {
 }
 
 func (m *UserAccountModel) FromProto(p *protos.UserAccount) {
-	m.UserId = p.UserId
+	m.ID = p.Id
 	m.UserName = p.UserName
 	m.UserPassword = p.UserPassword
 	m.UserEmail = p.UserEmail
@@ -49,7 +51,7 @@ func (m *UserAccountModel) GetModel(db *surrealdb.DB) (*protos.UserAccount, erro
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	result, err := db.Select(fmt.Sprintf("UserAccount:%s", m.UserId))
+	result, err := db.Select(fmt.Sprintf("UserAccount:%s", m.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -62,21 +64,76 @@ func (m *UserAccountModel) GetModel(db *surrealdb.DB) (*protos.UserAccount, erro
 	return data.ToProto(), nil
 }
 
+func (m *UserAccountModel) GetModelByWildKey(db *surrealdb.DB) (*protos.UserAccount, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	query := fmt.Sprintf(`
+	SELECT * FROM UserAccount 
+		WHERE UserName = '%s'
+		OR UserEmail = '%s'
+		OR id = '%s';
+	`, m.UserName, m.UserEmail, m.ID)
+
+	result, err := db.Query(query, m)
+	if err != nil {
+		return nil, errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message:", result))
+	}
+
+	var message map[string]interface{}
+	surrealdb.Unmarshal(result, message)
+	if err != nil {
+		fmt.Println("query:", query)
+		pp.Println("message:", message)
+		return nil, errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	}
+
+	var queryResult []QueryResult[UserAccountModel]
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
+	if err != nil {
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		log.Fatalf("error: %v", errorWrap)
+		return nil, errorWrap
+		// return nil, err
+	}
+	// pp.Println("jobs:", jobqueryResult)
+	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+	// pp.Println("jobs:", jobqueryResult[0].Result[0])
+	return queryResult[0].Result[0].ToProto(), nil
+
+}
+
 func (m *UserAccountModel) CreateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
 	// _, err := sd.Create(fmt.Sprintf("UserAccount:%s", m.UserId), m)
 	queryTemplate, _ := template.New("createUserAccount").Parse(`
-INSERT INTO UserAccount  {
-	id: {{.UserId}},
-	UserId       : s"{{.UserId}}",
-	UserName     : s"{{.UserName}}",
-	UserPassword : s"{{.UserPassword}}",
-	UserEmail    : s"{{.UserEmail}}",
-	UserPhone    : s"{{.UserPhone}}",
-	UserAddress  : s"{{.UserAddress}}",
-};
+BEGIN TRANSACTION;
+LET $is_exist = (
+    SELECT id FROM UserAccount 
+    WHERE UserName = $UserName 
+        OR UserEmail = $UserEmail 
+        OR UserPhone = $UserPhone
+);
+
+IF count($is_exist) > 0
+{
+    THROW 'User already exist';
+}
+;
+CREATE UserAccount CONTENT {
+	UserAddress: $UserAddress,
+	UserEmail: $UserEmail,
+	UserName: $UserName,
+	UserPassword: $UserPassword,
+	UserPhone: $UserPhone
+} RETURN id;
+COMMIT TRANSACTION;
 	`)
 	var doc bytes.Buffer
 	var err error
@@ -91,13 +148,28 @@ INSERT INTO UserAccount  {
 	if err != nil {
 		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message:", result))
 	}
-	var message map[string]interface{}
-	surrealdb.Unmarshal(result, message)
+
+	var queryResult []QueryResult[*UserAccountModel]
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
 	if err != nil {
-		fmt.Println("query:", query)
-		pp.Println("message:", message)
-		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		log.Fatalf("error: %v", errorWrap)
+		return errorWrap
+		// return nil, err
 	}
+
+	queryResult = lo.Filter(queryResult, func(x QueryResult[*UserAccountModel], _ int) bool { return x.Result != nil })
+	println(queryResult)
+	// var message map[string]interface{}
+	// surrealdb.Unmarshal(result, message)
+	// if err != nil {
+	// 	fmt.Println("query:", query)
+	// 	pp.Println("message:", message)
+	// 	return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	// }
+
 	return nil
 
 }
@@ -106,7 +178,10 @@ func (m *UserAccountModel) UpdateModel(sd *surrealdb.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Update(fmt.Sprintf("UserAccount:%s", m.UserId), m)
+	if m.ID == "" {
+		return fmt.Errorf("ID is empty")
+	}
+	_, err := sd.Update(fmt.Sprintf("UserAccount:%s", m.ID), m)
 	return err
 }
 
@@ -117,7 +192,6 @@ func (m *UserAccountModel) DefineModel(sd *surrealdb.DB) error {
 	query := `
 DEFINE  TABLE IF NOT EXISTS UserAccount SCHEMAFULL;
 -- Field definition
-	DEFINE FIELD IF NOT EXISTS	UserId 					ON TABLE UserAccount TYPE		string;
 	DEFINE FIELD IF NOT EXISTS	UserName 				ON TABLE UserAccount TYPE		string;
 	DEFINE FIELD IF NOT EXISTS	UserPassword		ON TABLE UserAccount TYPE		string;
 	DEFINE FIELD IF NOT EXISTS	UserEmail 			ON TABLE UserAccount TYPE		string;

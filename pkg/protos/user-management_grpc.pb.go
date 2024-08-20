@@ -19,14 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	UserManagementService_SaveUserAccount_FullMethodName                        = "/job_seek.user_management.UserManagementService/SaveUserAccount"
-	UserManagementService_GetUserAccount_FullMethodName                         = "/job_seek.user_management.UserManagementService/GetUserAccount"
-	UserManagementService_SaveUserSearchPreference_FullMethodName               = "/job_seek.user_management.UserManagementService/SaveUserSearchPreference"
-	UserManagementService_UpdateUserSearchPreference_FullMethodName             = "/job_seek.user_management.UserManagementService/UpdateUserSearchPreference"
-	UserManagementService_GetUserSearchPreference_FullMethodName                = "/job_seek.user_management.UserManagementService/GetUserSearchPreference"
-	UserManagementService_SaveUserJobSearchPredictedPreference_FullMethodName   = "/job_seek.user_management.UserManagementService/SaveUserJobSearchPredictedPreference"
-	UserManagementService_GetUserJobSearchPredictedPreference_FullMethodName    = "/job_seek.user_management.UserManagementService/GetUserJobSearchPredictedPreference"
-	UserManagementService_CreateUserJobSearchPredictedPreference_FullMethodName = "/job_seek.user_management.UserManagementService/CreateUserJobSearchPredictedPreference"
+	UserManagementService_CreateUserAccount_FullMethodName       = "/job_seek.user_management.UserManagementService/CreateUserAccount"
+	UserManagementService_GetUserAccount_FullMethodName          = "/job_seek.user_management.UserManagementService/GetUserAccount"
+	UserManagementService_UpdateUserAccount_FullMethodName       = "/job_seek.user_management.UserManagementService/UpdateUserAccount"
+	UserManagementService_CreateUserProfile_FullMethodName       = "/job_seek.user_management.UserManagementService/CreateUserProfile"
+	UserManagementService_GetUserProfile_FullMethodName          = "/job_seek.user_management.UserManagementService/GetUserProfile"
+	UserManagementService_UpdateUserProfile_FullMethodName       = "/job_seek.user_management.UserManagementService/UpdateUserProfile"
+	UserManagementService_DeleteUserProfile_FullMethodName       = "/job_seek.user_management.UserManagementService/DeleteUserProfile"
+	UserManagementService_ImportUserProfileFromCV_FullMethodName = "/job_seek.user_management.UserManagementService/ImportUserProfileFromCV"
+	UserManagementService_CreateUserCVProfile_FullMethodName     = "/job_seek.user_management.UserManagementService/CreateUserCVProfile"
+	UserManagementService_GetUserCVProfile_FullMethodName        = "/job_seek.user_management.UserManagementService/GetUserCVProfile"
 )
 
 // UserManagementServiceClient is the client API for UserManagementService service.
@@ -34,15 +36,16 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserManagementServiceClient interface {
 	// from user management
-	SaveUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error)
+	CreateUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error)
 	GetUserAccount(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserAccount, error)
-	// store point of user search Preference
-	SaveUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error)
-	UpdateUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error)
-	GetUserSearchPreference(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPreference, error)
-	SaveUserJobSearchPredictedPreference(ctx context.Context, in *UserJobSearchPredictedPreference, opts ...grpc.CallOption) (*PredictedPreferenceResponse, error)
-	GetUserJobSearchPredictedPreference(ctx context.Context, in *GetPredictedPreference, opts ...grpc.CallOption) (*UserJobSearchPredictedPreference, error)
-	CreateUserJobSearchPredictedPreference(ctx context.Context, opts ...grpc.CallOption) (UserManagementService_CreateUserJobSearchPredictedPreferenceClient, error)
+	UpdateUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error)
+	CreateUserProfile(ctx context.Context, in *UserProfile, opts ...grpc.CallOption) (*UserResponse, error)
+	GetUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserProfile, error)
+	UpdateUserProfile(ctx context.Context, in *UserProfile, opts ...grpc.CallOption) (*UserResponse, error)
+	DeleteUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	ImportUserProfileFromCV(ctx context.Context, in *UserCVProfile, opts ...grpc.CallOption) (*UserResponse, error)
+	CreateUserCVProfile(ctx context.Context, in *UserCVProfile, opts ...grpc.CallOption) (*UserResponse, error)
+	GetUserCVProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserCVProfile, error)
 }
 
 type userManagementServiceClient struct {
@@ -53,10 +56,10 @@ func NewUserManagementServiceClient(cc grpc.ClientConnInterface) UserManagementS
 	return &userManagementServiceClient{cc}
 }
 
-func (c *userManagementServiceClient) SaveUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error) {
+func (c *userManagementServiceClient) CreateUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserResponse)
-	err := c.cc.Invoke(ctx, UserManagementService_SaveUserAccount_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UserManagementService_CreateUserAccount_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,86 +76,84 @@ func (c *userManagementServiceClient) GetUserAccount(ctx context.Context, in *Ge
 	return out, nil
 }
 
-func (c *userManagementServiceClient) SaveUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error) {
+func (c *userManagementServiceClient) UpdateUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserResponse)
-	err := c.cc.Invoke(ctx, UserManagementService_SaveUserSearchPreference_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UserManagementService_UpdateUserAccount_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) UpdateUserSearchPreference(ctx context.Context, in *UserSearchPreference, opts ...grpc.CallOption) (*UserResponse, error) {
+func (c *userManagementServiceClient) CreateUserProfile(ctx context.Context, in *UserProfile, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserResponse)
-	err := c.cc.Invoke(ctx, UserManagementService_UpdateUserSearchPreference_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UserManagementService_CreateUserProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) GetUserSearchPreference(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserSearchPreference, error) {
+func (c *userManagementServiceClient) GetUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserProfile, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UserSearchPreference)
-	err := c.cc.Invoke(ctx, UserManagementService_GetUserSearchPreference_FullMethodName, in, out, cOpts...)
+	out := new(UserProfile)
+	err := c.cc.Invoke(ctx, UserManagementService_GetUserProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) SaveUserJobSearchPredictedPreference(ctx context.Context, in *UserJobSearchPredictedPreference, opts ...grpc.CallOption) (*PredictedPreferenceResponse, error) {
+func (c *userManagementServiceClient) UpdateUserProfile(ctx context.Context, in *UserProfile, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PredictedPreferenceResponse)
-	err := c.cc.Invoke(ctx, UserManagementService_SaveUserJobSearchPredictedPreference_FullMethodName, in, out, cOpts...)
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, UserManagementService_UpdateUserProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) GetUserJobSearchPredictedPreference(ctx context.Context, in *GetPredictedPreference, opts ...grpc.CallOption) (*UserJobSearchPredictedPreference, error) {
+func (c *userManagementServiceClient) DeleteUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UserJobSearchPredictedPreference)
-	err := c.cc.Invoke(ctx, UserManagementService_GetUserJobSearchPredictedPreference_FullMethodName, in, out, cOpts...)
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, UserManagementService_DeleteUserProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagementServiceClient) CreateUserJobSearchPredictedPreference(ctx context.Context, opts ...grpc.CallOption) (UserManagementService_CreateUserJobSearchPredictedPreferenceClient, error) {
+func (c *userManagementServiceClient) ImportUserProfileFromCV(ctx context.Context, in *UserCVProfile, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &UserManagementService_ServiceDesc.Streams[0], UserManagementService_CreateUserJobSearchPredictedPreference_FullMethodName, cOpts...)
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, UserManagementService_ImportUserProfileFromCV_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &userManagementServiceCreateUserJobSearchPredictedPreferenceClient{ClientStream: stream}
-	return x, nil
+	return out, nil
 }
 
-type UserManagementService_CreateUserJobSearchPredictedPreferenceClient interface {
-	Send(*UserJobSearchPredictedPreference) error
-	Recv() (*PredictedPreferenceResponse, error)
-	grpc.ClientStream
-}
-
-type userManagementServiceCreateUserJobSearchPredictedPreferenceClient struct {
-	grpc.ClientStream
-}
-
-func (x *userManagementServiceCreateUserJobSearchPredictedPreferenceClient) Send(m *UserJobSearchPredictedPreference) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *userManagementServiceCreateUserJobSearchPredictedPreferenceClient) Recv() (*PredictedPreferenceResponse, error) {
-	m := new(PredictedPreferenceResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+func (c *userManagementServiceClient) CreateUserCVProfile(ctx context.Context, in *UserCVProfile, opts ...grpc.CallOption) (*UserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, UserManagementService_CreateUserCVProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
 		return nil, err
 	}
-	return m, nil
+	return out, nil
+}
+
+func (c *userManagementServiceClient) GetUserCVProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserCVProfile, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserCVProfile)
+	err := c.cc.Invoke(ctx, UserManagementService_GetUserCVProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 // UserManagementServiceServer is the server API for UserManagementService service.
@@ -160,15 +161,16 @@ func (x *userManagementServiceCreateUserJobSearchPredictedPreferenceClient) Recv
 // for forward compatibility
 type UserManagementServiceServer interface {
 	// from user management
-	SaveUserAccount(context.Context, *UserAccount) (*UserResponse, error)
+	CreateUserAccount(context.Context, *UserAccount) (*UserResponse, error)
 	GetUserAccount(context.Context, *GetUserRequest) (*UserAccount, error)
-	// store point of user search Preference
-	SaveUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error)
-	UpdateUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error)
-	GetUserSearchPreference(context.Context, *GetUserRequest) (*UserSearchPreference, error)
-	SaveUserJobSearchPredictedPreference(context.Context, *UserJobSearchPredictedPreference) (*PredictedPreferenceResponse, error)
-	GetUserJobSearchPredictedPreference(context.Context, *GetPredictedPreference) (*UserJobSearchPredictedPreference, error)
-	CreateUserJobSearchPredictedPreference(UserManagementService_CreateUserJobSearchPredictedPreferenceServer) error
+	UpdateUserAccount(context.Context, *UserAccount) (*UserResponse, error)
+	CreateUserProfile(context.Context, *UserProfile) (*UserResponse, error)
+	GetUserProfile(context.Context, *GetUserRequest) (*UserProfile, error)
+	UpdateUserProfile(context.Context, *UserProfile) (*UserResponse, error)
+	DeleteUserProfile(context.Context, *GetUserRequest) (*UserResponse, error)
+	ImportUserProfileFromCV(context.Context, *UserCVProfile) (*UserResponse, error)
+	CreateUserCVProfile(context.Context, *UserCVProfile) (*UserResponse, error)
+	GetUserCVProfile(context.Context, *GetUserRequest) (*UserCVProfile, error)
 	mustEmbedUnimplementedUserManagementServiceServer()
 }
 
@@ -176,29 +178,35 @@ type UserManagementServiceServer interface {
 type UnimplementedUserManagementServiceServer struct {
 }
 
-func (UnimplementedUserManagementServiceServer) SaveUserAccount(context.Context, *UserAccount) (*UserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveUserAccount not implemented")
+func (UnimplementedUserManagementServiceServer) CreateUserAccount(context.Context, *UserAccount) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUserAccount not implemented")
 }
 func (UnimplementedUserManagementServiceServer) GetUserAccount(context.Context, *GetUserRequest) (*UserAccount, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserAccount not implemented")
 }
-func (UnimplementedUserManagementServiceServer) SaveUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveUserSearchPreference not implemented")
+func (UnimplementedUserManagementServiceServer) UpdateUserAccount(context.Context, *UserAccount) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserAccount not implemented")
 }
-func (UnimplementedUserManagementServiceServer) UpdateUserSearchPreference(context.Context, *UserSearchPreference) (*UserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserSearchPreference not implemented")
+func (UnimplementedUserManagementServiceServer) CreateUserProfile(context.Context, *UserProfile) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUserProfile not implemented")
 }
-func (UnimplementedUserManagementServiceServer) GetUserSearchPreference(context.Context, *GetUserRequest) (*UserSearchPreference, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserSearchPreference not implemented")
+func (UnimplementedUserManagementServiceServer) GetUserProfile(context.Context, *GetUserRequest) (*UserProfile, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserProfile not implemented")
 }
-func (UnimplementedUserManagementServiceServer) SaveUserJobSearchPredictedPreference(context.Context, *UserJobSearchPredictedPreference) (*PredictedPreferenceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveUserJobSearchPredictedPreference not implemented")
+func (UnimplementedUserManagementServiceServer) UpdateUserProfile(context.Context, *UserProfile) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserProfile not implemented")
 }
-func (UnimplementedUserManagementServiceServer) GetUserJobSearchPredictedPreference(context.Context, *GetPredictedPreference) (*UserJobSearchPredictedPreference, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserJobSearchPredictedPreference not implemented")
+func (UnimplementedUserManagementServiceServer) DeleteUserProfile(context.Context, *GetUserRequest) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserProfile not implemented")
 }
-func (UnimplementedUserManagementServiceServer) CreateUserJobSearchPredictedPreference(UserManagementService_CreateUserJobSearchPredictedPreferenceServer) error {
-	return status.Errorf(codes.Unimplemented, "method CreateUserJobSearchPredictedPreference not implemented")
+func (UnimplementedUserManagementServiceServer) ImportUserProfileFromCV(context.Context, *UserCVProfile) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImportUserProfileFromCV not implemented")
+}
+func (UnimplementedUserManagementServiceServer) CreateUserCVProfile(context.Context, *UserCVProfile) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUserCVProfile not implemented")
+}
+func (UnimplementedUserManagementServiceServer) GetUserCVProfile(context.Context, *GetUserRequest) (*UserCVProfile, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserCVProfile not implemented")
 }
 func (UnimplementedUserManagementServiceServer) mustEmbedUnimplementedUserManagementServiceServer() {}
 
@@ -213,20 +221,20 @@ func RegisterUserManagementServiceServer(s grpc.ServiceRegistrar, srv UserManage
 	s.RegisterService(&UserManagementService_ServiceDesc, srv)
 }
 
-func _UserManagementService_SaveUserAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UserManagementService_CreateUserAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UserAccount)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).SaveUserAccount(ctx, in)
+		return srv.(UserManagementServiceServer).CreateUserAccount(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_SaveUserAccount_FullMethodName,
+		FullMethod: UserManagementService_CreateUserAccount_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).SaveUserAccount(ctx, req.(*UserAccount))
+		return srv.(UserManagementServiceServer).CreateUserAccount(ctx, req.(*UserAccount))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -249,120 +257,148 @@ func _UserManagementService_GetUserAccount_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_SaveUserSearchPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserSearchPreference)
+func _UserManagementService_UpdateUserAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserAccount)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).SaveUserSearchPreference(ctx, in)
+		return srv.(UserManagementServiceServer).UpdateUserAccount(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_SaveUserSearchPreference_FullMethodName,
+		FullMethod: UserManagementService_UpdateUserAccount_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).SaveUserSearchPreference(ctx, req.(*UserSearchPreference))
+		return srv.(UserManagementServiceServer).UpdateUserAccount(ctx, req.(*UserAccount))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_UpdateUserSearchPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserSearchPreference)
+func _UserManagementService_CreateUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserProfile)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).UpdateUserSearchPreference(ctx, in)
+		return srv.(UserManagementServiceServer).CreateUserProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_UpdateUserSearchPreference_FullMethodName,
+		FullMethod: UserManagementService_CreateUserProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).UpdateUserSearchPreference(ctx, req.(*UserSearchPreference))
+		return srv.(UserManagementServiceServer).CreateUserProfile(ctx, req.(*UserProfile))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_GetUserSearchPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UserManagementService_GetUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).GetUserSearchPreference(ctx, in)
+		return srv.(UserManagementServiceServer).GetUserProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_GetUserSearchPreference_FullMethodName,
+		FullMethod: UserManagementService_GetUserProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).GetUserSearchPreference(ctx, req.(*GetUserRequest))
+		return srv.(UserManagementServiceServer).GetUserProfile(ctx, req.(*GetUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_SaveUserJobSearchPredictedPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserJobSearchPredictedPreference)
+func _UserManagementService_UpdateUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserProfile)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).SaveUserJobSearchPredictedPreference(ctx, in)
+		return srv.(UserManagementServiceServer).UpdateUserProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_SaveUserJobSearchPredictedPreference_FullMethodName,
+		FullMethod: UserManagementService_UpdateUserProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).SaveUserJobSearchPredictedPreference(ctx, req.(*UserJobSearchPredictedPreference))
+		return srv.(UserManagementServiceServer).UpdateUserProfile(ctx, req.(*UserProfile))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_GetUserJobSearchPredictedPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPredictedPreference)
+func _UserManagementService_DeleteUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserManagementServiceServer).GetUserJobSearchPredictedPreference(ctx, in)
+		return srv.(UserManagementServiceServer).DeleteUserProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserManagementService_GetUserJobSearchPredictedPreference_FullMethodName,
+		FullMethod: UserManagementService_DeleteUserProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).GetUserJobSearchPredictedPreference(ctx, req.(*GetPredictedPreference))
+		return srv.(UserManagementServiceServer).DeleteUserProfile(ctx, req.(*GetUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserManagementService_CreateUserJobSearchPredictedPreference_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(UserManagementServiceServer).CreateUserJobSearchPredictedPreference(&userManagementServiceCreateUserJobSearchPredictedPreferenceServer{ServerStream: stream})
-}
-
-type UserManagementService_CreateUserJobSearchPredictedPreferenceServer interface {
-	Send(*PredictedPreferenceResponse) error
-	Recv() (*UserJobSearchPredictedPreference, error)
-	grpc.ServerStream
-}
-
-type userManagementServiceCreateUserJobSearchPredictedPreferenceServer struct {
-	grpc.ServerStream
-}
-
-func (x *userManagementServiceCreateUserJobSearchPredictedPreferenceServer) Send(m *PredictedPreferenceResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *userManagementServiceCreateUserJobSearchPredictedPreferenceServer) Recv() (*UserJobSearchPredictedPreference, error) {
-	m := new(UserJobSearchPredictedPreference)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _UserManagementService_ImportUserProfileFromCV_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserCVProfile)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(UserManagementServiceServer).ImportUserProfileFromCV(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserManagementService_ImportUserProfileFromCV_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserManagementServiceServer).ImportUserProfileFromCV(ctx, req.(*UserCVProfile))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserManagementService_CreateUserCVProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserCVProfile)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserManagementServiceServer).CreateUserCVProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserManagementService_CreateUserCVProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserManagementServiceServer).CreateUserCVProfile(ctx, req.(*UserCVProfile))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserManagementService_GetUserCVProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserManagementServiceServer).GetUserCVProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserManagementService_GetUserCVProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserManagementServiceServer).GetUserCVProfile(ctx, req.(*GetUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // UserManagementService_ServiceDesc is the grpc.ServiceDesc for UserManagementService service.
@@ -373,41 +409,46 @@ var UserManagementService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UserManagementServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SaveUserAccount",
-			Handler:    _UserManagementService_SaveUserAccount_Handler,
+			MethodName: "CreateUserAccount",
+			Handler:    _UserManagementService_CreateUserAccount_Handler,
 		},
 		{
 			MethodName: "GetUserAccount",
 			Handler:    _UserManagementService_GetUserAccount_Handler,
 		},
 		{
-			MethodName: "SaveUserSearchPreference",
-			Handler:    _UserManagementService_SaveUserSearchPreference_Handler,
+			MethodName: "UpdateUserAccount",
+			Handler:    _UserManagementService_UpdateUserAccount_Handler,
 		},
 		{
-			MethodName: "UpdateUserSearchPreference",
-			Handler:    _UserManagementService_UpdateUserSearchPreference_Handler,
+			MethodName: "CreateUserProfile",
+			Handler:    _UserManagementService_CreateUserProfile_Handler,
 		},
 		{
-			MethodName: "GetUserSearchPreference",
-			Handler:    _UserManagementService_GetUserSearchPreference_Handler,
+			MethodName: "GetUserProfile",
+			Handler:    _UserManagementService_GetUserProfile_Handler,
 		},
 		{
-			MethodName: "SaveUserJobSearchPredictedPreference",
-			Handler:    _UserManagementService_SaveUserJobSearchPredictedPreference_Handler,
+			MethodName: "UpdateUserProfile",
+			Handler:    _UserManagementService_UpdateUserProfile_Handler,
 		},
 		{
-			MethodName: "GetUserJobSearchPredictedPreference",
-			Handler:    _UserManagementService_GetUserJobSearchPredictedPreference_Handler,
+			MethodName: "DeleteUserProfile",
+			Handler:    _UserManagementService_DeleteUserProfile_Handler,
+		},
+		{
+			MethodName: "ImportUserProfileFromCV",
+			Handler:    _UserManagementService_ImportUserProfileFromCV_Handler,
+		},
+		{
+			MethodName: "CreateUserCVProfile",
+			Handler:    _UserManagementService_CreateUserCVProfile_Handler,
+		},
+		{
+			MethodName: "GetUserCVProfile",
+			Handler:    _UserManagementService_GetUserCVProfile_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "CreateUserJobSearchPredictedPreference",
-			Handler:       _UserManagementService_CreateUserJobSearchPredictedPreference_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "user-management.proto",
 }

@@ -19,20 +19,29 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	PredictionService_UnaryServerUnaryClient_FullMethodName   = "/job_seek.prediction.PredictionService/UnaryServerUnaryClient"
-	PredictionService_StreamServerUnaryClient_FullMethodName  = "/job_seek.prediction.PredictionService/StreamServerUnaryClient"
-	PredictionService_UnaryServerStreamClient_FullMethodName  = "/job_seek.prediction.PredictionService/UnaryServerStreamClient"
-	PredictionService_StreamServerStreamClient_FullMethodName = "/job_seek.prediction.PredictionService/StreamServerStreamClient"
+	PredictionService_SurveyUserPerfence_FullMethodName         = "/job_seek.prediction.PredictionService/SurveyUserPerfence"
+	PredictionService_GetSurveyJob_FullMethodName               = "/job_seek.prediction.PredictionService/GetSurveyJob"
+	PredictionService_SurveyJobPerfence_FullMethodName          = "/job_seek.prediction.PredictionService/SurveyJobPerfence"
+	PredictionService_PredictJobMatchScore_FullMethodName       = "/job_seek.prediction.PredictionService/PredictJobMatchScore"
+	PredictionService_ExtractJobKeywords_FullMethodName         = "/job_seek.prediction.PredictionService/ExtractJobKeywords"
+	PredictionService_ExtractUserProfileKeywords_FullMethodName = "/job_seek.prediction.PredictionService/ExtractUserProfileKeywords"
+	PredictionService_GenerateCoverLetter_FullMethodName        = "/job_seek.prediction.PredictionService/GenerateCoverLetter"
+	PredictionService_GenerateCV_FullMethodName                 = "/job_seek.prediction.PredictionService/GenerateCV"
 )
 
 // PredictionServiceClient is the client API for PredictionService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PredictionServiceClient interface {
-	UnaryServerUnaryClient(ctx context.Context, in *Simple, opts ...grpc.CallOption) (*Simple, error)
-	StreamServerUnaryClient(ctx context.Context, in *Simple, opts ...grpc.CallOption) (PredictionService_StreamServerUnaryClientClient, error)
-	UnaryServerStreamClient(ctx context.Context, opts ...grpc.CallOption) (PredictionService_UnaryServerStreamClientClient, error)
-	StreamServerStreamClient(ctx context.Context, opts ...grpc.CallOption) (PredictionService_StreamServerStreamClientClient, error)
+	// rpc SurveyUserPersona() returns (UserResponse);
+	SurveyUserPerfence(ctx context.Context, in *SurveyUserPerfenceRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	GetSurveyJob(ctx context.Context, in *GetSurveyJobRequest, opts ...grpc.CallOption) (*GetSurveyJobResponse, error)
+	SurveyJobPerfence(ctx context.Context, in *SurveyJobPerfenceRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	PredictJobMatchScore(ctx context.Context, in *JobMatchScore, opts ...grpc.CallOption) (*JobMatchScore, error)
+	ExtractJobKeywords(ctx context.Context, in *ExtractKeywords, opts ...grpc.CallOption) (*ExtractKeywords, error)
+	ExtractUserProfileKeywords(ctx context.Context, in *ExtractKeywords, opts ...grpc.CallOption) (*ExtractKeywords, error)
+	GenerateCoverLetter(ctx context.Context, in *GenerateCoverLetterRequest, opts ...grpc.CallOption) (*GenerateCoverLetterResponse, error)
+	GenerateCV(ctx context.Context, in *GenerateCoverLetterRequest, opts ...grpc.CallOption) (*GenerateCoverLetterResponse, error)
 }
 
 type predictionServiceClient struct {
@@ -43,124 +52,99 @@ func NewPredictionServiceClient(cc grpc.ClientConnInterface) PredictionServiceCl
 	return &predictionServiceClient{cc}
 }
 
-func (c *predictionServiceClient) UnaryServerUnaryClient(ctx context.Context, in *Simple, opts ...grpc.CallOption) (*Simple, error) {
+func (c *predictionServiceClient) SurveyUserPerfence(ctx context.Context, in *SurveyUserPerfenceRequest, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Simple)
-	err := c.cc.Invoke(ctx, PredictionService_UnaryServerUnaryClient_FullMethodName, in, out, cOpts...)
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, PredictionService_SurveyUserPerfence_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *predictionServiceClient) StreamServerUnaryClient(ctx context.Context, in *Simple, opts ...grpc.CallOption) (PredictionService_StreamServerUnaryClientClient, error) {
+func (c *predictionServiceClient) GetSurveyJob(ctx context.Context, in *GetSurveyJobRequest, opts ...grpc.CallOption) (*GetSurveyJobResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &PredictionService_ServiceDesc.Streams[0], PredictionService_StreamServerUnaryClient_FullMethodName, cOpts...)
+	out := new(GetSurveyJobResponse)
+	err := c.cc.Invoke(ctx, PredictionService_GetSurveyJob_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &predictionServiceStreamServerUnaryClientClient{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-type PredictionService_StreamServerUnaryClientClient interface {
-	Recv() (*Simple, error)
-	grpc.ClientStream
-}
-
-type predictionServiceStreamServerUnaryClientClient struct {
-	grpc.ClientStream
-}
-
-func (x *predictionServiceStreamServerUnaryClientClient) Recv() (*Simple, error) {
-	m := new(Simple)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *predictionServiceClient) UnaryServerStreamClient(ctx context.Context, opts ...grpc.CallOption) (PredictionService_UnaryServerStreamClientClient, error) {
+func (c *predictionServiceClient) SurveyJobPerfence(ctx context.Context, in *SurveyJobPerfenceRequest, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &PredictionService_ServiceDesc.Streams[1], PredictionService_UnaryServerStreamClient_FullMethodName, cOpts...)
+	out := new(UserResponse)
+	err := c.cc.Invoke(ctx, PredictionService_SurveyJobPerfence_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &predictionServiceUnaryServerStreamClientClient{ClientStream: stream}
-	return x, nil
+	return out, nil
 }
 
-type PredictionService_UnaryServerStreamClientClient interface {
-	Send(*Simple) error
-	CloseAndRecv() (*Simple, error)
-	grpc.ClientStream
-}
-
-type predictionServiceUnaryServerStreamClientClient struct {
-	grpc.ClientStream
-}
-
-func (x *predictionServiceUnaryServerStreamClientClient) Send(m *Simple) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *predictionServiceUnaryServerStreamClientClient) CloseAndRecv() (*Simple, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(Simple)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *predictionServiceClient) StreamServerStreamClient(ctx context.Context, opts ...grpc.CallOption) (PredictionService_StreamServerStreamClientClient, error) {
+func (c *predictionServiceClient) PredictJobMatchScore(ctx context.Context, in *JobMatchScore, opts ...grpc.CallOption) (*JobMatchScore, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &PredictionService_ServiceDesc.Streams[2], PredictionService_StreamServerStreamClient_FullMethodName, cOpts...)
+	out := new(JobMatchScore)
+	err := c.cc.Invoke(ctx, PredictionService_PredictJobMatchScore_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &predictionServiceStreamServerStreamClientClient{ClientStream: stream}
-	return x, nil
+	return out, nil
 }
 
-type PredictionService_StreamServerStreamClientClient interface {
-	Send(*Simple) error
-	Recv() (*Simple, error)
-	grpc.ClientStream
-}
-
-type predictionServiceStreamServerStreamClientClient struct {
-	grpc.ClientStream
-}
-
-func (x *predictionServiceStreamServerStreamClientClient) Send(m *Simple) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *predictionServiceStreamServerStreamClientClient) Recv() (*Simple, error) {
-	m := new(Simple)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+func (c *predictionServiceClient) ExtractJobKeywords(ctx context.Context, in *ExtractKeywords, opts ...grpc.CallOption) (*ExtractKeywords, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ExtractKeywords)
+	err := c.cc.Invoke(ctx, PredictionService_ExtractJobKeywords_FullMethodName, in, out, cOpts...)
+	if err != nil {
 		return nil, err
 	}
-	return m, nil
+	return out, nil
+}
+
+func (c *predictionServiceClient) ExtractUserProfileKeywords(ctx context.Context, in *ExtractKeywords, opts ...grpc.CallOption) (*ExtractKeywords, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ExtractKeywords)
+	err := c.cc.Invoke(ctx, PredictionService_ExtractUserProfileKeywords_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *predictionServiceClient) GenerateCoverLetter(ctx context.Context, in *GenerateCoverLetterRequest, opts ...grpc.CallOption) (*GenerateCoverLetterResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenerateCoverLetterResponse)
+	err := c.cc.Invoke(ctx, PredictionService_GenerateCoverLetter_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *predictionServiceClient) GenerateCV(ctx context.Context, in *GenerateCoverLetterRequest, opts ...grpc.CallOption) (*GenerateCoverLetterResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenerateCoverLetterResponse)
+	err := c.cc.Invoke(ctx, PredictionService_GenerateCV_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 // PredictionServiceServer is the server API for PredictionService service.
 // All implementations must embed UnimplementedPredictionServiceServer
 // for forward compatibility
 type PredictionServiceServer interface {
-	UnaryServerUnaryClient(context.Context, *Simple) (*Simple, error)
-	StreamServerUnaryClient(*Simple, PredictionService_StreamServerUnaryClientServer) error
-	UnaryServerStreamClient(PredictionService_UnaryServerStreamClientServer) error
-	StreamServerStreamClient(PredictionService_StreamServerStreamClientServer) error
+	// rpc SurveyUserPersona() returns (UserResponse);
+	SurveyUserPerfence(context.Context, *SurveyUserPerfenceRequest) (*UserResponse, error)
+	GetSurveyJob(context.Context, *GetSurveyJobRequest) (*GetSurveyJobResponse, error)
+	SurveyJobPerfence(context.Context, *SurveyJobPerfenceRequest) (*UserResponse, error)
+	PredictJobMatchScore(context.Context, *JobMatchScore) (*JobMatchScore, error)
+	ExtractJobKeywords(context.Context, *ExtractKeywords) (*ExtractKeywords, error)
+	ExtractUserProfileKeywords(context.Context, *ExtractKeywords) (*ExtractKeywords, error)
+	GenerateCoverLetter(context.Context, *GenerateCoverLetterRequest) (*GenerateCoverLetterResponse, error)
+	GenerateCV(context.Context, *GenerateCoverLetterRequest) (*GenerateCoverLetterResponse, error)
 	mustEmbedUnimplementedPredictionServiceServer()
 }
 
@@ -168,17 +152,29 @@ type PredictionServiceServer interface {
 type UnimplementedPredictionServiceServer struct {
 }
 
-func (UnimplementedPredictionServiceServer) UnaryServerUnaryClient(context.Context, *Simple) (*Simple, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnaryServerUnaryClient not implemented")
+func (UnimplementedPredictionServiceServer) SurveyUserPerfence(context.Context, *SurveyUserPerfenceRequest) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SurveyUserPerfence not implemented")
 }
-func (UnimplementedPredictionServiceServer) StreamServerUnaryClient(*Simple, PredictionService_StreamServerUnaryClientServer) error {
-	return status.Errorf(codes.Unimplemented, "method StreamServerUnaryClient not implemented")
+func (UnimplementedPredictionServiceServer) GetSurveyJob(context.Context, *GetSurveyJobRequest) (*GetSurveyJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSurveyJob not implemented")
 }
-func (UnimplementedPredictionServiceServer) UnaryServerStreamClient(PredictionService_UnaryServerStreamClientServer) error {
-	return status.Errorf(codes.Unimplemented, "method UnaryServerStreamClient not implemented")
+func (UnimplementedPredictionServiceServer) SurveyJobPerfence(context.Context, *SurveyJobPerfenceRequest) (*UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SurveyJobPerfence not implemented")
 }
-func (UnimplementedPredictionServiceServer) StreamServerStreamClient(PredictionService_StreamServerStreamClientServer) error {
-	return status.Errorf(codes.Unimplemented, "method StreamServerStreamClient not implemented")
+func (UnimplementedPredictionServiceServer) PredictJobMatchScore(context.Context, *JobMatchScore) (*JobMatchScore, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PredictJobMatchScore not implemented")
+}
+func (UnimplementedPredictionServiceServer) ExtractJobKeywords(context.Context, *ExtractKeywords) (*ExtractKeywords, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExtractJobKeywords not implemented")
+}
+func (UnimplementedPredictionServiceServer) ExtractUserProfileKeywords(context.Context, *ExtractKeywords) (*ExtractKeywords, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExtractUserProfileKeywords not implemented")
+}
+func (UnimplementedPredictionServiceServer) GenerateCoverLetter(context.Context, *GenerateCoverLetterRequest) (*GenerateCoverLetterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateCoverLetter not implemented")
+}
+func (UnimplementedPredictionServiceServer) GenerateCV(context.Context, *GenerateCoverLetterRequest) (*GenerateCoverLetterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateCV not implemented")
 }
 func (UnimplementedPredictionServiceServer) mustEmbedUnimplementedPredictionServiceServer() {}
 
@@ -193,95 +189,148 @@ func RegisterPredictionServiceServer(s grpc.ServiceRegistrar, srv PredictionServ
 	s.RegisterService(&PredictionService_ServiceDesc, srv)
 }
 
-func _PredictionService_UnaryServerUnaryClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Simple)
+func _PredictionService_SurveyUserPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SurveyUserPerfenceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PredictionServiceServer).UnaryServerUnaryClient(ctx, in)
+		return srv.(PredictionServiceServer).SurveyUserPerfence(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PredictionService_UnaryServerUnaryClient_FullMethodName,
+		FullMethod: PredictionService_SurveyUserPerfence_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PredictionServiceServer).UnaryServerUnaryClient(ctx, req.(*Simple))
+		return srv.(PredictionServiceServer).SurveyUserPerfence(ctx, req.(*SurveyUserPerfenceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PredictionService_StreamServerUnaryClient_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Simple)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(PredictionServiceServer).StreamServerUnaryClient(m, &predictionServiceStreamServerUnaryClientServer{ServerStream: stream})
-}
-
-type PredictionService_StreamServerUnaryClientServer interface {
-	Send(*Simple) error
-	grpc.ServerStream
-}
-
-type predictionServiceStreamServerUnaryClientServer struct {
-	grpc.ServerStream
-}
-
-func (x *predictionServiceStreamServerUnaryClientServer) Send(m *Simple) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _PredictionService_UnaryServerStreamClient_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(PredictionServiceServer).UnaryServerStreamClient(&predictionServiceUnaryServerStreamClientServer{ServerStream: stream})
-}
-
-type PredictionService_UnaryServerStreamClientServer interface {
-	SendAndClose(*Simple) error
-	Recv() (*Simple, error)
-	grpc.ServerStream
-}
-
-type predictionServiceUnaryServerStreamClientServer struct {
-	grpc.ServerStream
-}
-
-func (x *predictionServiceUnaryServerStreamClientServer) SendAndClose(m *Simple) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *predictionServiceUnaryServerStreamClientServer) Recv() (*Simple, error) {
-	m := new(Simple)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _PredictionService_GetSurveyJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSurveyJobRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(PredictionServiceServer).GetSurveyJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PredictionService_GetSurveyJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PredictionServiceServer).GetSurveyJob(ctx, req.(*GetSurveyJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _PredictionService_StreamServerStreamClient_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(PredictionServiceServer).StreamServerStreamClient(&predictionServiceStreamServerStreamClientServer{ServerStream: stream})
-}
-
-type PredictionService_StreamServerStreamClientServer interface {
-	Send(*Simple) error
-	Recv() (*Simple, error)
-	grpc.ServerStream
-}
-
-type predictionServiceStreamServerStreamClientServer struct {
-	grpc.ServerStream
-}
-
-func (x *predictionServiceStreamServerStreamClientServer) Send(m *Simple) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *predictionServiceStreamServerStreamClientServer) Recv() (*Simple, error) {
-	m := new(Simple)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _PredictionService_SurveyJobPerfence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SurveyJobPerfenceRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(PredictionServiceServer).SurveyJobPerfence(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PredictionService_SurveyJobPerfence_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PredictionServiceServer).SurveyJobPerfence(ctx, req.(*SurveyJobPerfenceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PredictionService_PredictJobMatchScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobMatchScore)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PredictionServiceServer).PredictJobMatchScore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PredictionService_PredictJobMatchScore_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PredictionServiceServer).PredictJobMatchScore(ctx, req.(*JobMatchScore))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PredictionService_ExtractJobKeywords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExtractKeywords)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PredictionServiceServer).ExtractJobKeywords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PredictionService_ExtractJobKeywords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PredictionServiceServer).ExtractJobKeywords(ctx, req.(*ExtractKeywords))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PredictionService_ExtractUserProfileKeywords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExtractKeywords)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PredictionServiceServer).ExtractUserProfileKeywords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PredictionService_ExtractUserProfileKeywords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PredictionServiceServer).ExtractUserProfileKeywords(ctx, req.(*ExtractKeywords))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PredictionService_GenerateCoverLetter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateCoverLetterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PredictionServiceServer).GenerateCoverLetter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PredictionService_GenerateCoverLetter_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PredictionServiceServer).GenerateCoverLetter(ctx, req.(*GenerateCoverLetterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PredictionService_GenerateCV_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateCoverLetterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PredictionServiceServer).GenerateCV(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PredictionService_GenerateCV_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PredictionServiceServer).GenerateCV(ctx, req.(*GenerateCoverLetterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // PredictionService_ServiceDesc is the grpc.ServiceDesc for PredictionService service.
@@ -292,27 +341,38 @@ var PredictionService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PredictionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "UnaryServerUnaryClient",
-			Handler:    _PredictionService_UnaryServerUnaryClient_Handler,
+			MethodName: "SurveyUserPerfence",
+			Handler:    _PredictionService_SurveyUserPerfence_Handler,
+		},
+		{
+			MethodName: "GetSurveyJob",
+			Handler:    _PredictionService_GetSurveyJob_Handler,
+		},
+		{
+			MethodName: "SurveyJobPerfence",
+			Handler:    _PredictionService_SurveyJobPerfence_Handler,
+		},
+		{
+			MethodName: "PredictJobMatchScore",
+			Handler:    _PredictionService_PredictJobMatchScore_Handler,
+		},
+		{
+			MethodName: "ExtractJobKeywords",
+			Handler:    _PredictionService_ExtractJobKeywords_Handler,
+		},
+		{
+			MethodName: "ExtractUserProfileKeywords",
+			Handler:    _PredictionService_ExtractUserProfileKeywords_Handler,
+		},
+		{
+			MethodName: "GenerateCoverLetter",
+			Handler:    _PredictionService_GenerateCoverLetter_Handler,
+		},
+		{
+			MethodName: "GenerateCV",
+			Handler:    _PredictionService_GenerateCV_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "StreamServerUnaryClient",
-			Handler:       _PredictionService_StreamServerUnaryClient_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "UnaryServerStreamClient",
-			Handler:       _PredictionService_UnaryServerStreamClient_Handler,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "StreamServerStreamClient",
-			Handler:       _PredictionService_StreamServerStreamClient_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "prediction.proto",
 }

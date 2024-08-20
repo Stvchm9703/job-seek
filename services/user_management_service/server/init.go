@@ -2,12 +2,14 @@ package server
 
 import (
 	"fmt"
+	"job-seek/pkg/database"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/service_util"
 	runConf "job-seek/services/user_management_service/config"
 	"sync"
 
 	logrus "github.com/sirupsen/logrus"
+	surrealdb "github.com/surrealdb/surrealdb.go"
 
 	"net"
 
@@ -20,7 +22,7 @@ type UserManagementServiceServerImpl struct {
 	config *runConf.ServiceConfig
 
 	mut      *sync.Mutex
-
+	dbClient *surrealdb.DB
 	// other implement here
 }
 
@@ -31,10 +33,19 @@ func (s UserManagementServiceServerImpl) Startup() error {
 
 func (s UserManagementServiceServerImpl) Shutdown() error {
 	s.log.Info("Shutdown")
+
+	s.log.Info("Closing database connection")
+	if s.dbClient != nil {
+		s.dbClient.Close()
+	} else {
+		s.log.Warn("Database connection is nil pointer, check the memmory leak")
+	}
+	s.log.Info("Database connection closed")
+
 	return nil
 }
 
-func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) *grpc.Server {
+func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) (*grpc.Server, *UserManagementServiceServerImpl) {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.Host, config.Port))
 	if err != nil {
@@ -42,12 +53,8 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) *grpc.Ser
 	}
 	opt := service_util.CreateGrpcServerOption(&config.Server, log)
 	grpcServer := grpc.NewServer(opt...)
-	ssi := UserManagementServiceServerImpl{
-		mut:      &sync.Mutex{},
-		log:      log,
-		config:   config,
-	}
-	protos.RegisterJobSearchServiceServer(grpcServer, ssi)
+	ssi := InitService(config, log)
+	protos.RegisterUserManagementServiceServer(grpcServer, ssi)
 
 	go func() {
 		log.Printf("server listening at %v", lis.Addr())
@@ -56,6 +63,27 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) *grpc.Ser
 		}
 	}()
 	service_util.BeforeGracefulStop(grpcServer, ssi.Shutdown, log)
-	return grpcServer
+	return grpcServer, &ssi
 
+}
+
+func InitService(config *runConf.ServiceConfig, log *logrus.Logger) UserManagementServiceServerImpl {
+	dbClient, err := database.InitConnection(&config.SurrealDBService, "development")
+	log.Info("Connecting to database")
+	if err != nil {
+		log.WithFields(map[string]interface{}{
+			"error": err,
+			"host":  config.SurrealDBService.Host,
+		}).Fatal("Failed to connect to database in InitService")
+	}
+	log.Info("Connected to database")
+
+	ssi := UserManagementServiceServerImpl{
+		mut:      &sync.Mutex{},
+		log:      log,
+		config:   config,
+		dbClient: dbClient,
+	}
+	ssi.Startup()
+	return ssi
 }

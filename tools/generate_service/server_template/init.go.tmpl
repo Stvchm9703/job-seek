@@ -2,10 +2,13 @@ package server
 
 import (
 	"fmt"
+	"job-seek/pkg/database"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/service_util"
-	runConf "job-seek/services/{{.ServicePathName}}/config"
+	runConf "job-seek/services/job_search_service/config"
 	"sync"
+
+	surrealdb "github.com/surrealdb/surrealdb.go"
 
 	logrus "github.com/sirupsen/logrus"
 
@@ -20,7 +23,7 @@ type {{.ServiceName}}ServerImpl struct {
 	config *runConf.ServiceConfig
 
 	mut      *sync.Mutex
-
+	dbClient *surrealdb.DB
 	// other implement here
 }
 
@@ -34,7 +37,7 @@ func (s {{.ServiceName}}ServerImpl) Shutdown() error {
 	return nil
 }
 
-func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) *grpc.Server {
+func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) (*grpc.Server, *{{.ServiceName}}ServiceServerImpl) {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.Host, config.Port))
 	if err != nil {
@@ -42,12 +45,8 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) *grpc.Ser
 	}
 	opt := service_util.CreateGrpcServerOption(&config.Server, log)
 	grpcServer := grpc.NewServer(opt...)
-	ssi := {{.ServiceName}}ServerImpl{
-		mut:      &sync.Mutex{},
-		log:      log,
-		config:   config,
-	}
-	protos.RegisterJobSearchServiceServer(grpcServer, ssi)
+	ssi := InitService(config, log)
+	protos.Register{{.ServiceName}}ServiceServer(grpcServer, ssi)
 
 	go func() {
 		log.Printf("server listening at %v", lis.Addr())
@@ -56,6 +55,29 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) *grpc.Ser
 		}
 	}()
 	service_util.BeforeGracefulStop(grpcServer, ssi.Shutdown, log)
-	return grpcServer
+	return grpcServer, &ssi
 
+}
+
+
+
+func InitService(config *runConf.ServiceConfig, log *logrus.Logger) {{.ServiceName}}ServiceServerImpl {
+	dbClient, err := database.InitConnection(&config.SurrealDBService, "development")
+	log.Info("Connecting to database")
+	if err != nil {
+		log.WithFields(map[string]interface{}{
+			"error": err,
+			"host":  config.SurrealDBService.Host,
+		}).Fatal("Failed to connect to database in InitService")
+	}
+	log.Info("Connected to database")
+
+	ssi := JobSearchServiceServerImpl{
+		mut:      &sync.Mutex{},
+		log:      log,
+		config:   config,
+		dbClient: dbClient,
+	}
+	ssi.Startup()
+	return ssi
 }

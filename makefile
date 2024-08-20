@@ -10,7 +10,7 @@ generate-go-proto:
 
 sync-proto:
 	# cp -r pkg/protos/*.proto $(rust_dir)/packages/protos/defines/
-	cp -r pkg/protos/*.proto $(python_dir)/protos/
+	cp -r pkg/protos/*.proto $(python_dir)/app/libs/protos/
 
 check-rust-protos:
 	cd $(rust_dir)/packages/protos && \
@@ -20,7 +20,7 @@ check-rust-protos:
 generate-proto: \
 	generate-go-proto \
 	sync-proto \
-	check-rust-protos
+	# check-rust-protos
 
 build-job-search-service:
 	go build -o bin/job-search-service services/job-search-service/main.go
@@ -30,4 +30,4 @@ build-service:\
 	build-job-search-service
 
 tool-generate-service-template:
-	go run tools/generate-service-template/main.g
+	go run tools/generate-service-template/main.go

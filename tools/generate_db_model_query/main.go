@@ -180,9 +180,9 @@ func generateSurrealQueryModel(message parser.Message) string {
 }
 
 func generateSurrealQueryModelToProtos(message parser.Message) string {
-	var funcDefined string = fmt.Sprintf("func(m *%sModel) ToProto() protos.%s {\n", message.MessageName, message.MessageName)
+	var funcDefined string = fmt.Sprintf("func(m *%sModel) ToProto() *protos.%s {\n", message.MessageName, message.MessageName)
 
-	funcDefined += fmt.Sprintf("return protos.%s{\n", message.MessageName)
+	funcDefined += fmt.Sprintf("return &protos.%s{\n", message.MessageName)
 	var fieldArgs []string = []string{}
 
 	for _, v := range message.MessageBody {
