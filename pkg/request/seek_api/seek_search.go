@@ -142,8 +142,10 @@ func SeekSearchApiForApi(paramsPreset *SeekSearchApiParams, config *jsConfig.See
 	res, err := client.Get("search").
 		QueryStruct(params).
 		Receive(&responseData, nil)
-	fmt.Printf("req url: %s \n", res.Request.URL)
-	pp.Println("query", res.Request.URL.Query())
+	if res != nil {
+		fmt.Printf("req url: %s \n", res.Request.URL)
+		pp.Println("query", res.Request.URL.Query())
+	}
 
 	if err != nil {
 		return responseData, err
