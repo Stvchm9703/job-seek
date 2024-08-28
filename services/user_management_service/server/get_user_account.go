@@ -47,9 +47,9 @@ func checkFetchUserAccountEmptyFields(req *protos.GetUserRequest) error {
 	if req.GetUserId() == "" && req.GetUserName() == "" && req.GetUserEmail() == "" && req.GetUserPhone() == "" {
 		return status.Errorf(codes.InvalidArgument, "reference field cannot be empty")
 	}
-	if req.GetUserPassword() == "" {
-		return status.Errorf(codes.InvalidArgument, "Password cannot be empty")
-	}
+	// if req.GetUserPassword() == "" {
+	// 	return status.Errorf(codes.InvalidArgument, "Password cannot be empty")
+	// }
 	return nil
 }
 

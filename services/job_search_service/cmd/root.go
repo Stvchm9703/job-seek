@@ -68,6 +68,12 @@ var dbCmd = &cobra.Command{
 	Aliases: []string{"db"},
 	Short:   "Database related command",
 	Long:    `Database related command, with check connection, create table, drop table, etc`,
+}
+
+var dbInitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "init database",
+	Long:  `init database`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logLevel, _ := cmd.Flags().GetInt("verbose")
 		InitDB(logLevel)
@@ -112,6 +118,8 @@ func init() {
 	viper.BindPFlag("surreal_db_service.port", serveCmd.Flags().Lookup("db-port"))
 
 	serveCmd.Flags().BoolP("dump-in", "d", false, "with dumpping apu data")
+
+	dbCmd.AddCommand(dbInitCmd)
 
 	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(dbCmd)

@@ -25,6 +25,7 @@ var rootCmd = &cobra.Command{
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
+	Aliases: []string{"server", "run"},
 	Short: "Start the fetch job service",
 	Long:  `Start the fetch job service`,
 	Run: func(cmd *cobra.Command, args []string) {

@@ -19,29 +19,33 @@ import (
 )
 
 type UserProfileModel struct {
-	Id          string   `json:"id"`
-	UserId      string   `json:"user_id"`
-	Title       string   `json:"title"`
-	Position    string   `json:"position"`
-	Description string   `json:"description"`
-	Salary      string   `json:"salary"`
-	Type        string   `json:"type"`
-	Keywords    []string `json:"keywords"`
-	StartDate   string   `json:"start_date"`
-	EndDate     string   `json:"end_date"`
+	Id            string   `json:"id"`
+	UserId        string   `json:"UserId"`
+	Title         string   `json:"Title"`
+	Position      string   `json:"Position"`
+	Description   string   `json:"Description"`
+	Company       string   `json:"Company"`
+	CompanyDetail string   `json:"CompanyDetail"`
+	Salary        string   `json:"Salary"`
+	Type          string   `json:"Type"`
+	Keywords      []string `json:"Keywords"`
+	StartDate     string   `json:"StartDate"`
+	EndDate       string   `json:"EndDate"`
 }
 
 type UserProfileUnmarshalModel struct {
-	Id          string                    `json:"id"`
-	UserId      string                    `json:"user_id"`
-	Title       string                    `json:"title"`
-	Position    string                    `json:"position"`
-	Description string                    `json:"description"`
-	Salary      string                    `json:"salary"`
-	Type        string                    `json:"type"`
-	Keywords    []*PreferenceKeywordModel `json:"keywords"`
-	StartDate   string                    `json:"start_date"`
-	EndDate     string                    `json:"end_date"`
+	Id            string                    `json:"id"`
+	UserId        string                    `json:"UserId"`
+	Title         string                    `json:"Title"`
+	Position      string                    `json:"Position"`
+	Description   string                    `json:"Description"`
+	Company       string                    `json:"Company"`
+	Salary        string                    `json:"Salary"`
+	Type          string                    `json:"Type"`
+	Keywords      []*PreferenceKeywordModel `json:"Keywords"`
+	StartDate     string                    `json:"StartDate"`
+	EndDate       string                    `json:"EndDate"`
+	CompanyDetail *CompanyDetailModel       `json:"CompanyDetail"`
 }
 
 func (m *UserProfileUnmarshalModel) ToProto() *protos.UserProfile {
@@ -77,9 +81,10 @@ func (m *UserProfileModel) GetModel(db *surrealdb.DB) (*protos.UserProfile, erro
 		return nil, fmt.Errorf("database connection is nil")
 	}
 	query := fmt.Sprintf(`
-SELECT *, 
-(SELECT * FROM PreferenceKeyword  WHERE id in $parent.Keywords ) AS Keywords 
-FROM UserProfile:%s;`, m.UserId)
+SELECT *,
+(SELECT * FROM PreferenceKeyword  WHERE id in $parent.Keywords ) AS Keywords
+FROM UserProfile:%s
+;`, m.Id)
 	// fmt.Printf("run query : %s \n", query)
 	result, err := db.Query(query, nil)
 	if err != nil {
@@ -102,8 +107,44 @@ FROM UserProfile:%s;`, m.UserId)
 	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
 		return nil, fmt.Errorf("no data found")
 	}
-	// pp.Println("jobs:", jobqueryResult[0].Result[0])
+	// pp.Println("result:", queryResult[0].Result[0])
 	return queryResult[0].Result[0].ToProto(), nil
+}
+
+func (m *UserProfileModel) GetModelByUserId(db *surrealdb.DB) ([]*protos.UserProfile, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	query := fmt.Sprintf(`
+SELECT *,
+(SELECT * FROM PreferenceKeyword  WHERE id in $parent.Keywords ) AS Keywords
+FROM UserProfile
+WHERE UserId = r'%s'
+;`, m.UserId)
+	// fmt.Printf("run query : %s \n", query)
+	result, err := db.Query(query, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// resultMap := result.([]map[string]map[string][]interface{})
+
+	var queryResult []QueryResult[UserProfileUnmarshalModel]
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
+	if err != nil {
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		log.Fatalf("error: %v", errorWrap)
+		return nil, errorWrap
+		// return nil, err
+	}
+	// pp.Println("jobs:", jobqueryResult)
+	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+	// pp.Println("result:", queryResult[0].Result[0])
+	return lo.Map(queryResult[0].Result, func(p UserProfileUnmarshalModel, _ int) *protos.UserProfile { return p.ToProto() }), nil
 
 }
 
@@ -116,15 +157,17 @@ func (m *UserProfileModel) CreateModel(sd *surrealdb.DB) error {
 
 	queryTemplate, _ := template.New("createUserProfileModel").Parse(`
 CREATE UserProfile  CONTENT {
-	UserId : 					r"{{.UserId}}",
-	Title : 					s"{{.Title}}",
-	Position : 				s"{{.Position}}",
-	Description : 			s"$Description",
-	Salary : 					s"{{.Salary}}",
-	Type : 					s"{{.Type}}",
-	Keywords : 				 [{{- range $i, $v := .Keywords}}{{- if $i}},{{- end}}r"{{- $v}}"{{- end}}],
-	StartDate : 				s"{{.StartDate}}",
-	EndDate : 				s"{{.EndDate}}",
+	UserId : 		r"{{.UserId}}",
+	Title : 		s"{{.Title}}",
+	Position : 		s"{{.Position}}",
+	Description : 	s"$Description",
+	Salary : 		s"{{.Salary}}",
+	Company: 		s"{{.Company}}",
+	CompanyDetail: 	None,
+	Type : 			s"{{.Type}}",
+	Keywords : 		[{{- range $i, $v := .Keywords}}{{- if $i}},{{- end}}r"{{- $v}}"{{- end}}],
+	StartDate : 	s"{{.StartDate}}",
+	EndDate : 		s"{{.EndDate}}",
 }	`)
 	var doc bytes.Buffer
 	var err error
@@ -185,14 +228,17 @@ func (m *UserProfileModel) DefineModel(sd *surrealdb.DB) error {
 DEFINE TABLE IF NOT EXISTS UserProfile SCHEMAFULL;
 -- Field definition
 DEFINE FIELD IF NOT EXISTS UserId		ON TABLE UserProfile TYPE record<UserAccount>;
-DEFINE FIELD IF NOT EXISTS Title		ON TABLE UserProfile TYPE STRING;
-DEFINE FIELD IF NOT EXISTS Position	ON TABLE UserProfile TYPE STRING;
-DEFINE FIELD IF NOT EXISTS Description	ON TABLE UserProfile TYPE STRING;
-DEFINE FIELD IF NOT EXISTS Salary		ON TABLE UserProfile TYPE STRING;
-DEFINE FIELD IF NOT EXISTS Type		ON TABLE UserProfile TYPE STRING;
-DEFINE FIELD IF NOT EXISTS Keywords	ON TABLE UserProfile TYPE ARRAY<record<PreferenceKeyword>>;
-DEFINE FIELD IF NOT EXISTS StartDate	ON TABLE UserProfile TYPE STRING;
-DEFINE FIELD IF NOT EXISTS EndDate		ON TABLE UserProfile TYPE STRING;
+DEFINE FIELD IF NOT EXISTS Title		ON TABLE UserProfile TYPE string;
+DEFINE FIELD IF NOT EXISTS Position		ON TABLE UserProfile TYPE string;
+DEFINE FIELD IF NOT EXISTS Description	ON TABLE UserProfile TYPE string;
+DEFINE FIELD IF NOT EXISTS Company	ON TABLE UserProfile TYPE option<string>;
+DEFINE FIELD IF NOT EXISTS Salary		ON TABLE UserProfile TYPE string;
+DEFINE FIELD IF NOT EXISTS Type			ON TABLE UserProfile TYPE string;
+DEFINE FIELD IF NOT EXISTS Keywords		ON TABLE UserProfile TYPE option<array<record<PreferenceKeyword>>>;
+DEFINE FIELD IF NOT EXISTS StartDate	ON TABLE UserProfile TYPE string;
+DEFINE FIELD IF NOT EXISTS EndDate		ON TABLE UserProfile TYPE string;
+DEFINE FIELD IF NOT EXISTS CompanyDetail	ON TABLE UserProfile TYPE option<record<CompanyDetail>> ;
+
 -- END OF table definition
 		`
 	_, err := sd.Query(query, nil)

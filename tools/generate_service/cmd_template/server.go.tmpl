@@ -3,6 +3,7 @@ package cmd
 import (
 	"job-seek/services/{{.ServicePathName}}/config"
 	"job-seek/services/{{.ServicePathName}}/server"
+	"job-seek/services/{{.ServicePathName}}/server_test"
 
 	logger "job-seek/pkg/log"
 
@@ -44,10 +45,22 @@ func ServerDryRun(verboseLevel int) {
 func ServerTestRun(verboseLevel int) {
 	initLogger(3, verboseLevel)
 	log.Info("Start Server Test Run")
+	fmt.Println("Start Server Test Run")
+	// var manualShutdown func()
+	testService := server.InitService(&config.RuntimeConfig, log)
+
+	log.Info("Server Start Test Run")
+	log.Info("run {{.ServicePathName}}")
+
+	// add the test case here
+	
+	
+	// manualShutdown()
+	log.Info("Server Test Run End")
 }
 
 func ServerRun(verboseLevel int) {
 	initLogger(0, verboseLevel)
 	log.Info("Start Server")
-
+	runtimeServer, _ = server.InitGrpcServer(&config.RuntimeConfig, log)
 }

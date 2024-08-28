@@ -28,6 +28,10 @@ func (s UserManagementServiceServerImpl) CreateUserAccount(ctx context.Context, 
 		return nil, status.Errorf(codes.Internal, "Failed to create user account: %v", err)
 	}
 
+	s.log.WithFields(logrus.Fields{
+		"user": user,
+	}).Info("User account created successfully")
+
 	// Return the user response
 	return &protos.UserResponse{
 		UserId:  user.ID,
@@ -68,5 +72,16 @@ func (s UserManagementServiceServerImpl) storeUserAccountToDB(user *protos.UserA
 		return nil, err
 	}
 
-	return nil, nil
+	result, err := instanceModel.GetModelByWildKey(s.dbClient)
+
+	if err != nil {
+		s.log.WithFields(logrus.Fields{
+			"error": err,
+			"user":  user,
+		}).Error("Failed to get user account from database")
+		return instanceModel, err
+	}
+	instanceModel.FromProto(result)
+
+	return instanceModel, nil
 }

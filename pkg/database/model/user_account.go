@@ -20,11 +20,11 @@ import (
 
 type UserAccountModel struct {
 	ID           string `json:"id,omitempty"`
-	UserName     string `json:"user_name"`
-	UserPassword string `json:"user_password"`
-	UserEmail    string `json:"user_email"`
-	UserPhone    string `json:"user_phone"`
-	UserAddress  string `json:"user_address"`
+	UserName     string `json:"UserName"`
+	UserPassword string `json:"UserPassword"`
+	UserEmail    string `json:"UserEmail"`
+	UserPhone    string `json:"UserPhone"`
+	UserAddress  string `json:"UserAddress"`
 }
 
 func (m *UserAccountModel) ToProto() *protos.UserAccount {
@@ -69,7 +69,7 @@ func (m *UserAccountModel) GetModelByWildKey(db *surrealdb.DB) (*protos.UserAcco
 		return nil, fmt.Errorf("database connection is nil")
 	}
 	query := fmt.Sprintf(`
-	SELECT * FROM UserAccount 
+	SELECT * FROM UserAccount
 		WHERE UserName = '%s'
 		OR UserEmail = '%s'
 		OR id = '%s';
@@ -115,9 +115,9 @@ func (m *UserAccountModel) CreateModel(sd *surrealdb.DB) error {
 	queryTemplate, _ := template.New("createUserAccount").Parse(`
 BEGIN TRANSACTION;
 LET $is_exist = (
-    SELECT id FROM UserAccount 
-    WHERE UserName = $UserName 
-        OR UserEmail = $UserEmail 
+    SELECT id FROM UserAccount
+    WHERE UserName = $UserName
+        OR UserEmail = $UserEmail
         OR UserPhone = $UserPhone
 );
 
@@ -155,7 +155,7 @@ COMMIT TRANSACTION;
 	err = json.Unmarshal(jsonResult, &queryResult)
 	if err != nil {
 		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
-		log.Fatalf("error: %v", errorWrap)
+		fmt.Printf("error: %v \n", errorWrap)
 		return errorWrap
 		// return nil, err
 	}
@@ -192,11 +192,11 @@ func (m *UserAccountModel) DefineModel(sd *surrealdb.DB) error {
 	query := `
 DEFINE  TABLE IF NOT EXISTS UserAccount SCHEMAFULL;
 -- Field definition
-	DEFINE FIELD IF NOT EXISTS	UserName 				ON TABLE UserAccount TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	UserPassword		ON TABLE UserAccount TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	UserEmail 			ON TABLE UserAccount TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	UserPhone 			ON TABLE UserAccount TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	UserAddress 		ON TABLE UserAccount TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	UserName 		ON TABLE UserAccount TYPE	string;
+	DEFINE FIELD IF NOT EXISTS	UserPassword	ON TABLE UserAccount TYPE	string;
+	DEFINE FIELD IF NOT EXISTS	UserEmail 		ON TABLE UserAccount TYPE	string;
+	DEFINE FIELD IF NOT EXISTS	UserPhone 		ON TABLE UserAccount TYPE	string;
+	DEFINE FIELD IF NOT EXISTS	UserAddress 	ON TABLE UserAccount TYPE	string;
 `
 	_, err := sd.Query(query, nil)
 	return err

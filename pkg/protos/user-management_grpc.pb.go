@@ -24,6 +24,7 @@ const (
 	UserManagementService_UpdateUserAccount_FullMethodName       = "/job_seek.user_management.UserManagementService/UpdateUserAccount"
 	UserManagementService_CreateUserProfile_FullMethodName       = "/job_seek.user_management.UserManagementService/CreateUserProfile"
 	UserManagementService_GetUserProfile_FullMethodName          = "/job_seek.user_management.UserManagementService/GetUserProfile"
+	UserManagementService_ListUserProfile_FullMethodName         = "/job_seek.user_management.UserManagementService/ListUserProfile"
 	UserManagementService_UpdateUserProfile_FullMethodName       = "/job_seek.user_management.UserManagementService/UpdateUserProfile"
 	UserManagementService_DeleteUserProfile_FullMethodName       = "/job_seek.user_management.UserManagementService/DeleteUserProfile"
 	UserManagementService_ImportUserProfileFromCV_FullMethodName = "/job_seek.user_management.UserManagementService/ImportUserProfileFromCV"
@@ -40,7 +41,8 @@ type UserManagementServiceClient interface {
 	GetUserAccount(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserAccount, error)
 	UpdateUserAccount(ctx context.Context, in *UserAccount, opts ...grpc.CallOption) (*UserResponse, error)
 	CreateUserProfile(ctx context.Context, in *UserProfile, opts ...grpc.CallOption) (*UserResponse, error)
-	GetUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserProfile, error)
+	GetUserProfile(ctx context.Context, in *UserProfile, opts ...grpc.CallOption) (*UserProfile, error)
+	ListUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*ListUserProfileResponse, error)
 	UpdateUserProfile(ctx context.Context, in *UserProfile, opts ...grpc.CallOption) (*UserResponse, error)
 	DeleteUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserResponse, error)
 	ImportUserProfileFromCV(ctx context.Context, in *UserCVProfile, opts ...grpc.CallOption) (*UserResponse, error)
@@ -96,10 +98,20 @@ func (c *userManagementServiceClient) CreateUserProfile(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *userManagementServiceClient) GetUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserProfile, error) {
+func (c *userManagementServiceClient) GetUserProfile(ctx context.Context, in *UserProfile, opts ...grpc.CallOption) (*UserProfile, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserProfile)
 	err := c.cc.Invoke(ctx, UserManagementService_GetUserProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userManagementServiceClient) ListUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*ListUserProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListUserProfileResponse)
+	err := c.cc.Invoke(ctx, UserManagementService_ListUserProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +177,8 @@ type UserManagementServiceServer interface {
 	GetUserAccount(context.Context, *GetUserRequest) (*UserAccount, error)
 	UpdateUserAccount(context.Context, *UserAccount) (*UserResponse, error)
 	CreateUserProfile(context.Context, *UserProfile) (*UserResponse, error)
-	GetUserProfile(context.Context, *GetUserRequest) (*UserProfile, error)
+	GetUserProfile(context.Context, *UserProfile) (*UserProfile, error)
+	ListUserProfile(context.Context, *GetUserRequest) (*ListUserProfileResponse, error)
 	UpdateUserProfile(context.Context, *UserProfile) (*UserResponse, error)
 	DeleteUserProfile(context.Context, *GetUserRequest) (*UserResponse, error)
 	ImportUserProfileFromCV(context.Context, *UserCVProfile) (*UserResponse, error)
@@ -190,8 +203,11 @@ func (UnimplementedUserManagementServiceServer) UpdateUserAccount(context.Contex
 func (UnimplementedUserManagementServiceServer) CreateUserProfile(context.Context, *UserProfile) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUserProfile not implemented")
 }
-func (UnimplementedUserManagementServiceServer) GetUserProfile(context.Context, *GetUserRequest) (*UserProfile, error) {
+func (UnimplementedUserManagementServiceServer) GetUserProfile(context.Context, *UserProfile) (*UserProfile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserProfile not implemented")
+}
+func (UnimplementedUserManagementServiceServer) ListUserProfile(context.Context, *GetUserRequest) (*ListUserProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUserProfile not implemented")
 }
 func (UnimplementedUserManagementServiceServer) UpdateUserProfile(context.Context, *UserProfile) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserProfile not implemented")
@@ -294,7 +310,7 @@ func _UserManagementService_CreateUserProfile_Handler(srv interface{}, ctx conte
 }
 
 func _UserManagementService_GetUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserRequest)
+	in := new(UserProfile)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -306,7 +322,25 @@ func _UserManagementService_GetUserProfile_Handler(srv interface{}, ctx context.
 		FullMethod: UserManagementService_GetUserProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserManagementServiceServer).GetUserProfile(ctx, req.(*GetUserRequest))
+		return srv.(UserManagementServiceServer).GetUserProfile(ctx, req.(*UserProfile))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserManagementService_ListUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserManagementServiceServer).ListUserProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserManagementService_ListUserProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserManagementServiceServer).ListUserProfile(ctx, req.(*GetUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -427,6 +461,10 @@ var UserManagementService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserProfile",
 			Handler:    _UserManagementService_GetUserProfile_Handler,
+		},
+		{
+			MethodName: "ListUserProfile",
+			Handler:    _UserManagementService_ListUserProfile_Handler,
 		},
 		{
 			MethodName: "UpdateUserProfile",

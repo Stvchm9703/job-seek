@@ -17,16 +17,17 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "JSUserManagementService",
 	Short: "UserManagementService service",
-	Long: ``,
+	Long:  ``,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
 var serveCmd = &cobra.Command{
-	Use:   "serve",
-	Short: "Start the fetch job service",
-	Long:  `Start the fetch job service`,
+	Use:     "serve",
+	Aliases: []string{"server", "run"},
+	Short:   "Start the fetch job service",
+	Long:    `Start the fetch job service`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
 		logLevel, _ := cmd.Flags().GetInt("verbose")
@@ -50,8 +51,24 @@ var serveCmd = &cobra.Command{
 		if test, _ := cmd.Flags().GetBool("test"); test {
 			ServerTestRun(logLevel)
 			return // test mode
-
 		}
+	},
+}
+
+var dbCmd = &cobra.Command{
+	Use:     "database",
+	Aliases: []string{"db"},
+	Short:   "Database related command",
+	Long:    `Database related command, with check connection, create table, drop table, etc`,
+}
+
+var dbInitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "init database",
+	Long:  `init database`,
+	Run: func(cmd *cobra.Command, args []string) {
+		logLevel, _ := cmd.Flags().GetInt("verbose")
+		InitDB(logLevel)
 	},
 }
 
@@ -79,7 +96,7 @@ func init() {
 	serveCmd.Flags().StringP("host", "i", "localhost", "host")
 	viper.BindPFlag("host", serveCmd.Flags().Lookup("host"))
 
-	serveCmd.Flags().IntP("port", "p", 60010, "port")
+	serveCmd.Flags().IntP("port", "p", 60020, "port")
 	viper.BindPFlag("port", serveCmd.Flags().Lookup("port"))
 
 	serveCmd.Flags().Bool("dry-run", false, "dry-run mode with inputed command and config")
@@ -92,5 +109,8 @@ func init() {
 	serveCmd.Flags().Int("db-port", 8654, "database port")
 	viper.BindPFlag("surreal_db_service.port", serveCmd.Flags().Lookup("db-port"))
 
+	dbCmd.AddCommand(dbInitCmd)
+
 	rootCmd.AddCommand(serveCmd)
+	rootCmd.AddCommand(dbCmd)
 }

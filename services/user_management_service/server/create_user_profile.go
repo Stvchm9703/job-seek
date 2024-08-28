@@ -58,7 +58,7 @@ func (s UserManagementServiceServerImpl) CreateUserProfile(ctx context.Context, 
 	}()
 
 	return &protos.UserResponse{
-		UserId:  user.UserId,
+		UserId:  user.Id,
 		Status:  "success",
 		Message: "User profile created successfully",
 	}, nil
@@ -94,5 +94,5 @@ func (s UserManagementServiceServerImpl) storeUserProfileToDB(user *protos.UserP
 		return nil, err
 	}
 	// Save the user profile to the database
-	return nil, nil
+	return instanceModel, nil
 }

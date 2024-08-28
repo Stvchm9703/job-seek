@@ -37,7 +37,7 @@ func Setup() {
 
 	// basic server config
 	viper.SetDefault("host", "localhost")
-	viper.SetDefault("port", 60010)
+	viper.SetDefault("port", 60020)
 
 	// grpc server config
 	viper.SetDefault("server.max_connection_idle", 60)
@@ -47,7 +47,6 @@ func Setup() {
 	viper.SetDefault("server.timeout", 20)
 	viper.SetDefault("server.min_time", 5)
 	viper.SetDefault("server.permit_without_stream", true)
-
 
 	// internal services
 	viper.SetDefault("meili_search_service.host", "localhost")

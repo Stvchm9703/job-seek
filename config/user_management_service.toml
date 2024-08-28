@@ -1,0 +1,6 @@
+
+[surreal_db_service]
+host = '192.168.0.102'
+port = 8654
+user = "user_account_service"
+password = "jobseek_user_account"

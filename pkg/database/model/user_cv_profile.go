@@ -85,8 +85,8 @@ func (m *UserCVProfileModel) CreateModel(sd *surrealdb.DB) error {
 
 	queryTemplate, _ := template.New("createUserCVProfile").Parse(`
 INSERT INTO UserCVProfile {
-	UserId   : r"{{.UserId}}",   
-	CvData     : b"{{.CvData}}",   
+	UserId   : r"{{.UserId}}",
+	CvData     : b"{{.CvData}}",
 	CvKeywords : r"{{.CvKeywords}}",
 }	`)
 	var doc bytes.Buffer
@@ -128,9 +128,9 @@ func (m *UserCVProfileModel) DefineModel(sd *surrealdb.DB) error {
 	query := `
 DEFINE TABLE IF NOT EXISTS UserCVProfile SCHEMAFULL;
 -- Field definition
-	DEFINE FIELD IF NOT EXISTS	UserId 					ON TABLE UserAccount TYPE		string;
-	DEFINE FIELD IF NOT EXISTS	CvData 					ON TABLE UserAccount TYPE		bytes;
-	DEFINE FIELD IF NOT EXISTS	CvKeywords			ON TABLE UserAccount TYPE		array<record<PreferenceKeyword>>;
+	DEFINE FIELD IF NOT EXISTS	UserId 		ON TABLE UserCVProfile TYPE		string;
+	DEFINE FIELD IF NOT EXISTS	CvData 		ON TABLE UserCVProfile TYPE		bytes;
+	DEFINE FIELD IF NOT EXISTS	CvKeywords	ON TABLE UserCVProfile TYPE		array<record<PreferenceKeyword>>;
 `
 	_, err := sd.Query(query, nil)
 	return err

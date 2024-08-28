@@ -3,7 +3,7 @@ package cmd
 import (
 	"job-seek/pkg/database"
 	"job-seek/pkg/database/model"
-	runConf "job-seek/services/job_search_service/config"
+	runConf "job-seek/services/user_management_service/config"
 
 	logrus "github.com/sirupsen/logrus"
 )
@@ -23,37 +23,37 @@ func InitDB(verboseLevel int) {
 	log.Info("Connected to database")
 	log.Info("Check database model")
 	// Check database model
-	log.Info("Check CompanyDetailModel")
-	companyDetail := &model.CompanyDetailModel{}
-	err = companyDetail.DefineModel(dbClient)
+	log.Info("Check UserAccountModel")
+	uam := &model.UserAccountModel{}
+	err = uam.DefineModel(dbClient)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"config": runConf.RuntimeConfig,
-			"model":  "CompanyDetailModel",
+			"model":  "UserAccountModel",
 			"error":  err,
 		}).Fatal("Failed to define")
 	}
 
-	log.Info("Check JobModel")
-	jobPost := &model.JobModel{}
-	err = jobPost.DefineModel(dbClient)
+	log.Info("Check UserProfileModel")
+	upm := &model.UserProfileModel{}
+	err = upm.DefineModel(dbClient)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"config": runConf.RuntimeConfig,
-			"model":  "JobModel",
+			"model":  "UserProfileModel",
 			"error":  err,
 		}).Fatal("Failed to define")
 	}
 
-	log.Info("Check JobCacheModel")
-	jobCache := &model.JobCacheListModel{}
-	err = jobCache.DefineModel(dbClient)
+	log.Info("Check UserCvProfileModel")
+	ucvm := &model.UserCVProfileModel{}
+	err = ucvm.DefineModel(dbClient)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"config": runConf.RuntimeConfig,
-			"model":  "JobCacheListModel",
+			"model":  "UserCVProfileModel",
 			"error":  err,
-		}).Fatal("Failed to connect to database")
+		}).Fatal("Failed to define")
 	}
 
 	log.Info("completed")
