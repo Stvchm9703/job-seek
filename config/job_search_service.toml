@@ -16,4 +16,4 @@ domain = 'https://au.search.yahoo.com/'
 host = '192.168.0.102'
 port = 8654
 user = "job_search_service"
-password = "jobseek_jobsearch"
+password = "jobseek_job_search"

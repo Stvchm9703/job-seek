@@ -75,8 +75,7 @@ func TestUserProfileGet(service *server.UserManagementServiceServerImpl, log *lo
 
 	// testString := "test_user"
 	testRequest := &protos.UserProfile{
-		UserId:   &test_run_user_id,
-		UserName: &test_run_user_name,
+		Id: "",
 	}
 
 	testCtx := context.Background()
