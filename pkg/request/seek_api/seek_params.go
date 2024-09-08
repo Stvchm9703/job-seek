@@ -5,18 +5,18 @@ import (
 )
 
 type SeekSearchApiParams struct {
-	SiteKey        string `url:"siteKey", json:"sitekey"`
-	Where          string `url:"where", json:"where"`
-	Page           int    `url:"page", json:"page"`
-	PageSize       int    `url:"pageSize", json:"pageSize"`
-	Keywords       string `url:"keywords", json:"keywords"`
-	SalaryType     string `url:"salarytype", json:"salarytype"`
-	SalaryRange    string `url:"salaryrange", json:"salaryrange"`
-	Locale         string `url:"locale", json:"locale"`
-	SeekerId       string `url:"seekerId", json:"seekerId"`
-	Classification string `url:"classification", json:"classification"`
-	AdvertiserId   string `url:"advertiserid", json:"advertiserid"`
-	UserQueryId    string `url:"userQueryId", json:"userQueryId"`
+	SiteKey        string `url:"siteKey,omitempty", json:"sitekey"`
+	Where          string `url:"where,omitempty", json:"where"`
+	Page           int    `url:"page,omitempty", json:"page"`
+	PageSize       int    `url:"pageSize,omitempty", json:"pageSize"`
+	Keywords       string `url:"keywords,omitempty", json:"keywords"`
+	SalaryType     string `url:"salarytype,omitempty", json:"salarytype"`
+	SalaryRange    string `url:"salaryrange,omitempty", json:"salaryrange"`
+	Locale         string `url:"locale,omitempty", json:"locale"`
+	SeekerId       string `url:"seekerId,omitempty", json:"seekerId"`
+	Classification string `url:"classification,omitempty", json:"classification"`
+	AdvertiserId   string `url:"advertiserid,omitempty", json:"advertiserid"`
+	UserQueryId    string `url:"userQueryId,omitempty", json:"userQueryId"`
 }
 
 type SeekSearchApiResponse struct {

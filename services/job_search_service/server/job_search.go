@@ -17,6 +17,7 @@ import (
 
 	"github.com/google/uuid"
 	pp "github.com/k0kubun/pp/v3"
+	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -31,9 +32,10 @@ func FromProtoToRequest(req *protos.JobSearchRequest) *seek_api.SeekSearchApiPar
 		maxSalary = int(req.GetMaxSalary())
 	}
 	salaryRange := fmt.Sprintf("%d-", minSalary)
-	if maxSalary != 0 {
+	if minSalary == 0 && maxSalary == 0 {
+		salaryRange = ""
+	} else if maxSalary != 0 {
 		salaryRange = fmt.Sprintf("%d-%d", minSalary, maxSalary)
-
 	}
 
 	return &seek_api.SeekSearchApiParams{
@@ -90,6 +92,10 @@ func (s JobSearchServiceServerImpl) JobSearch(ctx context.Context, req *protos.J
 	// pp.Println("jobRequest keyword", req.Keywords)
 	combinedKeywords := seek_api.CreateSearchCombinations(req.Keywords)
 	// pp.Println("combinedKeywords", combinedKeywords)
+	combinedKeywords = lo.Filter(combinedKeywords, func(item string, _ int) bool {
+		// maxium 3 keyword combination
+		return strings.Count(item, " ") <= 2
+	})
 
 	sort.Slice(combinedKeywords, func(i, j int) bool {
 		return len(combinedKeywords[i]) > len(combinedKeywords[j])
@@ -129,39 +135,79 @@ func (s JobSearchServiceServerImpl) getPostJobsList(combinedKeywords []string, s
 		"firstPatchList": firstPatchList,
 	}).Trace("gernerated the batch search params")
 
-	firstPatch, _ := s.fetchJobs(cacheRef.String(), &firstPatchList[0])
-	s.log.WithFields(logrus.Fields{
-		"method": "getPostJobsList",
-		// "firstPatch": firstPatch,
-		"total": firstPatch.TotalCount,
-		"meta":  firstPatch.SolMetadata,
-	}).Debug("fetched the first patch ")
+	for _, patchParams := range firstPatchList {
+		patchJobList, patchJobErr := s.fetchJobs(cacheRef.String(), &patchParams)
+		if patchJobErr != nil {
+			s.log.WithFields(logrus.Fields{
+				"method": "getPostJobsList",
+				"error":  patchJobErr,
+			}).Warn("Fail to Get Patch Job, Try to continue with others params")
+			continue
+		}
+		s.log.WithFields(logrus.Fields{
+			"method": "getPostJobsList",
+			// "firstPatch": firstPatch,
+			"total": patchJobList.TotalCount,
+			"meta":  patchJobList.SolMetadata,
+		}).Debug("fetched the first patch ")
+		secondPatchList := generateSearchParamsBatchFromFirstBatch(&patchParams, patchJobList)
 
-	for _, job := range firstPatch.Data {
-		jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
-		postData = append(postData, jobDetail)
+		for _, job := range patchJobList.Data {
+			jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
+			postData = append(postData, jobDetail)
+		}
+
+		for _, continuePatch := range secondPatchList {
+			continuePatchJobList, _ := s.fetchJobs(cacheRef.String(), &continuePatch)
+			s.log.WithFields(logrus.Fields{
+				"method": "getPostJobsList",
+				// "firstPatch": firstPatch,
+				"total": continuePatchJobList.TotalCount,
+				"meta":  continuePatchJobList.SolMetadata,
+			}).Debug("fetched the first patch ")
+
+			for _, job := range continuePatchJobList.Data {
+				jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
+				postData = append(postData, jobDetail)
+			}
+		}
 	}
 
-	// go func() {
-	//continue to fetch the next page
-	secondTierPatchList := generateSearchParamsBatchFromFirstBatch(&firstPatchList[0], firstPatch)
-	pendingJobList := []seek_api.SeekSearchApiResponseData{}
-	for _, searchParams := range firstPatchList[1:] {
-		// fetch jobs
-		resp, _ := s.fetchJobs(cacheRef.String(), &searchParams)
-		pendingJobList = append(pendingJobList, resp.Data...)
-		secondTierPatchList = append(secondTierPatchList, generateSearchParamsBatchFromFirstBatch(&searchParams, resp)...)
-	}
-	for _, searchParams := range secondTierPatchList {
-		// fetch jobs
-		resp, _ := s.fetchJobs(cacheRef.String(), &searchParams)
-		pendingJobList = append(pendingJobList, resp.Data...)
-	}
+	// firstPatch, _ := s.fetchJobs(cacheRef.String(), &firstPatchList[0])
+	// s.log.WithFields(logrus.Fields{
+	// 	"method": "getPostJobsList",
+	// 	// "firstPatch": firstPatch,
+	// 	"total": firstPatch.TotalCount,
+	// 	"meta":  firstPatch.SolMetadata,
+	// }).Debug("fetched the first patch ")
 
-	for _, job := range pendingJobList {
-		jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
-		postData = append(postData, jobDetail)
-	}
+	// for _, job := range firstPatch.Data {
+	// 	jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
+	// 	postData = append(postData, jobDetail)
+	// }
+
+	// // go func() {
+	// //continue to fetch the next page
+	// secondTierPatchList := generateSearchParamsBatchFromFirstBatch(&firstPatchList[0], firstPatch)
+	// // pendingJobList := []seek_api.SeekSearchApiResponseData{}
+	// if len(firstPatchList) > 1 {
+	// 	for _, searchParams := range firstPatchList[1:] {
+	// 		// fetch jobs
+	// 		resp, _ := s.fetchJobs(cacheRef.String(), &searchParams)
+	// 		// pendingJobList = append(pendingJobList, resp.Data...)
+	// 		secondTierPatchList = append(secondTierPatchList, generateSearchParamsBatchFromFirstBatch(&searchParams, resp)...)
+	// 	}
+	// }
+	// for _, searchParams := range secondTierPatchList {
+	// 	// fetch jobs
+	// 	resp, _ := s.fetchJobs(cacheRef.String(), &searchParams)
+	// 	// pendingJobList = append(pendingJobList, resp.Data...)
+	// 	for _, job := range resp.Data {
+	// 		jobDetail, _ := s.getJobDetail(fmt.Sprintf("%d", job.ID))
+	// 		postData = append(postData, jobDetail)
+	// 	}
+	// }
+
 	// }()
 	s.log.Infof("Total jobs fetched: %d", len(postData))
 
@@ -187,7 +233,10 @@ func generateSearchParamsBatch(preset *seek_api.SeekSearchApiParams, keywords []
 }
 func generateSearchParamsBatchFromFirstBatch(firstSearch *seek_api.SeekSearchApiParams, response *seek_api.SeekSearchApiResponse) []seek_api.SeekSearchApiParams {
 	var searchParamsBatch []seek_api.SeekSearchApiParams
-	totalPage := response.SolMetadata.PageSize / response.TotalCount
+	totalPage := 0
+	if response.TotalCount != 0 {
+		totalPage = response.SolMetadata.PageSize / response.TotalCount
+	}
 	pp.Println("paging", map[string]interface{}{
 		"category":        firstSearch.Classification,
 		"calculation":     totalPage,
@@ -206,7 +255,7 @@ func generateSearchParamsBatchFromFirstBatch(firstSearch *seek_api.SeekSearchApi
 			SalaryType:     firstSearch.SalaryType,
 			SalaryRange:    firstSearch.SalaryRange,
 			Where:          firstSearch.Where,
-			UserQueryId:    response.SearchParams.UserQueryId,
+			UserQueryId:    response.UserQueryID,
 			Classification: firstSearch.Classification,
 		})
 	}
