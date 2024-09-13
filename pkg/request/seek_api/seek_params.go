@@ -17,6 +17,7 @@ type SeekSearchApiParams struct {
 	Classification string `url:"classification,omitempty", json:"classification"`
 	AdvertiserId   string `url:"advertiserid,omitempty", json:"advertiserid"`
 	UserQueryId    string `url:"userQueryId,omitempty", json:"userQueryId"`
+	WorkType       string `url:"workType,omitempty", json:"workType"` // Full-time:242, Part-time:243, Contract:244, Casual/Vacation:245
 }
 
 type SeekSearchApiResponse struct {

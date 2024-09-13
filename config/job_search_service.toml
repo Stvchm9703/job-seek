@@ -8,6 +8,7 @@ lang_locale = "en-AU"
 country_code = "AU"
 timezone = "Australia/Sydney"
 zone = "anz-1"
+max_job_count = 100
 
 [yahoo_search]
 domain = 'https://au.search.yahoo.com/'

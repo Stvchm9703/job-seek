@@ -62,6 +62,7 @@ func (s JobSearchServiceServerImpl) JobSearch(ctx context.Context, req *protos.J
 		"method": "JobSearch",
 		"req":    req,
 	}).Info("JobSearch called")
+
 	if req.PageNumber != nil && req.CacheRef != nil {
 		// continue to fetch the next page
 		// get the search params from the cache

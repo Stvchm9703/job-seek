@@ -208,3 +208,44 @@ func CreateSearchCombinations(keywords []string) []string {
 	return casualKW
 
 }
+
+func CreateSearchCombinationsV2(keywords []string) []string {
+	// exclude the important keywords
+
+	importantKW := lo.Filter(keywords, func(kw string, _ int) bool {
+		return strings.Contains(kw, "!") || strings.Contains(kw, "*")
+	})
+
+	importantKW = lo.Map(importantKW, func(kw string, _ int) string {
+		s := strings.ReplaceAll(kw, "!", "")
+		return strings.ReplaceAll(s, "*", "")
+	})
+
+	// log.Println("importantKW  ", importantKW)
+
+	casualKW := lo.Filter(keywords, func(kw string, _ int) bool {
+		return !strings.Contains(kw, "!") && !strings.Contains(kw, "*")
+	})
+
+	combinedKeywords := combinations.Combinations(casualKW, 3)
+	// log.Println("combinedKeywords  ", combinedKeywords)
+
+	casualKW = []string{}
+	if len(importantKW) == 0 {
+		for _, kw := range combinedKeywords {
+			casualKW = append(casualKW, strings.Join(kw, " "))
+		}
+
+		return casualKW
+	}
+	for _, kw := range combinedKeywords {
+		for _, imp := range importantKW {
+			kw := append(kw, imp)
+			casualKW = append(casualKW, strings.Join(kw, " "))
+		}
+	}
+	// log.Println("kw  ", casualKW)
+
+	return casualKW
+
+}
