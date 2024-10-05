@@ -58,7 +58,6 @@ var serveCmd = &cobra.Command{
 			ServerDumpingData(logLevel)
 			return
 		}
-
 		ServerRun(logLevel)
 	},
 }
@@ -85,6 +84,7 @@ var dbInitCmd = &cobra.Command{
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
+		// panic(err)
 		os.Exit(1)
 	}
 }

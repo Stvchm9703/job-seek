@@ -10,10 +10,12 @@ import (
 	"job-seek/pkg/dataset/location/au"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/request/seek_api"
+	"math"
 	"sort"
 	"strings"
 
 	"github.com/google/uuid"
+	pp "github.com/k0kubun/pp/v3"
 	"github.com/samber/lo"
 	logrus "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -46,33 +48,46 @@ func (s JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *prot
 
 	// 3 set parameters
 	combinedKeywords := seek_api.CreateSearchCombinationsV2(req.Keywords)
+	pp.Println("query", combinedKeywords)
 	combinedKeywords = lo.Filter(combinedKeywords, func(item string, _ int) bool {
 		// maxium 3 keyword combination
-		return strings.Count(item, " ") <= 4
+		return strings.Count(item, " ") >= 4 && strings.Count(item, " ") <= 15
 	})
 
 	sort.Slice(combinedKeywords, func(i, j int) bool {
 		return len(combinedKeywords[i]) > len(combinedKeywords[j])
 	})
 
-	combinedKeywords = combinedKeywords[:5]
+	pp.Println("query", combinedKeywords)
+
+	maxCap := math.Min(5, float64(len(combinedKeywords)))
+	combinedKeywords = combinedKeywords[:int32(maxCap)]
 
 	s.log.WithFields(logrus.Fields{
 		"method":           "UserJobSearch",
 		"combinedKeywords": combinedKeywords,
 		"jobRequest":       jobRequest,
 	}).Trace("UserJobSearch called")
+	cacheRef, _ := uuid.NewV7()
+	cacheRefString := cacheRef.String()
 
-	postData, cacheRef, err := s.getPostJobsListSinglar(combinedKeywords, jobRequest)
+	postData, err := s.getPostJobsListSinglar(cacheRefString, combinedKeywords, jobRequest)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
 	}
 
+	// get the job title from the keywords
+	jbtitle, _ := lo.Find(req.Keywords, func(key string) bool {
+		return strings.Contains(key, "!") || strings.Contains(key, "*")
+	})
+	jbtitle = strings.ReplaceAll(jbtitle, "!", "")
+
 	// 1 set of different from different locations
 	locationsSet := jobRequest
+	locationsSet.Keywords = jbtitle
 	locationsSet.Where = au.FindParentLocation(req.GetWorkLocale())
 	locationsSet.PageSize = 10
-	locationsPostData, err := s.batchFetchJobTask(cacheRef, locationsSet)
+	locationsPostData, err := s.batchFetchJobTask(cacheRefString, locationsSet)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
 	}
@@ -81,16 +96,20 @@ func (s JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *prot
 	jobTypesSet := jobRequest
 	jobTypesSet.Classification = job_classification.FindParentCategory(jobTypesSet.Classification)
 	jobTypesSet.PageSize = 10
-	jobTypesPostData, err := s.batchFetchJobTask(cacheRef, jobTypesSet)
+	jobRequest.Where = req.GetWorkLocale()
+	jobTypesPostData, err := s.batchFetchJobTask(cacheRefString, jobTypesSet)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
 	}
 
 	// 1 set of different from different job titles
 	jobTitlesSet := jobRequest
-	jobTitlesSet.Keywords = jobTitlesSet.Keywords + " Senior"
+	// jobTitlesSet.Keywords =  "Senior "
+	jobTitlesSet.Keywords = "Senior " + jbtitle
 	jobTitlesSet.PageSize = 10
-	jobTitlesPostData, err := s.batchFetchJobTask(cacheRef, jobTitlesSet)
+	jobTitlesSet.Where = req.GetWorkLocale()
+
+	jobTitlesPostData, err := s.batchFetchJobTask(cacheRefString, jobTitlesSet)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
 	}
@@ -107,15 +126,13 @@ func (s JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *prot
 
 }
 
-func (s JobSearchServiceServerImpl) getPostJobsListSinglar(combinedKeywords []string, searchParamsPreset *seek_api.SeekSearchApiParams) ([]*protos.Job, string, error) {
+func (s JobSearchServiceServerImpl) getPostJobsListSinglar(cacheRefString string, combinedKeywords []string, searchParamsPreset *seek_api.SeekSearchApiParams) ([]*protos.Job, error) {
 
 	// s.LogTrace("getPostJobsListSinglar", "Get Post Jobs List", map[string]interface{}{
 	// 	"combinedKeywords":   combinedKeywords,
 	// 	"searchParamsPreset": searchParamsPreset,
 	// })
 
-	cacheRef, _ := uuid.NewV7()
-	cacheRefString := cacheRef.String()
 	postData := []*protos.Job{}
 	// uncachedPostData := []*protos.Job{}
 
@@ -134,13 +151,13 @@ func (s JobSearchServiceServerImpl) getPostJobsListSinglar(combinedKeywords []st
 	}
 	s.log.Infof("Total jobs fetched: %d", len(postData))
 
-	return postData, cacheRefString, nil
+	return postData, nil
 }
 
 // - 10 different from different industries
-func (s JobSearchServiceServerImpl) batchFetchJobTask(cacheRef string, searchParamsPreset *seek_api.SeekSearchApiParams) ([]*protos.Job, error) {
+func (s JobSearchServiceServerImpl) batchFetchJobTask(cacheRefString string, searchParamsPreset *seek_api.SeekSearchApiParams) ([]*protos.Job, error) {
 
-	patchJobList, patchJobErr := s.fetchJobs(cacheRef, searchParamsPreset)
+	patchJobList, patchJobErr := s.fetchJobs(cacheRefString, searchParamsPreset)
 
 	postData := []*protos.Job{}
 

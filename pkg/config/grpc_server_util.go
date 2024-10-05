@@ -11,11 +11,12 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host     string `toml:"host" mapstructure:"host"`
-	Port     int    `toml:"port" mapstructure:"port"`
-	ApiKey   string `toml:"api_key" mapstructure:"api_key"`
-	User     string `toml:"user" mapstructure:"user"`
-	Password string `toml:"password" mapstructure:"password"`
+	Host         string `toml:"host" mapstructure:"host"`
+	Port         int    `toml:"port" mapstructure:"port"`
+	ApiKey       string `toml:"api_key" mapstructure:"api_key"`
+	User         string `toml:"user" mapstructure:"user"`
+	Password     string `toml:"password" mapstructure:"password"`
+	DatabasePath string `toml:"database_path" mapstructure:"database_path"`
 }
 
 type ApiService struct {

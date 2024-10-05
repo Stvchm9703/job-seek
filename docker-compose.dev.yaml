@@ -1,0 +1,7 @@
+services:
+  surrealdb:
+    expose:
+      - "8654"
+  # meilisearch:
+  #   expose:
+  #     - "7700"

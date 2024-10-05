@@ -184,7 +184,7 @@ func batchGenerateCoverLetter(postDetail *request.SeekPostDetails, readConfig *c
 func fetchJobs(preset *seek_api.SeekSearchApiParams, keyword string) ([]seek_api.SeekSearchApiResponseData, error) {
 	postData := []seek_api.SeekSearchApiResponseData{}
 
-	data, err := seek_api.SeekSearchApiWithPreset(preset, keyword, 1)
+	data, err := seek_api.SeekSearchApiWithPreset(preset, keyword, 1, "", "")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -196,7 +196,7 @@ func fetchJobs(preset *seek_api.SeekSearchApiParams, keyword string) ([]seek_api
 
 	for pageNumber := 1; pageNumber <= pageTotal; pageNumber++ {
 		time.Sleep(80 * time.Millisecond)
-		data, err := seek_api.SeekSearchApiWithPreset(preset, keyword, pageNumber)
+		data, err := seek_api.SeekSearchApiWithPreset(preset, keyword, pageNumber, "", data.UserQueryID)
 		if err != nil {
 			log.Println(err)
 		}

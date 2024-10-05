@@ -4,16 +4,11 @@
 package model
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
-	"text/template"
 
-	"github.com/k0kubun/pp/v3"
-	surrealdb "github.com/surrealdb/surrealdb.go"
+	"gorm.io/gorm"
 
 	// "job-seek/pkg/config"
 	// "job-seek/pkg/database"
@@ -21,57 +16,63 @@ import (
 )
 
 type JobModel struct {
-	PostId         string   `json:"post_id"`
-	PostTitle      string   `json:"post_title"`
-	PostUrl        string   `json:"post_url"`
-	PayRange       string   `json:"pay_range"`
-	DebugText      string   `json:"debug_text"`
-	HittedKeywords []string `json:"hitted_keywords"`
-	Score          int      `json:"score,omitempty"`
-	Role           string   `json:"role"`
-	WorkType       string   `json:"work_type"`
-	CompanyDetail  string   `json:"company_detail,omitempty"`
-	Locations      string   `json:"locations"`
-	ExpiringDate   string   `json:"expiring_date"`
+	gorm.Model
+	PostId          string             `json:"post_id" gorm:"primaryKey"`
+	PostTitle       string             `json:"post_title"`
+	PostUrl         string             `json:"post_url"`
+	PayRange        string             `json:"pay_range"`
+	DebugText       string             `json:"debug_text"`
+	HittedKeywords  string             `json:"hitted_keywords"`
+	Score           int                `json:"score,omitempty"`
+	Role            string             `json:"role"`
+	WorkType        string             `json:"work_type"`
+	CompanyDetailID int                `json:"company_detail_id"`
+	CompanyDetail   CompanyDetailModel `json:"company_detail,omitempty"`
+	Locations       string             `json:"locations"`
+	ExpiringDate    string             `json:"expiring_date"`
 }
 
-type JobUnmarshalModel struct {
-	Id             string              `json:"id"`
-	PostId         string              `json:"PostId"`
-	PostTitle      string              `json:"PostTitle"`
-	PostUrl        string              `json:"PostUrl"`
-	PayRange       string              `json:"PayRange"`
-	DebugText      string              `json:"DebugText"`
-	HittedKeywords []string            `json:"HittedKeywords"`
-	Score          int                 `json:"Score,omitempty"`
-	Role           string              `json:"Role"`
-	WorkType       string              `json:"WorkType"`
-	CompanyDetail  *CompanyDetailModel `json:"CompanyDetail,omitempty"`
-	Locations      string              `json:"Locations"`
-	ExpiringDate   string              `json:"ExpiringDate"`
+func (JobModel) TableName() string {
+	return "job"
 }
 
-func (m *JobUnmarshalModel) ToProto() *protos.Job {
-	score := int32(m.Score)
-	var companyProto *protos.CompanyDetail = nil
-	if m.CompanyDetail != nil {
-		companyProto = m.CompanyDetail.ToProto()
-	}
-	return &protos.Job{
-		PostId:         m.PostId,
-		PostTitle:      m.PostTitle,
-		PostUrl:        m.PostUrl,
-		PayRange:       m.PayRange,
-		DebugText:      m.DebugText,
-		HittedKeywords: m.HittedKeywords,
-		Score:          &score,
-		Role:           m.Role,
-		WorkType:       m.WorkType,
-		CompanyDetail:  companyProto,
-		Locations:      m.Locations,
-		ExpiringDate:   m.ExpiringDate,
-	}
-}
+// type JobUnmarshalModel struct {
+// 	Id             string              `json:"id"`
+// 	PostId         string              `json:"PostId"`
+// 	PostTitle      string              `json:"PostTitle"`
+// 	PostUrl        string              `json:"PostUrl"`
+// 	PayRange       string              `json:"PayRange"`
+// 	DebugText      string              `json:"DebugText"`
+// 	HittedKeywords []string            `json:"HittedKeywords"`
+// 	Score          int                 `json:"Score,omitempty"`
+// 	Role           string              `json:"Role"`
+// 	WorkType       string              `json:"WorkType"`
+// 	CompanyDetail  *CompanyDetailModel `json:"CompanyDetail,omitempty"`
+// 	Locations      string              `json:"Locations"`
+// 	ExpiringDate   string              `json:"ExpiringDate"`
+// }
+
+// func (m *JobUnmarshalModel) ToProto() *protos.Job {
+// 	score := int32(m.Score)
+// 	var companyProto *protos.CompanyDetail = nil
+// 	if m.CompanyDetail != nil {
+// 		companyProto = m.CompanyDetail.ToProto()
+// 	}
+// 	return &protos.Job{
+// 		PostId:         m.PostId,
+// 		PostTitle:      m.PostTitle,
+// 		PostUrl:        m.PostUrl,
+// 		PayRange:       m.PayRange,
+// 		DebugText:      m.DebugText,
+// 		HittedKeywords: m.HittedKeywords,
+// 		Score:          &score,
+// 		Role:           m.Role,
+// 		WorkType:       m.WorkType,
+// 		CompanyDetail:  companyProto,
+// 		Locations:      m.Locations,
+// 		ExpiringDate:   m.ExpiringDate,
+// 	}
+// }
 
 func (m *JobModel) ToProto() *protos.Job {
 	score := int32(m.Score)
@@ -81,11 +82,11 @@ func (m *JobModel) ToProto() *protos.Job {
 		PostUrl:        m.PostUrl,
 		PayRange:       m.PayRange,
 		DebugText:      m.DebugText,
-		HittedKeywords: m.HittedKeywords,
+		HittedKeywords: strings.Split(m.HittedKeywords, ", "),
 		Score:          &score,
 		Role:           m.Role,
 		WorkType:       m.WorkType,
-		CompanyDetail:  nil,
+		CompanyDetail:  m.CompanyDetail.ToProto(),
 		Locations:      m.Locations,
 		ExpiringDate:   m.ExpiringDate,
 	}
@@ -97,51 +98,30 @@ func (m *JobModel) FromProto(p *protos.Job) {
 	m.PostUrl = p.PostUrl
 	m.PayRange = p.PayRange
 	m.DebugText = p.DebugText
-	m.HittedKeywords = p.HittedKeywords
+	m.HittedKeywords = strings.Join(p.HittedKeywords, ", ")
 	m.Score = int(p.GetScore())
 	m.Role = p.Role
 	m.WorkType = p.WorkType
-	m.CompanyDetail = "CompanyDetail:" + p.CompanyDetail.ReferenceId
+	// m.CompanyDetail = "CompanyDetail:" + p.CompanyDetail.ReferenceId
+	m.CompanyDetail = CompanyDetailModel{
+		ReferenceId: p.CompanyDetail.ReferenceId,
+	}
 	m.Locations = p.Locations
 	m.ExpiringDate = p.ExpiringDate
 }
 
-func (m *JobModel) GetModel(db *surrealdb.DB) (*protos.Job, error) {
+func (m *JobModel) GetModel(db *gorm.DB) (*protos.Job, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	query := fmt.Sprintf(`
-SELECT *, 
-(SELECT * FROM CompanyDetail  WHERE id = $parent.CompanyDetail Limit 1)[0] AS CompanyDetail 
-FROM Job:%s;`, m.PostId)
-	// fmt.Printf("run query : %s \n", query)
-	result, err := db.Query(query, nil)
-	if err != nil {
-		return nil, err
+	result := db.First(m)
+	if result.Error != nil {
+		return nil, result.Error
 	}
-
-	// resultMap := result.([]map[string]map[string][]interface{})
-
-	var jobqueryResult []QueryResult[JobUnmarshalModel]
-	// err = surrealdb.Unmarshal(result, jobqueryResult)
-	jsonResult, _ := json.Marshal(result)
-	err = json.Unmarshal(jsonResult, &jobqueryResult)
-	if err != nil {
-		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
-		log.Fatalf("error: %v", errorWrap)
-		return nil, errorWrap
-		// return nil, err
-	}
-	// pp.Println("jobs:", jobqueryResult)
-	if len(jobqueryResult) == 0 || len(jobqueryResult[0].Result) == 0 {
-		return nil, fmt.Errorf("no data found")
-	}
-	// pp.Println("jobs:", jobqueryResult[0].Result[0])
-	return jobqueryResult[0].Result[0].ToProto(), nil
-
+	return m.ToProto(), nil
 }
 
-func (m *JobModel) CreateModel(sd *surrealdb.DB) error {
+func (m *JobModel) CreateModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
@@ -150,89 +130,28 @@ func (m *JobModel) CreateModel(sd *surrealdb.DB) error {
 	if m.PostId == "" || m.PostTitle == "" {
 		return fmt.Errorf("empty data")
 	}
-
-	queryTemplate, _ := template.New("createJob").Parse(`
-INSERT INTO Job {
-  id : 						{{.PostId}},
-  PostId:         s"{{.PostId}}",
-  PostTitle:      s"{{.PostTitle}}",
-  PostUrl:        s"{{.PostUrl}}",
-  PayRange:       s"{{.PayRange}}",
-  DebugText:      s"$DebugText",
-  HittedKeywords: [],
-  Score:          0,
-  Role:           s"{{.Role}}",
-  WorkType:       s"{{.WorkType}}",
-  CompanyDetail:  r"{{.CompanyDetail}}",
-  Locations:      s"{{.Locations}}",
-  ExpiringDate:   s"{{.ExpiringDate}}",
-}	`)
-	var doc bytes.Buffer
-	var err error
-	err = queryTemplate.Execute(&doc, m)
-	if err != nil {
-		return err
-	}
-	// _, err := sd.Create(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
-	query := strings.ReplaceAll(doc.String(), "\n", " ")
-	query = strings.ReplaceAll(query, "\t", " ")
-	query = strings.ReplaceAll(query, "\r", " ")
-	query = strings.ReplaceAll(query, `\"`, `"`)
-	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
-	debugContent := strings.ReplaceAll(m.DebugText, "'", " %%U+0027%% ")
-	debugContent = strings.ReplaceAll(debugContent, "\"", " %%U+0022%% ")
-	debugContent = strings.ReplaceAll(debugContent, "\\|", " %%U+007C%% ")
-	debugContent = strings.ReplaceAll(debugContent, "\\", "")
-	query = strings.ReplaceAll(query, "$DebugText", debugContent)
-
-	result, err := sd.Query(query, m)
-	var message map[string]interface{}
-	surrealdb.Unmarshal(result, message)
-	if err != nil {
-		fmt.Println("query:", query)
-		pp.Println("message:", message)
-		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	result := sd.Create(m)
+	if result.Error != nil {
+		return errors.New(result.Error.Error())
 	}
 	return nil
 }
 
-func (m *JobModel) UpdateModel(sd *surrealdb.DB) error {
+func (m *JobModel) UpdateModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	_, err := sd.Update(fmt.Sprintf("Job:%s", m.PostId), m)
-	return err
+	result := sd.Save(m)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
 
-func (m *JobModel) DefineModel(sd *surrealdb.DB) error {
+func (m *JobModel) DefineModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-
-	query := `
--- Table definition
-DEFINE TABLE IF NOT EXISTS Job SCHEMAFULL;
--- Field definition
-  DEFINE FIELD IF NOT EXISTS PostId      ON TABLE Job TYPE  string;
-  DEFINE FIELD IF NOT EXISTS PostTitle    ON TABLE Job TYPE  string;
-  DEFINE FIELD IF NOT EXISTS PostUrl     ON TABLE Job TYPE  string;
-  DEFINE FIELD IF NOT EXISTS PayRange     ON TABLE Job TYPE  string;
-  DEFINE FIELD IF NOT EXISTS DebugText    ON TABLE Job TYPE  string;
-  DEFINE FIELD IF NOT EXISTS HittedKeywords  ON TABLE Job TYPE  array<string>;
-  DEFINE FIELD IF NOT EXISTS Score      ON TABLE Job TYPE  number;
-  DEFINE FIELD IF NOT EXISTS Role      ON TABLE Job TYPE  string;
-  DEFINE FIELD IF NOT EXISTS WorkType     ON TABLE Job TYPE  string;
-  DEFINE FIELD IF NOT EXISTS CompanyDetail  ON TABLE Job TYPE  record<CompanyDetail>;
-  DEFINE FIELD IF NOT EXISTS Locations    ON TABLE Job TYPE  string;
-  DEFINE FIELD IF NOT EXISTS ExpiringDate   ON TABLE Job TYPE  string;  
--- Index definition
-  DEFINE INDEX IF NOT EXISTS id       ON TABLE Job COLUMNS PostId UNIQUE;
-  DEFINE ANALYZER IF NOT EXISTS  ContentSearch TOKENIZERS blank  FILTERS snowball(english), edgengram(3,5);
-  DEFINE INDEX  ContentSearch ON TABLE Job COLUMNS DebugText SEARCH ANALYZER ContentSearch BM25 HIGHLIGHTS;
-  DEFINE INDEX IF NOT EXISTS TitleSearch ON TABLE Job COLUMNS PostTitle SEARCH ANALYZER ContentSearch BM25 HIGHLIGHTS;
--- END OF table definition
-  `
-	_, err := sd.Query(query, nil)
-	return err
+	return sd.AutoMigrate(&m)
 
 }

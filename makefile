@@ -25,7 +25,10 @@ generate-proto: \
 	# check-rust-protos
 
 build-job-search-service:
-	go build -o bin/job-search-service services/job-search-service/main.go
+	go build -o bin/job-search-service services/job_search_service/main.go
+
+run-job-search-service:
+	go run services/job_search_service/main.go  -C=config/job_search_service.toml run -V=4
 
 
 build-service:\

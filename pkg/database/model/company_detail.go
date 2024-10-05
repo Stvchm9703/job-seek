@@ -4,22 +4,19 @@
 package model
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
 	"strings"
-	"text/template"
 
 	"github.com/k0kubun/pp/v3"
-	"github.com/samber/lo"
-	surrealdb "github.com/surrealdb/surrealdb.go"
+	"gorm.io/gorm"
 )
 
 type CompanyDetailModel struct {
-	ID           string `json:"id,omitempty"`
-	ReferenceId  string `surrealdb:"mapTo:id,primaryId"`
-	Name         string `surrealdb:"skipUpdate"`
+	gorm.Model
+	ReferenceId  string `gorm:"primaryKey"`
+	Name         string
 	Url          string
 	Linkedin     string
 	Description  string
@@ -27,9 +24,12 @@ type CompanyDetailModel struct {
 	JobPosted    int
 	GroupSize    string
 	HeadQuarters string
-	Specialties  []string
+	Specialties  string
 	Locations    string
-	LastUpdate   string `surrealdb:"autoUpdateTime"`
+}
+
+func (CompanyDetailModel) TableName() string {
+	return "company_detail"
 }
 
 func (m *CompanyDetailModel) ToProto() *protos.CompanyDetail {
@@ -45,9 +45,8 @@ func (m *CompanyDetailModel) ToProto() *protos.CompanyDetail {
 		JobPosted:    int32(m.JobPosted),
 		GroupSize:    groupSize,
 		HeadQuarters: m.HeadQuarters,
-		Specialties:  m.Specialties,
+		Specialties:  strings.Split(m.Specialties, ", "),
 		Locations:    m.Locations,
-		LastUpdate:   m.LastUpdate,
 	}
 }
 
@@ -62,45 +61,38 @@ func (m *CompanyDetailModel) FromProto(p *protos.CompanyDetail) {
 	m.JobPosted = int(p.JobPosted)
 	m.GroupSize = p.GroupSize.String()
 	m.HeadQuarters = p.HeadQuarters
-	m.Specialties = p.Specialties
+	m.Specialties = strings.Join(p.Specialties, ", ")
 	m.Locations = p.Locations
 }
 
-func (m *CompanyDetailModel) GetModel(db *surrealdb.DB) (*protos.CompanyDetail, error) {
+func (m *CompanyDetailModel) GetModel(db *gorm.DB) (*protos.CompanyDetail, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	result, err := db.Select(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId))
-	if err != nil {
-		return nil, err
-	}
-	detail := new(CompanyDetailModel)
-	err = surrealdb.Unmarshal(result, detail)
+	var result CompanyDetailModel
+	db.First(&result, m.ReferenceId)
 
-	if err != nil {
-		return nil, errors.Join(fmt.Errorf("failed to unmarshal CompanyDetailModel"), err, pp.Errorf("result", result))
-	}
-	return detail.ToProto(), nil
+	return result.ToProto(), nil
 }
 
-func (m *CompanyDetailModel) ListModel(db *surrealdb.DB) (*protos.CompanyDetail, error) {
-	query := fmt.Sprintf(`
-	SELECT * , search::score(1) as score FROM CompanyDetail WHERE Name @1@ "%s" ORDER BY score DESC;
-	`, m.Name)
-	result, err := db.Query(query, nil)
-	if err != nil {
-		return nil, err
-	}
-	detail := new(CompanyDetailModel)
-	err = surrealdb.Unmarshal(result, detail)
+// func (m *CompanyDetailModel) ListModel(db *gorm.DB) (*protos.CompanyDetail, error) {
+// 	query := fmt.Sprintf(`
+// 	SELECT * , search::score(1) as score FROM CompanyDetail WHERE Name @1@ "%s" ORDER BY score DESC;
+// 	`, m.Name)
+// 	result, err := db.Query(query, nil)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	detail := new(CompanyDetailModel)
+// 	err = surrealdb.Unmarshal(result, detail)
 
-	if err != nil {
-		return nil, errors.Join(fmt.Errorf("failed to unmarshal CompanyDetailModel"), err, pp.Errorf("result", result))
-	}
-	return detail.ToProto(), nil
-}
+// 	if err != nil {
+// 		return nil, errors.Join(fmt.Errorf("failed to unmarshal CompanyDetailModel"), err, pp.Errorf("result", result))
+// 	}
+// 	return detail.ToProto(), nil
+// }
 
-func (m *CompanyDetailModel) CreateModel(sd *surrealdb.DB) error {
+func (m *CompanyDetailModel) CreateModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
@@ -108,101 +100,36 @@ func (m *CompanyDetailModel) CreateModel(sd *surrealdb.DB) error {
 		return fmt.Errorf("ReferenceId is empty")
 	}
 
-	spSpecialties := strings.Join(lo.Map(m.Specialties, func(s string, _ int) string {
-		return fmt.Sprintf(`s"%s"`, s)
-	}), ",")
-
-	queryTemplate, _ := template.New("createCompanyDetail").Parse(`
-INSERT INTO CompanyDetail  {
-	id: {{.ReferenceId}},
-	ReferenceId: s"{{.ReferenceId}}",
-	Name: s"{{.Name}}",
-	Url: s"{{.Url}}",
-	Linkedin: s"{{.Linkedin}}",
-	Description: s"$Description",
-	Industry: s"{{.Industry}}",
-	JobPosted: {{.JobPosted}},
-	GroupSize: 		s"{{.GroupSize}}",
-	HeadQuarters: s"{{.HeadQuarters}}",
-	Specialties: [$Specialties],
-	Locations: s"{{.Locations}}",
-	LastUpdate: time::format(time::now(),"%+"),
-};
-	`)
-	var doc bytes.Buffer
-	var err error
-	err = queryTemplate.Execute(&doc, m)
-	if err != nil {
-		return err
+	result := sd.Create(m)
+	if result.Error != nil {
+		return errors.Join(result.Error, pp.Errorf("result:", result))
 	}
-	// _, err := sd.Create(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
-	query := strings.ReplaceAll(doc.String(), "\n", " ")
-	query = strings.ReplaceAll(query, "\t", " ")
-	query = strings.ReplaceAll(query, "\r", " ")
-	// query = strings.ReplaceAll(query, "\"", "'")
-	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
+	pp.Println(result)
 
-	query = strings.ReplaceAll(query, "$Specialties", spSpecialties)
-	debugContent := strings.ReplaceAll(m.Description, "'", " %%U+0027%% ")
-	debugContent = strings.ReplaceAll(debugContent, "\"", " %%U+0022%% ")
-	debugContent = strings.ReplaceAll(debugContent, "\\|", " %%U+007C%% ")
-	query = strings.ReplaceAll(query, "$Description", debugContent)
-	// pp.Println("query:", query)
-
-	result, err := sd.Query(query, m)
-	if err != nil {
-		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message:", result))
-	}
-	var message map[string]interface{}
-	surrealdb.Unmarshal(result, message)
-	if err != nil {
-		fmt.Println("query:", query)
-		pp.Println("message:", message)
-		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
-	}
 	return nil
-	// return err
 }
 
-func (m *CompanyDetailModel) UpdateModel(sd *surrealdb.DB) error {
-	if sd == nil {
-		return fmt.Errorf("database connection is nil")
-	}
-	_, err := sd.Update(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
-	return err
-}
-
-func (m CompanyDetailModel) DefineModel(sd *surrealdb.DB) error {
+func (m *CompanyDetailModel) UpdateModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
 
-	query := `
-DEFINE TABLE IF NOT EXISTS CompanyDetail SCHEMAFULL;
-  DEFINE FIELD IF NOT EXISTS  ReferenceId     ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS  Name            ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS  Url              ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS  Linkedin        ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS  Description      ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS  Industry        ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS  JobPosted        ON TABLE CompanyDetail TYPE    number;
-  DEFINE FIELD IF NOT EXISTS  GroupSize        ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS  HeadQuarters    ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS  Specialties      ON TABLE CompanyDetail TYPE    array<string>;
-  DEFINE FIELD IF NOT EXISTS  Locations        ON TABLE CompanyDetail TYPE    string;
-  DEFINE FIELD IF NOT EXISTS  LastUpdate      ON TABLE CompanyDetail TYPE    string;
-  DEFINE INDEX IF NOT EXISTS  id              ON TABLE CompanyDetail COLUMNS ReferenceId UNIQUE;
-  DEFINE EVENT IF NOT EXISTS UpdateHook ON TABLE CompanyDetail 
-    WHEN $event = "CREATE" OR $event = "INSERT"
-    THEN (
-      UPDATE CompanyDetail SET LastUpdate = time::format(time::now(),"%+") 
-        WHERE id = $after.post_id
-    );;
-	DEFINE INDEX  NameSearch ON TABLE CompanyDetail COLUMNS Name SEARCH ANALYZER ContentSearch BM25 HIGHLIGHTS;
-  DEFINE INDEX IF NOT EXISTS DescriptionSearch ON TABLE CompanyDetail COLUMNS Description SEARCH ANALYZER ContentSearch BM25 HIGHLIGHTS;
-    `
+	result := sd.Save(m)
 
-	_, err := sd.Query(query, nil)
-	return err
+	if result.Error != nil {
+		return errors.Join(result.Error, pp.Errorf("result:", result))
+	}
+
+	pp.Println(result)
+
+	return nil
+}
+
+func (m CompanyDetailModel) DefineModel(sd *gorm.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
+	return sd.AutoMigrate(&CompanyDetailModel{})
 
 }

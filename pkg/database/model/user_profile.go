@@ -4,244 +4,154 @@
 package model
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
-	"log"
-	"strings"
-	"text/template"
+	"strconv"
 
-	"github.com/k0kubun/pp/v3"
 	"github.com/samber/lo"
-	surrealdb "github.com/surrealdb/surrealdb.go"
+	"gorm.io/gorm"
 )
 
 type UserProfileModel struct {
-	Id            string   `json:"id"`
-	UserId        string   `json:"UserId"`
-	Title         string   `json:"Title"`
-	Position      string   `json:"Position"`
-	Description   string   `json:"Description"`
-	Company       string   `json:"Company"`
-	CompanyDetail string   `json:"CompanyDetail"`
-	Salary        string   `json:"Salary"`
-	Type          string   `json:"Type"`
-	Keywords      []string `json:"Keywords"`
-	StartDate     string   `json:"StartDate"`
-	EndDate       string   `json:"EndDate"`
+	gorm.Model
+	// Id            string                   `json:"id"`
+	// UserId        string                   `json:"UserId" gorm:""`
+	User          UserAccountModel         `json:"User"`
+	Title         string                   `json:"Title"`
+	Position      string                   `json:"Position"`
+	Description   string                   `json:"Description"`
+	Company       string                   `json:"Company"`
+	CompanyDetail CompanyDetailModel       `json:"CompanyDetail"`
+	Salary        string                   `json:"Salary"`
+	Type          string                   `json:"Type"`
+	Keywords      []PreferenceKeywordModel `json:"Keywords"`
+	StartDate     string                   `json:"StartDate"`
+	EndDate       string                   `json:"EndDate"`
 }
 
-type UserProfileUnmarshalModel struct {
-	Id            string                    `json:"id"`
-	UserId        string                    `json:"UserId"`
-	Title         string                    `json:"Title"`
-	Position      string                    `json:"Position"`
-	Description   string                    `json:"Description"`
-	Company       string                    `json:"Company"`
-	Salary        string                    `json:"Salary"`
-	Type          string                    `json:"Type"`
-	Keywords      []*PreferenceKeywordModel `json:"Keywords"`
-	StartDate     string                    `json:"StartDate"`
-	EndDate       string                    `json:"EndDate"`
-	CompanyDetail *CompanyDetailModel       `json:"CompanyDetail"`
+func (UserProfileModel) TableName() string {
+	return "user_profile"
 }
 
-func (m *UserProfileUnmarshalModel) ToProto() *protos.UserProfile {
+// type UserProfileUnmarshalModel struct {
+// 	Id            string                   `json:"id"`
+// 	UserId        string                   `json:"UserId"`
+// 	Title         string                   `json:"Title"`
+// 	Position      string                   `json:"Position"`
+// 	Description   string                   `json:"Description"`
+// 	Company       string                   `json:"Company"`
+// 	Salary        string                   `json:"Salary"`
+// 	Type          string                   `json:"Type"`
+// 	Keywords      []PreferenceKeywordModel `json:"Keywords"`
+// 	StartDate     string                   `json:"StartDate"`
+// 	EndDate       string                   `json:"EndDate"`
+// 	CompanyDetail CompanyDetailModel       `json:"CompanyDetail"`
+// }
+
+func (m *UserProfileModel) ToProto() *protos.UserProfile {
 	mType := protos.UserProfileType_value[m.Type]
 
 	return &protos.UserProfile{
-		UserId:      m.UserId,
+		UserId:      fmt.Sprintf("%d", m.User.ID),
 		Title:       m.Title,
 		Position:    m.Position,
 		Description: m.Description,
 		Salary:      m.Salary,
 		Type:        protos.UserProfileType(mType),
-		Keywords:    lo.Map(m.Keywords, func(k *PreferenceKeywordModel, _ int) *protos.PreferenceKeyword { return k.ToProto() }),
+		Keywords:    lo.Map(m.Keywords, func(k PreferenceKeywordModel, _ int) *protos.PreferenceKeyword { return k.ToProto() }),
 		StartDate:   m.StartDate,
 		EndDate:     m.EndDate,
 	}
 }
 
 func (m *UserProfileModel) FromProto(p *protos.UserProfile) {
-	m.UserId = p.UserId
+	idv, _ := strconv.Atoi(p.UserId)
+	m.User = UserAccountModel{}
+	m.User.ID = uint(idv)
 	m.Title = p.Title
 	m.Position = p.Position
 	m.Description = p.Description
 	m.Salary = p.Salary
 	m.Type = p.Type.String()
-	m.Keywords = lo.Map(p.Keywords, func(k *protos.PreferenceKeyword, _ int) string { return "PreferenceKeyword:" + k.Keyword })
+	m.Keywords = lo.Map(p.Keywords, func(k *protos.PreferenceKeyword, _ int) PreferenceKeywordModel {
+		pk := PreferenceKeywordModel{}
+		pk.FromProto(k)
+		return pk
+	})
 	m.StartDate = p.StartDate
 	m.EndDate = p.EndDate
 }
 
-func (m *UserProfileModel) GetModel(db *surrealdb.DB) (*protos.UserProfile, error) {
+func (m *UserProfileModel) GetModel(db *gorm.DB) (*protos.UserProfile, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	query := fmt.Sprintf(`
-SELECT *,
-(SELECT * FROM PreferenceKeyword  WHERE id in $parent.Keywords ) AS Keywords
-FROM UserProfile:%s
-;`, m.Id)
-	// fmt.Printf("run query : %s \n", query)
-	result, err := db.Query(query, nil)
-	if err != nil {
-		return nil, err
+	if err := db.First(m).Error; err != nil {
+		return nil, db.Error
 	}
+	return m.ToProto(), nil
 
-	// resultMap := result.([]map[string]map[string][]interface{})
-
-	var queryResult []QueryResult[UserProfileUnmarshalModel]
-	// err = surrealdb.Unmarshal(result, jobqueryResult)
-	jsonResult, _ := json.Marshal(result)
-	err = json.Unmarshal(jsonResult, &queryResult)
-	if err != nil {
-		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
-		log.Fatalf("error: %v", errorWrap)
-		return nil, errorWrap
-		// return nil, err
-	}
-	// pp.Println("jobs:", jobqueryResult)
-	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
-		return nil, fmt.Errorf("no data found")
-	}
-	// pp.Println("result:", queryResult[0].Result[0])
-	return queryResult[0].Result[0].ToProto(), nil
 }
 
-func (m *UserProfileModel) GetModelByUserId(db *surrealdb.DB) ([]*protos.UserProfile, error) {
+func (m *UserProfileModel) GetModelByUserId(db *gorm.DB) ([]*protos.UserProfile, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	query := fmt.Sprintf(`
-SELECT *,
-(SELECT * FROM PreferenceKeyword  WHERE id in $parent.Keywords ) AS Keywords
-FROM UserProfile
-WHERE UserId = r'%s'
-;`, m.UserId)
-	// fmt.Printf("run query : %s \n", query)
-	result, err := db.Query(query, nil)
-	if err != nil {
+	var result []*UserProfileModel
+	if err := db.Model(&UserProfileModel{}).Where("user_id = ?", m.User.ID).Find(&result).Error; err != nil {
 		return nil, err
 	}
-
-	// resultMap := result.([]map[string]map[string][]interface{})
-
-	var queryResult []QueryResult[UserProfileUnmarshalModel]
-	// err = surrealdb.Unmarshal(result, jobqueryResult)
-	jsonResult, _ := json.Marshal(result)
-	err = json.Unmarshal(jsonResult, &queryResult)
-	if err != nil {
-		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
-		log.Fatalf("error: %v", errorWrap)
-		return nil, errorWrap
-		// return nil, err
-	}
-	// pp.Println("jobs:", jobqueryResult)
-	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
-		return nil, fmt.Errorf("no data found")
-	}
-	// pp.Println("result:", queryResult[0].Result[0])
-	return lo.Map(queryResult[0].Result, func(p UserProfileUnmarshalModel, _ int) *protos.UserProfile { return p.ToProto() }), nil
-
+	return lo.Map(result, func(item *UserProfileModel, index int) *protos.UserProfile {
+		return item.ToProto()
+	}), nil
 }
 
-func (m *UserProfileModel) CreateModel(sd *surrealdb.DB) error {
+func (m *UserProfileModel) CreateModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	// fmt.Println("CreateModel")
-	// pp.Println(m)
+	if m.User.ID == 0 {
+		return fmt.Errorf("user id is empty")
+	}
 
-	queryTemplate, _ := template.New("createUserProfileModel").Parse(`
-CREATE UserProfile  CONTENT {
-	UserId : 		r"{{.UserId}}",
-	Title : 		s"{{.Title}}",
-	Position : 		s"{{.Position}}",
-	Description : 	s"$Description",
-	Salary : 		s"{{.Salary}}",
-	Company: 		s"{{.Company}}",
-	CompanyDetail: 	None,
-	Type : 			s"{{.Type}}",
-	Keywords : 		[{{- range $i, $v := .Keywords}}{{- if $i}},{{- end}}r"{{- $v}}"{{- end}}],
-	StartDate : 	s"{{.StartDate}}",
-	EndDate : 		s"{{.EndDate}}",
-}	`)
-	var doc bytes.Buffer
-	var err error
-	err = queryTemplate.Execute(&doc, m)
-	if err != nil {
+	if err := sd.Create(m).Error; err != nil {
 		return err
 	}
-	// _, err := sd.Create(fmt.Sprintf("CompanyDetail:%s", m.ReferenceId), m)
-	query := strings.ReplaceAll(doc.String(), "\n", " ")
-	query = strings.ReplaceAll(query, "\t", " ")
-	query = strings.ReplaceAll(query, "\r", " ")
-	query = strings.ReplaceAll(query, `\"`, `"`)
-	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
-	debugContent := strings.ReplaceAll(m.Description, "'", " %%U+0027%% ")
-	debugContent = strings.ReplaceAll(debugContent, "\"", " %%U+0022%% ")
-	debugContent = strings.ReplaceAll(debugContent, "\\|", " %%U+007C%% ")
-	debugContent = strings.ReplaceAll(debugContent, "\\", "")
-	query = strings.ReplaceAll(query, "$Description", debugContent)
 
-	result, err := sd.Query(query, m)
-	var message map[string]interface{}
-	surrealdb.Unmarshal(result, message)
-	if err != nil {
-		fmt.Println("query:", query)
-		pp.Println("message:", message)
-		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+	return nil
+}
+
+func (m *UserProfileModel) UpdateModel(sd *gorm.DB) error {
+	if sd == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	if m.ID == 0 {
+		return fmt.Errorf("ID is empty")
+	}
+	if err := sd.Save(m).Error; err != nil {
+		return err
 	}
 	return nil
 }
 
-func (m *UserProfileModel) UpdateModel(sd *surrealdb.DB) error {
+func (m *UserProfileModel) DeleteModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	if m.UserId == "" {
-		return fmt.Errorf("user id is empty")
+	if m.ID == 0 {
+		return fmt.Errorf("ID is empty")
 	}
-
-	_, err := sd.Update(fmt.Sprintf("UserProfile:%s", m.UserId), m)
-	return err
+	if err := sd.Delete(m).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
-func (m *UserProfileModel) DeleteModel(sd *surrealdb.DB) error {
-	if sd == nil {
-		return fmt.Errorf("database connection is nil")
-	}
-	_, err := sd.Delete(fmt.Sprintf("UserProfile:%s", m.Id))
-	return err
-}
-
-func (m *UserProfileModel) DefineModel(sd *surrealdb.DB) error {
+func (m *UserProfileModel) DefineModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
 
-	query := `
--- Table definition
-DEFINE TABLE IF NOT EXISTS UserProfile SCHEMAFULL;
--- Field definition
-DEFINE FIELD IF NOT EXISTS UserId		ON TABLE UserProfile TYPE record<UserAccount>;
-DEFINE FIELD IF NOT EXISTS Title		ON TABLE UserProfile TYPE string;
-DEFINE FIELD IF NOT EXISTS Position		ON TABLE UserProfile TYPE string;
-DEFINE FIELD IF NOT EXISTS Description	ON TABLE UserProfile TYPE string;
-DEFINE FIELD IF NOT EXISTS Company	ON TABLE UserProfile TYPE option<string>;
-DEFINE FIELD IF NOT EXISTS Salary		ON TABLE UserProfile TYPE string;
-DEFINE FIELD IF NOT EXISTS Type			ON TABLE UserProfile TYPE string;
-DEFINE FIELD IF NOT EXISTS Keywords		ON TABLE UserProfile TYPE option<array<record<PreferenceKeyword>>>;
-DEFINE FIELD IF NOT EXISTS StartDate	ON TABLE UserProfile TYPE string;
-DEFINE FIELD IF NOT EXISTS EndDate		ON TABLE UserProfile TYPE string;
-DEFINE FIELD IF NOT EXISTS CompanyDetail	ON TABLE UserProfile TYPE option<record<CompanyDetail>> ;
-
--- END OF table definition
-		`
-	_, err := sd.Query(query, nil)
-	return err
+	return sd.AutoMigrate(&m)
 
 }

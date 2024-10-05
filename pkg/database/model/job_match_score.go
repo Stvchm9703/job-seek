@@ -5,45 +5,53 @@ package model
 
 import (
 	"job-seek/pkg/protos"
+	"strconv"
 
 	"github.com/samber/lo"
+	"gorm.io/gorm"
 )
 
 type JobMatchScoreModel struct {
-	UserId         string   `json:"user_id"`
-	JobId          string   `json:"job_id"`
-	PredictScore   float32  `json:"predict_score"`
-	HittedKeywords []string `json:"hitted_keywords"`
-	Job            string   `json:"job,omitempty"`
-	UserProfile    string   `json:"user_profile,omitempty"`
+	gorm.Model
+	// UserId         string                    `json:"user_id"`
+	// JobId          string                    `json:"job_id"`
+	PredictScore   float32                  `json:"predict_score"`
+	HittedKeywords []PreferenceKeywordModel `json:"hitted_keywords"`
+	Job            JobModel                 `json:"job,omitempty"`
+	UserProfile    UserProfileModel         `json:"user_profile,omitempty"`
 }
 
-type JobMatchScoreUnmarshalModel struct {
-	Id             string                     `json:"id"`
-	UserId         string                     `json:"user_id"`
-	JobId          string                     `json:"job_id"`
-	PredictScore   float32                    `json:"predict_score"`
-	HittedKeywords []*PreferenceKeywordModel  `json:"hitted_keywords"`
-	Job            *JobUnmarshalModel         `json:"job,omitempty"`
-	UserProfile    *UserProfileUnmarshalModel `json:"user_profile,omitempty"`
+func (JobMatchScoreModel) TableName() string {
+	return "job_match_score"
 }
 
-func (m *JobMatchScoreUnmarshalModel) ToProto() *protos.JobMatchScore {
+func (m *JobMatchScoreModel) ToProto() *protos.JobMatchScore {
 	return &protos.JobMatchScore{
-		UserId:         m.UserId,
-		JobId:          m.JobId,
+		// UserId:         m.UserId,
+		// JobId:          m.JobId,
 		PredictScore:   m.PredictScore,
-		HittedKeywords: lo.Map(m.HittedKeywords, func(p *PreferenceKeywordModel, _ int) *protos.PreferenceKeyword { return p.ToProto() }),
+		HittedKeywords: lo.Map(m.HittedKeywords, func(p PreferenceKeywordModel, _ int) *protos.PreferenceKeyword { return p.ToProto() }),
 		Job:            m.Job.ToProto(),
 		UserProfile:    m.UserProfile.ToProto(),
 	}
 }
 
 func (m *JobMatchScoreModel) FromProto(p *protos.JobMatchScore) {
-	m.UserId = p.UserId
-	m.JobId = p.JobId
+	// m.UserId = p.UserId
+	// m.JobId = p.JobId
 	m.PredictScore = p.PredictScore
-	m.HittedKeywords = lo.Map(p.HittedKeywords, func(k *protos.PreferenceKeyword, _ int) string { return k.Keyword })
-	m.Job = p.Job.PostId
-	m.UserProfile = p.UserProfile.UserId
+	m.HittedKeywords = lo.Map(p.HittedKeywords, func(k *protos.PreferenceKeyword, _ int) PreferenceKeywordModel {
+		temp := PreferenceKeywordModel{
+			User:       UserAccountModel{},
+			Keyword:    k.Keyword,
+			Value:      k.Value,
+			Type:       k.Type,
+			IsPositive: k.IsPositive,
+		}
+		kwId, _ := strconv.Atoi(k.KwId)
+		temp.ID = uint(kwId)
+		return temp
+	})
+	m.Job.FromProto(p.Job)
+	m.UserProfile.FromProto(p.UserProfile)
 }
