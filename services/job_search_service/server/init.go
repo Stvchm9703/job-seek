@@ -76,14 +76,15 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) (*grpc.Se
 }
 
 func InitService(config *runConf.ServiceConfig, log *logrus.Logger) JobSearchServiceServerImpl {
-	dbClient, err := database.InitConnection(&config.SQLDBService, "development")
+
+	dbClient, err := database.InitConnection(&config.DBService, "development")
 	log.Info("Connecting to database")
 	if err != nil {
 		println("Failed to connect to database in InitService")
 		println(err.Error())
 		log.WithFields(map[string]interface{}{
 			"error": err,
-			"host":  config.SQLDBService,
+			"host":  config.DBService,
 		}).Fatal("Failed to connect to database in InitService")
 	}
 	log.Info("Connected to database")

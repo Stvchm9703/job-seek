@@ -16,9 +16,13 @@ domain = 'https://au.search.yahoo.com/'
 [surreal_db_service]
 host = '127.0.0.1'
 port = 8654
-user = "root"
-password = "root"
+user = "job_search_service"
+password = "service_job_search"
 
 
 [sql_db_service]
 database_path = "db/job_search_service.db"
+user = "job_search_service"
+password = "service_job_search"
+host = "127.0.0.1"
+port = 5432

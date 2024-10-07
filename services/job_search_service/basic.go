@@ -45,7 +45,7 @@ func main_process() {
 	// postDetails := []request.SeekPostDetails{}
 	combinedKeywords := seek_api.CreateSearchCombinations(*readConfig.SearchKeywords)
 
-	postData := getPostPobsList(combinedKeywords, searchParamsPreset)
+	postData := getPostJobsList(combinedKeywords, searchParamsPreset)
 
 	log.Println("total post data count : ", len(postData))
 	waitSecond := int64(15 * len(postData))
@@ -111,7 +111,7 @@ func main_process() {
 	}
 }
 
-func getPostPobsList(combinedKeywords []string, searchParamsPreset *seek_api.SeekSearchApiParams) []seek_api.SeekSearchApiResponseData {
+func getPostJobsList(combinedKeywords []string, searchParamsPreset *seek_api.SeekSearchApiParams) []seek_api.SeekSearchApiResponseData {
 
 	postData := []seek_api.SeekSearchApiResponseData{}
 	for _, keywordCombination := range combinedKeywords {

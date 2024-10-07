@@ -1,31 +1,38 @@
 services:
-  surrealdb:
-    image: surrealdb/surrealdb:v1.5.5
-    container_name: surrealdb
-    ports:
-      - "8654:8654"
-    user: root
-    command:
-      - start
-      - --log=debug
-      - --auth
-      - --user=root
-      - --pass=root
-      - --bind=0.0.0.0:8654 
-      - file:/db/database1.db
-    restart: always
+  db:
+    image: postgres:16.4
+    hostname: job_seeker-db
+    environment:
+      POSTGRES_PASSWORD: "root"
+      POSTGRES_USER: "root"
+      POSTGRES_DB: "job_seeker"
     volumes:
-      - ./db:/db
-
-    deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 4G
-        reservations:
-          cpus: '0.001'
-          memory: 1G
-
+    - ./db/pgdb:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: pg_isready -U job_seeker
+      interval: 2s
+      timeout: 3s
+      retries: 40
+    ports: 
+    - 5432:5432
+  # surrealdb:
+  #   image: surrealdb/surrealdb:v1.5.5
+  #   container_name: surrealdb
+  #   ports:
+  #     - "8654:8654"
+  #   user: root
+  #   command:
+  #     - start
+  #     - --log=debug
+  #     - --auth
+  #     - --user=root
+  #     - --pass=root
+  #     - --bind=0.0.0.0:8654 
+  #     - file:/db/database1.db
+  #   restart: always
+  #   volumes:
+  #     - ./db:/db
   # meilisearch:
   #   image: getmeili/meilisearch:latest
   #   container_name: meilisearch
@@ -42,3 +49,11 @@ services:
   #   restart: unless-stopped
   #   volumes:
   #     - ./meilisearch:/data.ms
+# deploy:
+#   resources:
+#     limits:
+#       cpus: '0.2'
+#       memory: 4G
+#     reservations:
+#       cpus: '0.001'
+#       memory: 1G

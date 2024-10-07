@@ -18,7 +18,7 @@ type ServiceConfig struct {
 	// internal services
 	MeiliSearchService config.DatabaseConfig `toml:"meili_search_service" mapstructure:"meili_search_service"`
 	SurrealDBService   config.DatabaseConfig `toml:"surreal_db_service" mapstructure:"surreal_db_service"`
-	SQLDBService       config.DatabaseConfig `toml:"sql_db_service" mapstructure:"sql_db_service"`
+	DBService          config.DatabaseConfig `toml:"sql_db_service" mapstructure:"sql_db_service"`
 	// api services
 	SeekService config.SeekServiceConfig `toml:"seek_service" mapstructure:"seek_service"`
 	YahooSearch config.ApiService        `toml:"yahoo_search" mapstructure:"yahoo_search"`
@@ -67,6 +67,8 @@ func Setup() {
 
 	// sql db service
 	viper.SetDefault("sql_db_service.database_path", "db/job_search_service.db")
+	viper.SetDefault("sql_db_service.host", "localhost")
+	viper.SetDefault("sql_db_service.port", 5432)
 
 	err := viper.ReadInConfig()
 	if err != nil {

@@ -15,7 +15,7 @@ import (
 
 type CompanyDetailModel struct {
 	gorm.Model
-	ReferenceId  string `gorm:"primaryKey"`
+	ReferenceId  string
 	Name         string
 	Url          string
 	Linkedin     string

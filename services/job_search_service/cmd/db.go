@@ -13,7 +13,7 @@ func InitDB(verboseLevel int) {
 	log.Info("Start Database Check")
 	// ctx, ctxCancel := context.WithCancel(context.Background())
 	// defer ctxCancel()
-	dbClient, err := database.InitConnection(&runConf.RuntimeConfig.SurrealDBService, "development")
+	dbClient, err := database.InitConnection(&runConf.RuntimeConfig.DBService, "development")
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"config": runConf.RuntimeConfig,

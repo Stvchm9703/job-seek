@@ -17,7 +17,7 @@ import (
 
 type JobModel struct {
 	gorm.Model
-	PostId          string             `json:"post_id" gorm:"primaryKey"`
+	PostId          string             `json:"post_id"`
 	PostTitle       string             `json:"post_title"`
 	PostUrl         string             `json:"post_url"`
 	PayRange        string             `json:"pay_range"`
@@ -26,8 +26,8 @@ type JobModel struct {
 	Score           int                `json:"score,omitempty"`
 	Role            string             `json:"role"`
 	WorkType        string             `json:"work_type"`
-	CompanyDetailID int                `json:"company_detail_id"`
-	CompanyDetail   CompanyDetailModel `json:"company_detail,omitempty"`
+	CompanyDetailID int                `json:"-"`
+	CompanyDetail   CompanyDetailModel `json:"company_detail,omitempty" gorm:"foreignKey:CompanyDetailID"`
 	Locations       string             `json:"locations"`
 	ExpiringDate    string             `json:"expiring_date"`
 }
@@ -148,10 +148,9 @@ func (m *JobModel) UpdateModel(sd *gorm.DB) error {
 	return nil
 }
 
-func (m *JobModel) DefineModel(sd *gorm.DB) error {
+func (m JobModel) DefineModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
 	return sd.AutoMigrate(&m)
-
 }
