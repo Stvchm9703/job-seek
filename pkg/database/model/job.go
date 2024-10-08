@@ -17,25 +17,25 @@ import (
 
 type JobModel struct {
 	gorm.Model
-	PostId          string             `json:"post_id"`
-	PostTitle       string             `json:"post_title"`
-	PostUrl         string             `json:"post_url"`
-	PayRange        string             `json:"pay_range"`
-	DebugText       string             `json:"debug_text"`
-	HittedKeywords  string             `json:"hitted_keywords"`
-	Score           int                `json:"score,omitempty"`
-	Role            string             `json:"role"`
-	WorkType        string             `json:"work_type"`
-	CompanyDetailID int                `json:"-"`
-	CompanyDetail   CompanyDetailModel `json:"company_detail,omitempty" gorm:"foreignKey:CompanyDetailID"`
-	Locations       string             `json:"locations"`
-	ExpiringDate    string             `json:"expiring_date"`
+	PostId         string              `json:"post_id"`
+	PostTitle      string              `json:"post_title"`
+	PostUrl        string              `json:"post_url"`
+	PayRange       string              `json:"pay_range"`
+	DebugText      string              `json:"debug_text"`
+	HittedKeywords string              `json:"hitted_keywords"`
+	Score          int                 `json:"score,omitempty"`
+	Role           string              `json:"role"`
+	WorkType       string              `json:"work_type"`
+	CompanyDetail  *CompanyDetailModel `json:"company_detail,omitempty" gorm:"foreignKey:ID"`
+	Locations      string              `json:"locations"`
+	ExpiringDate   string              `json:"expiring_date"`
 }
 
 func (JobModel) TableName() string {
 	return "job"
 }
 
+// survey_user_preference
 // type JobUnmarshalModel struct {
 // 	Id             string              `json:"id"`
 // 	PostId         string              `json:"PostId"`
@@ -103,7 +103,7 @@ func (m *JobModel) FromProto(p *protos.Job) {
 	m.Role = p.Role
 	m.WorkType = p.WorkType
 	// m.CompanyDetail = "CompanyDetail:" + p.CompanyDetail.ReferenceId
-	m.CompanyDetail = CompanyDetailModel{
+	m.CompanyDetail = &CompanyDetailModel{
 		ReferenceId: p.CompanyDetail.ReferenceId,
 	}
 	m.Locations = p.Locations
@@ -148,9 +148,9 @@ func (m *JobModel) UpdateModel(sd *gorm.DB) error {
 	return nil
 }
 
-func (m JobModel) DefineModel(sd *gorm.DB) error {
+func (JobModel) DefineModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	return sd.AutoMigrate(&m)
+	return sd.AutoMigrate(&JobModel{})
 }

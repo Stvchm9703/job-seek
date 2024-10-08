@@ -7,6 +7,7 @@ import (
 	"context"
 	"job-seek/pkg/database/model"
 	"job-seek/pkg/protos"
+	"strconv"
 
 	logrus "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -37,9 +38,9 @@ func (s UserManagementServiceServerImpl) deleteUserProfileByProfileId(profielId 
 	// You can use a database query or any other method to delete the user
 	// Return an error if the delete operation fails, nil otherwise
 	// todo()
-	instanceModel := &model.UserProfileModel{
-		Id: profielId,
-	}
+	profielIdInt, _ := strconv.Atoi(profielId)
+	instanceModel := &model.UserProfileModel{}
+	instanceModel.ID = uint(profielIdInt)
 	user, err := instanceModel.GetModel(s.dbClient)
 	if err != nil {
 		s.log.WithFields(logrus.Fields{

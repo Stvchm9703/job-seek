@@ -4,3 +4,10 @@ host = '192.168.0.102'
 port = 8654
 user = "user_account_service"
 password = "jobseek_user_account"
+
+[sql_db_service]
+database_path = "db/job_search_service.db"
+user = "user_management_service"
+password = "service_user_management"
+host = "127.0.0.1"
+port = 5432

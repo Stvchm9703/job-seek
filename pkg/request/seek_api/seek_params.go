@@ -2,12 +2,9 @@ package seek_api
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type SeekSearchApiParams struct {
-	gorm.Model
 	SiteKey        string `url:"siteKey,omitempty", json:"sitekey"`
 	Where          string `url:"where,omitempty", json:"where"`
 	Page           int    `url:"page,omitempty", json:"page"`

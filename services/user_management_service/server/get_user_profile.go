@@ -7,6 +7,7 @@ import (
 	"context"
 	"job-seek/pkg/database/model"
 	"job-seek/pkg/protos"
+	"strconv"
 
 	logrus "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -48,9 +49,9 @@ func (s UserManagementServiceServerImpl) GetUserProfile(ctx context.Context, req
 func (s UserManagementServiceServerImpl) fetchUserProfile(recId string) (*protos.UserProfile, error) {
 	// You can use a database query or any other method to save the user
 	// Return an error if the save operation fails, nil otherwise
-	instanceModel := &model.UserProfileModel{
-		Id: recId,
-	}
+	recIdInt, _ := strconv.Atoi(recId)
+	instanceModel := &model.UserProfileModel{}
+	instanceModel.ID = uint(recIdInt)
 	user, err := instanceModel.GetModel(s.dbClient)
 	if err != nil {
 		s.log.WithFields(logrus.Fields{

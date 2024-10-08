@@ -5,6 +5,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"job-seek/pkg/database/model"
 	"job-seek/pkg/protos"
 
@@ -51,7 +52,7 @@ func (s UserManagementServiceServerImpl) updateUserAccount(req *protos.UserAccou
 	}
 
 	return &protos.UserResponse{
-		UserId:  instanceModel.ID,
+		UserId:  fmt.Sprintf("%d", instanceModel.ID),
 		Message: "User profile updated successfully",
 		Status:  "success",
 	}, nil

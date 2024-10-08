@@ -6,15 +6,12 @@ import (
 	"job-seek/pkg/protos"
 	"job-seek/pkg/service_util"
 	runConf "job-seek/services/job_search_service/config"
+	"net"
 	"sync"
 
-	"gorm.io/gorm"
-
 	logrus "github.com/sirupsen/logrus"
-
-	"net"
-
 	"google.golang.org/grpc"
+	"gorm.io/gorm"
 )
 
 type JobSearchServiceServerImpl struct {
@@ -65,7 +62,6 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) (*grpc.Se
 
 	go func() {
 		log.Printf("server listening at %v", lis.Addr())
-		fmt.Printf("server listening at %v", lis.Addr())
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("failed to serve: %v", err)
 			println("failed to serve: %v", err)

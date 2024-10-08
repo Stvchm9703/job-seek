@@ -7,6 +7,7 @@ import (
 	"context"
 	"job-seek/pkg/database/model"
 	"job-seek/pkg/protos"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -58,10 +59,12 @@ func (s UserManagementServiceServerImpl) fetchUserAccount(userId string, userNam
 	// Return an error if the save operation fails, nil otherwise
 	instanceModel := &model.UserAccountModel{
 		// UserId:    userId,
-		ID:        userId,
 		UserName:  userName,
 		UserEmail: userEmail,
 	}
+	userIdInt, _ := strconv.Atoi(userId)
+	instanceModel.ID = uint(userIdInt)
+
 	model, err := instanceModel.GetModelByWildKey(s.dbClient)
 
 	if err != nil {

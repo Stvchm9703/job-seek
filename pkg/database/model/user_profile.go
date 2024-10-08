@@ -15,16 +15,15 @@ import (
 type UserProfileModel struct {
 	gorm.Model
 	// Id            string                   `json:"id"`
-	// UserId        string                   `json:"UserId" gorm:""`
-	User          UserAccountModel         `json:"User"`
+	User          UserAccountModel         `json:"User" gorm:"foreignKey:ID"`
 	Title         string                   `json:"Title"`
 	Position      string                   `json:"Position"`
 	Description   string                   `json:"Description"`
 	Company       string                   `json:"Company"`
-	CompanyDetail CompanyDetailModel       `json:"CompanyDetail"`
+	CompanyDetail *CompanyDetailModel      `json:"CompanyDetail" gorm:"foreignKey:ID"`
 	Salary        string                   `json:"Salary"`
 	Type          string                   `json:"Type"`
-	Keywords      []PreferenceKeywordModel `json:"Keywords"`
+	Keywords      []PreferenceKeywordModel `json:"Keywords" gorm:"foreignKey:ID"`
 	StartDate     string                   `json:"StartDate"`
 	EndDate       string                   `json:"EndDate"`
 }
@@ -147,11 +146,11 @@ func (m *UserProfileModel) DeleteModel(sd *gorm.DB) error {
 	return nil
 }
 
-func (m *UserProfileModel) DefineModel(sd *gorm.DB) error {
+func (UserProfileModel) DefineModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
 
-	return sd.AutoMigrate(&m)
+	return sd.AutoMigrate(&UserProfileModel{})
 
 }

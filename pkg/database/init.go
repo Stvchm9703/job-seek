@@ -20,7 +20,12 @@ func InitConnection(conf *config.DatabaseConfig, database string) (*gorm.DB, err
 		conf.User, conf.Password,
 		conf.Host, conf.Port,
 	)
-	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{
+		// NamingStrategy: schema.NamingStrategy{
+		// 	TablePrefix: "public.", // schema name
+		// 	// SingularTable: false,
+		// },
+	})
 
 	if err != nil {
 		// panic("failed to connect database")

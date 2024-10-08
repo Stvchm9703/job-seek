@@ -16,7 +16,7 @@ import (
 
 type PreferenceKeywordModel struct {
 	gorm.Model
-	User       UserAccountModel `gorm:"foreignKey:UserId"`
+	User       UserAccountModel `gorm:"foreignKey:ID"`
 	Keyword    string           `json:"keyword"`
 	Value      string           `json:"value"`
 	Type       string           `json:"type"`
@@ -120,7 +120,7 @@ func (m *PreferenceKeywordModel) DeleteModel(sd *gorm.DB) error {
 	return nil
 }
 
-func (m *PreferenceKeywordModel) DefineModel(sd *gorm.DB) error {
+func (PreferenceKeywordModel) DefineModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}

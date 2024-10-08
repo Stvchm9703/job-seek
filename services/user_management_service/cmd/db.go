@@ -13,7 +13,7 @@ func InitDB(verboseLevel int) {
 	log.Info("Start Database Check")
 	// ctx, ctxCancel := context.WithCancel(context.Background())
 	// defer ctxCancel()
-	dbClient, err := database.InitConnection(&runConf.RuntimeConfig.SurrealDBService, "development")
+	dbClient, err := database.InitConnection(&runConf.RuntimeConfig.DBService, "development")
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"config": runConf.RuntimeConfig,
@@ -45,16 +45,60 @@ func InitDB(verboseLevel int) {
 		}).Fatal("Failed to define")
 	}
 
-	log.Info("Check UserCvProfileModel")
-	ucvm := &model.UserCVProfileModel{}
-	err = ucvm.DefineModel(dbClient)
+	log.Info("Check PreferenceKeywordModel")
+	pkm := &model.PreferenceKeywordModel{}
+	err = pkm.DefineModel(dbClient)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"config": runConf.RuntimeConfig,
-			"model":  "UserCVProfileModel",
+			"model":  "PreferenceKeywordModel",
 			"error":  err,
 		}).Fatal("Failed to define")
 	}
+
+	log.Info("Check SurveyUserPreferenceModel")
+	supm := &model.SurveyUserPreferenceModel{}
+	err = supm.DefineModel(dbClient)
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"config": runConf.RuntimeConfig,
+			"model":  "SurveyUserPreferenceModel",
+			"error":  err,
+		}).Fatal("Failed to define")
+	}
+
+	log.Info("Check SurveyJobQuestionModel")
+	sqpm := &model.SurveyJobQuestionModel{}
+	err = sqpm.DefineModel(dbClient)
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"config": runConf.RuntimeConfig,
+			"model":  "SurveyJobQuestionModel",
+			"error":  err,
+		}).Fatal("Failed to define")
+	}
+
+	log.Info("Check SurveyJobPreferenceModel")
+	sjpm := &model.SurveyJobPreferenceModel{}
+	err = sjpm.DefineModel(dbClient)
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"config": runConf.RuntimeConfig,
+			"model":  "SurveyJobPreferenceModel",
+			"error":  err,
+		}).Fatal("Failed to define")
+	}
+
+	// log.Info("Check UserCvProfileModel")
+	// ucvm := &model.UserCVProfileModel{}
+	// err = ucvm.DefineModel(dbClient)
+	// if err != nil {
+	// 	log.WithFields(logrus.Fields{
+	// 		"config": runConf.RuntimeConfig,
+	// 		"model":  "UserCVProfileModel",
+	// 		"error":  err,
+	// 	}).Fatal("Failed to define")
+	// }
 
 	log.Info("completed")
 

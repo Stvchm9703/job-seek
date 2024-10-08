@@ -18,6 +18,7 @@ type ServiceConfig struct {
 	// internal services
 	MeiliSearchService config.DatabaseConfig `toml:"meili_search_service" mapstructure:"meili_search_service"`
 	SurrealDBService   config.DatabaseConfig `toml:"surreal_db_service" mapstructure:"surreal_db_service"`
+	DBService          config.DatabaseConfig `toml:"sql_db_service" mapstructure:"sql_db_service"`
 }
 
 var (

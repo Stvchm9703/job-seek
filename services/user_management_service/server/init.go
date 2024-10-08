@@ -6,14 +6,12 @@ import (
 	"job-seek/pkg/protos"
 	"job-seek/pkg/service_util"
 	runConf "job-seek/services/user_management_service/config"
+	"net"
 	"sync"
 
 	logrus "github.com/sirupsen/logrus"
-	surrealdb "github.com/surrealdb/surrealdb.go"
-
-	"net"
-
 	"google.golang.org/grpc"
+	"gorm.io/gorm"
 )
 
 type UserManagementServiceServerImpl struct {
@@ -22,7 +20,7 @@ type UserManagementServiceServerImpl struct {
 	config *runConf.ServiceConfig
 
 	mut      *sync.Mutex
-	dbClient *surrealdb.DB
+	dbClient *gorm.DB
 	// other implement here
 }
 
@@ -36,7 +34,8 @@ func (s UserManagementServiceServerImpl) Shutdown() error {
 
 	s.log.Info("Closing database connection")
 	if s.dbClient != nil {
-		s.dbClient.Close()
+		dbInstance, _ := s.dbClient.DB()
+		dbInstance.Close()
 	} else {
 		s.log.Warn("Database connection is nil pointer, check the memmory leak")
 	}
@@ -68,12 +67,12 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) (*grpc.Se
 }
 
 func InitService(config *runConf.ServiceConfig, log *logrus.Logger) UserManagementServiceServerImpl {
-	dbClient, err := database.InitConnection(&config.SurrealDBService, "development")
+	dbClient, err := database.InitConnection(&config.DBService, "development")
 	log.Info("Connecting to database")
 	if err != nil {
 		log.WithFields(map[string]interface{}{
 			"error": err,
-			"host":  config.SurrealDBService.Host,
+			"host":  config.DBService,
 		}).Fatal("Failed to connect to database in InitService")
 	}
 	log.Info("Connected to database")

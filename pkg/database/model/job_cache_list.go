@@ -10,6 +10,7 @@ import (
 
 	"github.com/k0kubun/pp/v3"
 	"github.com/samber/lo"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +23,7 @@ type JobCacheListModel struct {
 	TotalCount     int
 	TotalPage      int
 	CurrentKeyword string
-	SearchParams   seek_api.SeekSearchApiParams `gorm:"foreignKey:ID"`
+	SearchParams   datatypes.JSONType[seek_api.SeekSearchApiParams]
 	ExpiredDate    string
 }
 
@@ -47,7 +48,7 @@ func (m *JobCacheListModel) ToProto() *protos.JobSearchResponse {
 }
 
 func (m *JobCacheListModel) FromSearchResult(r *seek_api.SeekSearchApiParams, p *seek_api.SeekSearchApiResponse) {
-	m.SearchParams = *r
+	m.SearchParams = datatypes.NewJSONType[seek_api.SeekSearchApiParams](*r)
 	if p.UserQueryID != "" {
 		m.UserQueryId = p.UserQueryID
 	} else if p.SearchParams.UserQueryId != "" {

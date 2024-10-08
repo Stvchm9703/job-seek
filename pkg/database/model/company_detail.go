@@ -129,7 +129,6 @@ func (m CompanyDetailModel) DefineModel(sd *gorm.DB) error {
 	if sd == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-
 	return sd.AutoMigrate(&CompanyDetailModel{})
 
 }
