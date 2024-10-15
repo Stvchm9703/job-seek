@@ -36,8 +36,12 @@ func (m *UserAccountModel) ToProto() *protos.UserAccount {
 }
 
 func (m *UserAccountModel) FromProto(p *protos.UserAccount) {
-	idv, _ := strconv.Atoi(p.Id)
-	m.ID = uint(idv)
+	if p.Id == "" || p.Id == "-1" {
+		m.ID = 0
+	} else {
+		idv, _ := strconv.Atoi(p.Id)
+		m.ID = uint(idv)
+	}
 	m.UserName = p.UserName
 	m.UserPassword = p.UserPassword
 	m.UserEmail = p.UserEmail
@@ -71,13 +75,17 @@ func (m *UserAccountModel) GetModelByWildKey(db *gorm.DB) (*protos.UserAccount, 
 	// `, m.UserName, m.UserEmail, m.ID)
 
 	// var result UserAccountModel
-	if m.ID != 0 {
-		if err := db.Where("id = ?", m.ID).First(m).Error; err == nil {
+	if m.ID > 0 {
+		if err := db.First(m).Error; err == nil {
 			return m.ToProto(), nil
 		}
 	}
 
-	if err := db.Where("UserName = ? OR UserEmail = ?", m.UserName, m.UserEmail).First(m).Error; err != nil {
+	if m.UserName == "" && m.UserEmail == "" {
+		return nil, fmt.Errorf("UserName and UserEmail is empty")
+	}
+
+	if err := db.Where("user_name = ? OR user_email = ?", m.UserName, m.UserEmail).First(m).Error; err != nil {
 		return nil, err
 	}
 	return m.ToProto(), nil

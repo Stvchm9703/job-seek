@@ -5,6 +5,7 @@ import (
 	"job-seek/services/user_management_service/config"
 	"job-seek/services/user_management_service/server"
 	"job-seek/services/user_management_service/server_test"
+	twp "job-seek/services/user_management_service/server_twirp"
 
 	logger "job-seek/pkg/log"
 
@@ -76,4 +77,10 @@ func ServerRun(verboseLevel int) {
 	initLogger(0, verboseLevel)
 	log.Info("Start Server")
 	runtimeServer, _ = server.InitGrpcServer(&config.RuntimeConfig, log)
+}
+
+func ServerTwirpRun(verboseLevel int) {
+	initLogger(0, verboseLevel)
+	log.Info("Start Server Twirp")
+	twp.InitTwirpServer(&config.RuntimeConfig, log)
 }

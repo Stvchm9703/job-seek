@@ -98,11 +98,12 @@ func (m *UserProfileModel) GetModelByUserId(db *gorm.DB) ([]*protos.UserProfile,
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	var result []*UserProfileModel
-	if err := db.Model(&UserProfileModel{}).Where("user_id = ?", m.User.ID).Find(&result).Error; err != nil {
+
+	var result []UserProfileModel
+	if err := db.Where("user_id = ?", m.UserID).Find(&result).Error; err != nil {
 		return nil, err
 	}
-	return lo.Map(result, func(item *UserProfileModel, index int) *protos.UserProfile {
+	return lo.Map(result, func(item UserProfileModel, index int) *protos.UserProfile {
 		return item.ToProto()
 	}), nil
 }

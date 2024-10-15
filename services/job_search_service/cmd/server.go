@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	logger "job-seek/pkg/log"
 	"job-seek/services/job_search_service/config"
 	databatch "job-seek/services/job_search_service/data_batch"
 	"job-seek/services/job_search_service/server"
 	"job-seek/services/job_search_service/server_test"
-
-	logger "job-seek/pkg/log"
+	twp "job-seek/services/job_search_service/server_twirp"
 
 	logrus "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -75,4 +75,10 @@ func ServerDumpingData(verboseLevel int) {
 	databatch.JobDumping(&service, log)
 	// manualShutdown()
 	log.Info("Server Test Run End")
+}
+
+func ServerTwirpRun(verboseLevel int) {
+	initLogger(0, verboseLevel)
+	log.Info("Start Server Twirp")
+	twp.InitTwirpServer(&config.RuntimeConfig, log)
 }

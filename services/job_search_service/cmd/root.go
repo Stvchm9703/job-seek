@@ -58,7 +58,11 @@ var serveCmd = &cobra.Command{
 			ServerDumpingData(logLevel)
 			return
 		}
-		ServerRun(logLevel)
+		if useGrpc, _ := cmd.Flags().GetBool("use-grpc"); useGrpc {
+			ServerRun(logLevel)
+		} else {
+			ServerTwirpRun(logLevel)
+		}
 	},
 }
 
@@ -110,6 +114,7 @@ func init() {
 	serveCmd.Flags().Bool("dry-run", false, "dry-run mode with inputed command and config")
 	serveCmd.Flags().Bool("test", false, "test run all related service with inputed command and config")
 	serveCmd.Flags().BoolP("print", "P", false, "print config in toml format, for other service to use")
+	serveCmd.Flags().BoolP("use-grpc", "g", false, "use grpc service, instead of twirp")
 
 	serveCmd.Flags().String("db-address", "localhost", "database address")
 	viper.BindPFlag("surreal_db_service.host", serveCmd.Flags().Lookup("db-address"))
