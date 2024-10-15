@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"job-seek/services/{{.ServicePathName}}/config"
-	"job-seek/services/{{.ServicePathName}}/server"
-	"job-seek/services/{{.ServicePathName}}/server_test"
-
+	"fmt"
 	logger "job-seek/pkg/log"
+	"job-seek/services/prediction_service/config"
+	"job-seek/services/prediction_service/server"
+	twp "job-seek/services/prediction_service/server_twirp"
 
 	logrus "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -21,7 +21,7 @@ func initLogger(minLevel int, verboseLevel int) {
 	if verbose < minLevel && minLevel != 0 {
 		verbose = minLevel
 	}
-	log = logger.InitLog("{{.ServicePathName}}", verbose)
+	log = logger.InitLog("prediction_service", verbose)
 
 	// configPrint, _ := json.Marshal(config.RuntimeConfig)
 	log.WithFields(logrus.Fields{
@@ -50,11 +50,10 @@ func ServerTestRun(verboseLevel int) {
 	server.InitService(&config.RuntimeConfig, log)
 
 	log.Info("Server Start Test Run")
-	log.Info("run {{.ServicePathName}}")
+	log.Info("run prediction_service")
 
 	// add the test case here
-	
-	
+
 	// manualShutdown()
 	log.Info("Server Test Run End")
 }
@@ -63,4 +62,10 @@ func ServerRun(verboseLevel int) {
 	initLogger(0, verboseLevel)
 	log.Info("Start Server")
 	runtimeServer, _ = server.InitGrpcServer(&config.RuntimeConfig, log)
+}
+
+func ServerTwirpRun(verboseLevel int) {
+	initLogger(0, verboseLevel)
+	log.Info("Start Server")
+	twp.InitTwirpServer(&config.RuntimeConfig, log)
 }

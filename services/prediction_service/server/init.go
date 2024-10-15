@@ -5,10 +5,10 @@ import (
 	"job-seek/pkg/database"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/service_util"
-	runConf "job-seek/services/{{.ServicePathName}}/config"
+	runConf "job-seek/services/prediction_service/config"
 	"sync"
 
-	surrealdb "github.com/surrealdb/surrealdb.go"
+	"gorm.io/gorm"
 
 	logrus "github.com/sirupsen/logrus"
 
@@ -17,27 +17,27 @@ import (
 	"google.golang.org/grpc"
 )
 
-type {{.ServiceName}}ServerImpl struct {
-	protos.Unimplemented{{.ServiceName}}Server
+type PredictionServiceServerImpl struct {
+	protos.UnimplementedPredictionServiceServer
 	log    *logrus.Logger
 	config *runConf.ServiceConfig
 
 	mut      *sync.Mutex
-	dbClient *surrealdb.DB
+	dbClient *gorm.DB
 	// other implement here
 }
 
-func (s {{.ServiceName}}ServerImpl) Startup() error {
+func (s PredictionServiceServerImpl) Startup() error {
 	s.log.Info("Startup Produle")
 	return nil
 }
 
-func (s {{.ServiceName}}ServerImpl) Shutdown() error {
+func (s PredictionServiceServerImpl) Shutdown() error {
 	s.log.Info("Shutdown")
 	return nil
 }
 
-func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) (*grpc.Server, *{{.ServiceName}}ServerImpl) {
+func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) (*grpc.Server, *PredictionServiceServerImpl) {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.Host, config.Port))
 	if err != nil {
@@ -46,7 +46,7 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) (*grpc.Se
 	opt := service_util.CreateGrpcServerOption(&config.Server, log)
 	grpcServer := grpc.NewServer(opt...)
 	ssi := InitService(config, log)
-	protos.Register{{.ServiceName}}Server(grpcServer, ssi)
+	protos.RegisterPredictionServiceServer(grpcServer, ssi)
 
 	go func() {
 		log.Printf("server listening at %v", lis.Addr())
@@ -59,9 +59,7 @@ func InitGrpcServer(config *runConf.ServiceConfig, log *logrus.Logger) (*grpc.Se
 
 }
 
-
-
-func InitService(config *runConf.ServiceConfig, log *logrus.Logger) {{.ServiceName}}ServerImpl {
+func InitService(config *runConf.ServiceConfig, log *logrus.Logger) PredictionServiceServerImpl {
 	dbClient, err := database.InitConnection(&config.SurrealDBService, "development")
 	log.Info("Connecting to database")
 	if err != nil {
@@ -72,7 +70,7 @@ func InitService(config *runConf.ServiceConfig, log *logrus.Logger) {{.ServiceNa
 	}
 	log.Info("Connected to database")
 
-	ssi := {{.ServiceName}}ServerImpl {
+	ssi := PredictionServiceServerImpl{
 		mut:      &sync.Mutex{},
 		log:      log,
 		config:   config,

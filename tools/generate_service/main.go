@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+
 	"fmt"
 	"os"
 	"path"
@@ -143,6 +144,7 @@ func generateFile(outputPath string, templatePath string, params templateParams)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to execute template %s, err %v\n", templatePath, err)
 	}
+
 }
 
 func generateServiceFunction(rpcfunction *parser.RPC, param *templateParams) {
