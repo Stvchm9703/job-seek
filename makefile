@@ -7,6 +7,7 @@ generate-go-proto:
 	--proto_path=pkg/protos \
 	--go_out=pkg/protos --go_opt=paths=source_relative \
 	--go-grpc_out=pkg/protos --go-grpc_opt=paths=source_relative \
+	--twirp_out=pkg/protos \
 		pkg/protos/*.proto
 
 sync-proto:
