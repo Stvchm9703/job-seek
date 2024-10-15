@@ -15,16 +15,16 @@ import (
 
 type JobApplyModel struct {
 	gorm.Model
-	Id          string `json:"id,omitempty" gorm:"primaryKey"`
-	JobID       int    `json:"job_id"`
-	Job         JobModel
-	UserID      int `json:"user_id"`
-	User        UserAccountModel
-	Status      string `json:"status,omitempty"`
-	CoverLetter string `json:"cover_letter,omitempty"`
-	CvContent   string `json:"cv_content,omitempty"`
-	CvFile      []byte `json:"cv_file,omitempty"`
-	Message     string `json:"message,omitempty"`
+	Id          string           `json:"id,omitempty" gorm:"primaryKey"`
+	JobID       int              `json:"-"`
+	Job         JobModel         `gorm:"foreignKey:JobID"`
+	UserID      int              `json:"-"`
+	User        UserAccountModel `gorm:"foreignKey:UserID"`
+	Status      string           `json:"status,omitempty"`
+	CoverLetter string           `json:"cover_letter,omitempty"`
+	CvContent   string           `json:"cv_content,omitempty"`
+	CvFile      []byte           `json:"cv_file,omitempty"`
+	Message     string           `json:"message,omitempty"`
 }
 
 func (JobApplyModel) TableName() string {

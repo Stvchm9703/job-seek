@@ -16,11 +16,12 @@ import (
 
 type PreferenceKeywordModel struct {
 	gorm.Model
-	User       UserAccountModel `gorm:"foreignKey:ID"`
-	Keyword    string           `json:"keyword"`
-	Value      string           `json:"value"`
-	Type       string           `json:"type"`
-	IsPositive bool             `json:"is_positive"`
+	UserID     *uint64           `json:"-" gorm:"default:null"`
+	User       *UserAccountModel `gorm:"default:NULL,foreignKey:UserID,references:ID"`
+	Keyword    string            `json:"keyword"`
+	Value      string            `json:"value"`
+	Type       string            `json:"type"`
+	IsPositive bool              `json:"is_positive"`
 }
 
 func (PreferenceKeywordModel) TableName() string {
@@ -40,7 +41,7 @@ func (m *PreferenceKeywordModel) ToProto() *protos.PreferenceKeyword {
 
 func (m *PreferenceKeywordModel) FromProto(p *protos.PreferenceKeyword) {
 	idv, _ := strconv.Atoi(p.GetUserId())
-	m.User = UserAccountModel{}
+	m.User = &UserAccountModel{}
 	m.User.ID = uint(idv)
 	m.Keyword = p.Keyword
 	m.Value = p.Value

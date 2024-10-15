@@ -17,18 +17,19 @@ import (
 
 type JobModel struct {
 	gorm.Model
-	PostId         string              `json:"post_id"`
-	PostTitle      string              `json:"post_title"`
-	PostUrl        string              `json:"post_url"`
-	PayRange       string              `json:"pay_range"`
-	DebugText      string              `json:"debug_text"`
-	HittedKeywords string              `json:"hitted_keywords"`
-	Score          int                 `json:"score,omitempty"`
-	Role           string              `json:"role"`
-	WorkType       string              `json:"work_type"`
-	CompanyDetail  *CompanyDetailModel `json:"company_detail,omitempty" gorm:"foreignKey:ID"`
-	Locations      string              `json:"locations"`
-	ExpiringDate   string              `json:"expiring_date"`
+	PostId          string              `json:"post_id"`
+	PostTitle       string              `json:"post_title"`
+	PostUrl         string              `json:"post_url"`
+	PayRange        string              `json:"pay_range"`
+	DebugText       string              `json:"debug_text"`
+	HittedKeywords  string              `json:"hitted_keywords"`
+	Score           int                 `json:"score,omitempty"`
+	Role            string              `json:"role"`
+	WorkType        string              `json:"work_type"`
+	CompanyDetailID *uint64             `json:"-" gorm:"default:null"`
+	CompanyDetail   *CompanyDetailModel `gorm:"default:NULL,foreignKey:CompanyDetailID,references:ID,OnDelete:SET NULL;"`
+	Locations       string              `json:"locations"`
+	ExpiringDate    string              `json:"expiring_date"`
 }
 
 func (JobModel) TableName() string {

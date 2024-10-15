@@ -16,9 +16,11 @@ type JobMatchScoreModel struct {
 	// UserId         string                    `json:"user_id"`
 	// JobId          string                    `json:"job_id"`
 	PredictScore   float32                  `json:"predict_score"`
-	HittedKeywords []PreferenceKeywordModel `json:"hitted_keywords"`
-	Job            JobModel                 `json:"job,omitempty"`
-	UserProfile    UserProfileModel         `json:"user_profile,omitempty"`
+	HittedKeywords []PreferenceKeywordModel `json:"hitted_keywords" gorm:"many2many:job_match_score_keyword;"`
+	JobID          int                      `json:"job_id"`
+	Job            JobModel                 `json:"job,omitempty" gorm:"foreignKey:JobID"`
+	UserProfileID  int                      `json:"user_profile_id"`
+	UserProfile    UserProfileModel         `json:"user_profile,omitempty" gorm:"foreignKey:UserProfileID"`
 }
 
 func (JobMatchScoreModel) TableName() string {
@@ -42,7 +44,7 @@ func (m *JobMatchScoreModel) FromProto(p *protos.JobMatchScore) {
 	m.PredictScore = p.PredictScore
 	m.HittedKeywords = lo.Map(p.HittedKeywords, func(k *protos.PreferenceKeyword, _ int) PreferenceKeywordModel {
 		temp := PreferenceKeywordModel{
-			User:       UserAccountModel{},
+			User:       &UserAccountModel{},
 			Keyword:    k.Keyword,
 			Value:      k.Value,
 			Type:       k.Type,

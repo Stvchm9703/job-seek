@@ -15,17 +15,19 @@ import (
 type UserProfileModel struct {
 	gorm.Model
 	// Id            string                   `json:"id"`
-	User          UserAccountModel         `json:"User" gorm:"foreignKey:ID"`
-	Title         string                   `json:"Title"`
-	Position      string                   `json:"Position"`
-	Description   string                   `json:"Description"`
-	Company       string                   `json:"Company"`
-	CompanyDetail *CompanyDetailModel      `json:"CompanyDetail" gorm:"foreignKey:ID"`
-	Salary        string                   `json:"Salary"`
-	Type          string                   `json:"Type"`
-	Keywords      []PreferenceKeywordModel `json:"Keywords" gorm:"foreignKey:ID"`
-	StartDate     string                   `json:"StartDate"`
-	EndDate       string                   `json:"EndDate"`
+	UserID          *uint64                  `json:"-" gorm:"default:null"`
+	User            *UserAccountModel        `json:"user" gorm:"default:NULL,foreignKey:UserID,references:ID"`
+	Title           string                   `json:"title"`
+	Position        string                   `json:"position"`
+	Description     string                   `json:"description"`
+	Company         string                   `json:"company"`
+	CompanyDetailID *uint64                  `json:"-" gorm:"default:null"`
+	CompanyDetail   *CompanyDetailModel      `json:"company_detail" gorm:"default:NULL,foreignKey:CompanyDetailID,references:ID,OnDelete:SET NULL;"`
+	Salary          string                   `json:"salary"`
+	Type            string                   `json:"type"`
+	Keywords        []PreferenceKeywordModel `json:"keywords" gorm:"many2many:user_profile_keyword;"`
+	StartDate       string                   `json:"start_date"`
+	EndDate         string                   `json:"end_date"`
 }
 
 func (UserProfileModel) TableName() string {
@@ -65,7 +67,7 @@ func (m *UserProfileModel) ToProto() *protos.UserProfile {
 
 func (m *UserProfileModel) FromProto(p *protos.UserProfile) {
 	idv, _ := strconv.Atoi(p.UserId)
-	m.User = UserAccountModel{}
+	m.User = &UserAccountModel{}
 	m.User.ID = uint(idv)
 	m.Title = p.Title
 	m.Position = p.Position

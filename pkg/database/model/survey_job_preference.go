@@ -13,10 +13,10 @@ type SurveyJobPreferenceModel struct {
 	// string survey_id = 2;
 	// repeated job_seek.job_search.Job jobs = 3;
 	// repeated SurveyJobQuestionSet survey_job_questions = 4;
-	UserID             int                      `json:"user_id"`
-	User               UserAccountModel         `json:"user"`
+	UserID             int                      `json:"-"`
+	User               UserAccountModel         `json:"user" gorm:"foreignKey:UserID"`
 	SurveyID           int                      `json:"survey_id"`
-	SurveyJobQuestions []SurveyJobQuestionModel `json:"survey_job_questions" gorm:"foreignKey:ID"`
+	SurveyJobQuestions []SurveyJobQuestionModel `json:"survey_job_questions" gorm:"foreignKey:SurveyJobPreferenceID"`
 }
 
 func (SurveyJobPreferenceModel) TableName() string {
@@ -38,12 +38,12 @@ type SurveyJobQuestionModel struct {
 	// repeated string similarities = 4;
 	// repeated string differences = 5;
 	// optional float overall_similarity = 6;
-
-	PairID       string                                `json:"pair_id"`
-	JobA         datatypes.JSONType[SurveyJobSetModel] `json:"job_a"`
-	JobB         datatypes.JSONType[SurveyJobSetModel] `json:"job_b"`
-	Similarities datatypes.JSONSlice[string]           `json:"similarities"`
-	Differences  datatypes.JSONSlice[string]           `json:"differences"`
+	SurveyJobPreferenceID uint                                  `json:"-"`
+	PairID                string                                `json:"pair_id"`
+	JobA                  datatypes.JSONType[SurveyJobSetModel] `json:"job_a"`
+	JobB                  datatypes.JSONType[SurveyJobSetModel] `json:"job_b"`
+	Similarities          datatypes.JSONSlice[string]           `json:"similarities"`
+	Differences           datatypes.JSONSlice[string]           `json:"differences"`
 }
 
 func (SurveyJobQuestionModel) TableName() string {

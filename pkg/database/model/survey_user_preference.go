@@ -8,8 +8,9 @@ import (
 
 type SurveyUserPreferenceModel struct {
 	gorm.Model
-	User     UserAccountModel         `json:"user" gorm:"foreignKey:ID"`
-	Keywords []PreferenceKeywordModel `json:"keywords" gorm:"foreignKey:ID"`
+	UserID   int                      `json:"-"`
+	User     UserAccountModel         `json:"user" gorm:"foreignKey:UserID"`
+	Keywords []PreferenceKeywordModel `json:"keywords" gorm:"many2many:survey_user_preference_keyword;"`
 }
 
 func (SurveyUserPreferenceModel) TableName() string {

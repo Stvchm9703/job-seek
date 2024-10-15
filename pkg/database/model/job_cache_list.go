@@ -18,7 +18,7 @@ type JobCacheListModel struct {
 	gorm.Model
 	CacheRef       string
 	UserQueryId    string
-	Job            []JobModel `gorm:"foreignKey:PostId"`
+	Job            []JobModel `gorm:"foreignKey:ID"`
 	PageNumber     int
 	TotalCount     int
 	TotalPage      int
