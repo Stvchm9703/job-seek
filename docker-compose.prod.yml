@@ -1,0 +1,76 @@
+services:
+  db:
+    image: postgres:16.4
+    hostname: job_seeker-db
+    environment:
+      POSTGRES_PASSWORD: "root"
+      POSTGRES_USER: "root"
+      POSTGRES_DB: "job_seeker"
+    volumes:
+    - ./db/pgdb:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: pg_isready -U job_seeker
+      interval: 2s
+      timeout: 3s
+      retries: 40
+    ports: 
+    - 5432:5432
+  
+  service_job_search:
+    build:
+      context: .
+      dockerfile: deploy/job_search_service.dockerfile
+    hostname: service_job_search
+    ports:
+    - 60010:60010
+    depends_on:
+    - db
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:60010/"]
+      interval: 2s
+      timeout: 3s
+      retries: 40
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 4G
+        reservations:
+          cpus: '0.001'
+          memory: 1G
+
+  service_user_management:
+    build:
+      context: .
+      dockerfile: deploy/user_management_service.dockerfile
+    hostname: service_user_management
+    ports:
+    - 60020:60020
+    depends_on:
+    - db
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:60020/"]
+      interval: 10s
+      timeout: 30s
+      retries: 40
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 4G
+        reservations:
+          cpus: '0.001'
+          memory: 1G
+
+  # migration tool
+  tool_db_migration:
+    image: golang:1.23.2
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    command: ["go", "run", "tools/migrate_db.go"]
+   
