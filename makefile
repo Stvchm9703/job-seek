@@ -32,7 +32,7 @@ run-job-search-service:
 	go run services/job_search_service/main.go  -C=config/job_search_service.toml run -V=4
 
 run-user-service:
-	go run services/user_management_service/main.go  -C=config/user_account_service.toml run -V=4
+	go run services/user_management_service/main.go  -C=config/user_management_service.toml run -V=4
 
 run-predict-service:
 	go run services/prediction_service/main.go  -C=config/prediction_service.toml run -V=4

@@ -37,7 +37,7 @@ func Setup() {
 
 	// basic server config
 	viper.SetDefault("host", "localhost")
-	viper.SetDefault("port", 60010)
+	viper.SetDefault("port", 60030)
 
 	// grpc server config
 	viper.SetDefault("server.max_connection_idle", 60)
@@ -48,7 +48,6 @@ func Setup() {
 	viper.SetDefault("server.min_time", 5)
 	viper.SetDefault("server.permit_without_stream", true)
 
-
 	// internal services
 	viper.SetDefault("meili_search_service.host", "localhost")
 	viper.SetDefault("meili_search_service.port", 7700)
@@ -56,6 +55,11 @@ func Setup() {
 
 	viper.SetDefault("surreal_db_service.host", "localhost")
 	viper.SetDefault("surreal_db_service.port", 8654)
+
+	// sql db service
+	viper.SetDefault("sql_db_service.database_path", "db/job_search_service.db")
+	viper.SetDefault("sql_db_service.host", "localhost")
+	viper.SetDefault("sql_db_service.port", 5432)
 
 	err := viper.ReadInConfig()
 	if err != nil {

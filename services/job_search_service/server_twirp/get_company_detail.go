@@ -11,10 +11,8 @@ import (
 	"job-seek/pkg/request"
 	linkedin "job-seek/pkg/request/linkedin_search"
 
-	"github.com/google/uuid"
 	logrus "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/twitchtv/twirp"
 )
 
 // GetCompanyDetail implements GetCompanyDetail from JobSearchServiceServer
@@ -38,7 +36,8 @@ func (s *JobSearchServiceServerImpl) GetCompanyDetail(ctx context.Context, req *
 			s.log.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("fail to fetch company detail from cache")
-			return nil, status.Errorf(codes.Internal, "fail to fetch company detail from DB")
+			// return nil, status.Errorf(codes.Internal, "fail to fetch company detail from DB")
+			return nil, twirp.Internal.Errorf("fail to fetch company detail from DB: %v", err)
 		}
 		return companyDetail, nil
 	}
@@ -46,7 +45,8 @@ func (s *JobSearchServiceServerImpl) GetCompanyDetail(ctx context.Context, req *
 	companyName := req.GetName()
 	if companyName == "" {
 		s.log.Error("fail to fetch company detail from cache, company name is required")
-		return nil, status.Errorf(codes.InvalidArgument, "company name is required")
+		// return nil, status.Errorf(codes.InvalidArgument, "company name is required")
+		return nil, twirp.InvalidArgumentError("CompanyName", "company name is required")
 	}
 	// todo: call the search engine to get company detail
 
@@ -56,13 +56,18 @@ func (s *JobSearchServiceServerImpl) GetCompanyDetail(ctx context.Context, req *
 		s.log.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("fail to fetch company detail from api")
-		return nil, status.Errorf(codes.Internal, "Failed to get company detail from API")
+		// return nil, status.Errorf(codes.Internal, "Failed to get company detail from API")
+		return nil, twirp.InternalErrorWith(err)
 	}
 
 	var jobPostCount int
 	jobPostCount, err = linkedin.GetCompanyPostListForApi(&s.config.SeekService, companyId)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to get company post list from API")
+		// return nil, status.Errorf(codes.Internal, "Failed to get company post list from API")
+		s.log.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("fail to fetch jobCount from api")
+		return nil, twirp.InternalErrorWith(err)
 	}
 
 	companyDetail.JobPosted = int32(jobPostCount)
@@ -70,9 +75,10 @@ func (s *JobSearchServiceServerImpl) GetCompanyDetail(ctx context.Context, req *
 	return companyDetail, nil
 
 }
-func v5UUID(data string) uuid.UUID {
-	return uuid.NewSHA1(uuid.NameSpaceURL, []byte(data))
-}
+
+// func v5UUID(data string) uuid.UUID {
+// 	return uuid.NewSHA1(uuid.NameSpaceURL, []byte(data))
+// }
 
 func (s *JobSearchServiceServerImpl) getCompanyDetailFromDB(company_id string) (*protos.CompanyDetail, error) {
 	companyModel := model.CompanyDetailModel{

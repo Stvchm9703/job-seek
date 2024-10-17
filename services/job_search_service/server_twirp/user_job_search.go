@@ -15,11 +15,9 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	pp "github.com/k0kubun/pp/v3"
 	"github.com/samber/lo"
 	logrus "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/twitchtv/twirp"
 )
 
 // UserJobSearch implements UserJobSearch from JobSearchServiceServer
@@ -48,7 +46,8 @@ func (s *JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *pro
 
 	// 3 set parameters
 	combinedKeywords := seek_api.CreateSearchCombinationsV2(req.Keywords)
-	pp.Println("query", combinedKeywords)
+	// pp.Println("query", combinedKeywords)
+
 	combinedKeywords = lo.Filter(combinedKeywords, func(item string, _ int) bool {
 		// maxium 3 keyword combination
 		return strings.Count(item, " ") >= 4 && strings.Count(item, " ") <= 15
@@ -57,8 +56,6 @@ func (s *JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *pro
 	sort.Slice(combinedKeywords, func(i, j int) bool {
 		return len(combinedKeywords[i]) > len(combinedKeywords[j])
 	})
-
-	pp.Println("query", combinedKeywords)
 
 	maxCap := math.Min(5, float64(len(combinedKeywords)))
 	combinedKeywords = combinedKeywords[:int32(maxCap)]
@@ -73,7 +70,8 @@ func (s *JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *pro
 
 	postData, err := s.getPostJobsListSinglar(cacheRefString, combinedKeywords, jobRequest)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		// return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		return nil, twirp.InternalErrorWith(err)
 	}
 
 	// get the job title from the keywords
@@ -89,7 +87,8 @@ func (s *JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *pro
 	locationsSet.PageSize = 10
 	locationsPostData, err := s.batchFetchJobTask(cacheRefString, locationsSet)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		// return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		return nil, twirp.InternalErrorWith(err)
 	}
 
 	// 1 set of different from different job types
@@ -99,7 +98,8 @@ func (s *JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *pro
 	jobRequest.Where = req.GetWorkLocale()
 	jobTypesPostData, err := s.batchFetchJobTask(cacheRefString, jobTypesSet)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		// return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		return nil, twirp.InternalErrorWith(err)
 	}
 
 	// 1 set of different from different job titles
@@ -111,7 +111,8 @@ func (s *JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *pro
 
 	jobTitlesPostData, err := s.batchFetchJobTask(cacheRefString, jobTitlesSet)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		// return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		return nil, twirp.InternalErrorWith(err)
 	}
 
 	postData = append(postData, locationsPostData...)

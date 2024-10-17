@@ -19,8 +19,7 @@ import (
 	pp "github.com/k0kubun/pp/v3"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/twitchtv/twirp"
 )
 
 func FromProtoToRequest(req *protos.JobSearchRequest) *seek_api.SeekSearchApiParams {
@@ -76,7 +75,8 @@ func (s *JobSearchServiceServerImpl) JobSearch(ctx context.Context, req *protos.
 			s.log.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("fail to fetch jobs from cache")
-			return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+			// return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+			return nil, twirp.InternalErrorWith(err)
 		}
 		s.log.WithFields(logrus.Fields{
 			"method":   "JobSearch",
@@ -108,7 +108,8 @@ func (s *JobSearchServiceServerImpl) JobSearch(ctx context.Context, req *protos.
 	}).Trace("JobSearch call API")
 	postData, err := s.getPostJobsList(combinedKeywords, jobRequest)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		// return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+		return nil, twirp.InternalErrorWith(err)
 	}
 
 	responseData := &protos.JobSearchResponse{

@@ -8,7 +8,12 @@ import (
 	"fmt"
 	"job-seek/pkg/database/model"
 	"job-seek/pkg/protos"
+	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
 
+	"github.com/k0kubun/pp/v3"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -56,6 +61,7 @@ func (s UserManagementServiceServerImpl) CreateUserProfile(ctx context.Context, 
 			"user": user,
 		}).Info("User profile created successfully")
 		s.log.Info("Start to postprocess user profile")
+
 	}()
 
 	return &protos.UserResponse{
@@ -96,4 +102,100 @@ func (s UserManagementServiceServerImpl) storeUserProfileToDB(user *protos.UserP
 	}
 	// Save the user profile to the database
 	return instanceModel, nil
+}
+
+// request the user profile job
+func (s UserManagementServiceServerImpl) fetchUserProfileRelatedJob(request *protos.UserProfile) error {
+	// create grpc client to request the job
+
+	pp.Println("fetchUserProfileRelatedJob", request)
+
+	s.log.WithFields(logrus.Fields{
+		"request": request,
+	}).Info("fetchUserProfileRelatedJob")
+
+	job_req := createUserProfileJobParams(request)
+
+	s.log.WithField("job_req", job_req).Info("fetchUserProfileRelatedJob")
+
+	js_client := protos.NewJobSearchServiceProtobufClient(fmt.Sprintf("http://%s:%d", s.config.JobSearchService.Host, s.config.JobSearchService.Port), &http.Client{})
+	result, err := js_client.UserJobSearch(context.Background(), job_req)
+	if err != nil {
+		s.log.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("Failed to fetch user profile related job")
+		return err
+	}
+
+	s.log.WithFields(logrus.Fields{
+		"result": result,
+	}).Info("fetchUserProfileRelatedJob: success return")
+
+	return nil
+}
+
+func createUserProfileJobParams(request *protos.UserProfile) *protos.JobSearchRequest {
+	// create grpc client to request the job
+	if request == nil {
+		return nil
+	}
+
+	reqSet := protos.JobSearchRequest{
+		UserId:     request.UserId,
+		SalaryType: protos.SalaryType_ANNUAL.Enum(),
+	}
+
+	if request.Salary != "" {
+		salarySet := strings.Split(request.Salary, " -")
+		if len(salarySet) == 2 {
+			if minSalary, err := strconv.Atoi(salarySet[0]); err == nil {
+				minSalaryInt32 := int32(minSalary)
+				minSalaryInt32 = int32(float32(minSalaryInt32) * 0.8)
+				reqSet.MinSalary = &minSalaryInt32
+			}
+			if maxSalary, err := strconv.Atoi(salarySet[1]); err == nil {
+				maxSalaryInt32 := int32(maxSalary)
+				maxSalaryInt32 *= 2
+				reqSet.MaxSalary = &maxSalaryInt32
+			}
+		} else if len(salarySet) == 1 {
+			if minSalary, err := strconv.Atoi(salarySet[0]); err == nil {
+				minSalaryInt32 := int32(minSalary)
+				minSalaryInt32 = int32(float32(minSalaryInt32) * 0.8)
+				reqSet.MinSalary = &minSalaryInt32
+			}
+		}
+	}
+
+	if request.Location != "" {
+		workLocale := strings.ReplaceAll(request.Location, "undefined", "")
+		workLocale = strings.ReplaceAll(workLocale, ",", "")
+		m1 := regexp.MustCompile(`^\d+`)
+		workLocale = m1.ReplaceAllString(workLocale, "")
+		reqSet.WorkLocale = &workLocale
+	}
+
+	for _, kw := range request.Keywords {
+		reqSet.Keywords = append(reqSet.Keywords, kw.Value)
+	}
+
+	if request.Type == protos.UserProfileType_EMPLOYEE {
+		classic := int32(0)
+		if request.Position != "" {
+			m2 := regexp.MustCompile(`\d+`)
+			captured := m2.FindAllString(request.Position, -1)
+			classic32, _ := strconv.Atoi(captured[0])
+			classic = int32(classic32)
+		}
+
+		reqSet.Classification = &classic
+
+		reqSet.Keywords = append(reqSet.Keywords, fmt.Sprintf("!%s", request.Title))
+	} else {
+
+		reqSet.Keywords = append(reqSet.Keywords, strings.Split(request.Title, ";")...)
+	}
+
+	return &reqSet
+
 }
