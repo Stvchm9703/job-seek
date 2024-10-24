@@ -5,9 +5,8 @@ package server
 
 import (
 	"context"
-	"job-seek/pkg/database/model"
+	"job-seek/pkg/database_v1/model"
 	"job-seek/pkg/protos"
-	"strconv"
 
 	logrus "github.com/sirupsen/logrus"
 	"github.com/twitchtv/twirp"
@@ -51,9 +50,11 @@ func (s *UserManagementServiceServerImpl) GetUserProfile(ctx context.Context, re
 func (s *UserManagementServiceServerImpl) fetchUserProfile(recId string) (*protos.UserProfile, error) {
 	// You can use a database query or any other method to save the user
 	// Return an error if the save operation fails, nil otherwise
-	recIdInt, _ := strconv.Atoi(recId)
-	instanceModel := &model.UserProfileModel{}
-	instanceModel.ID = uint(recIdInt)
+	// recIdInt, _ := strconv.Atoi(recId)
+	instanceModel := &model.UserProfileModel{
+		Id: recId,
+	}
+	// instanceModel.ID = uint(recIdInt)
 	user, err := instanceModel.GetModel(s.dbClient)
 	if err != nil {
 		s.log.WithFields(logrus.Fields{

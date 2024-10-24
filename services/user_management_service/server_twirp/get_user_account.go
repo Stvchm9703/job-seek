@@ -5,9 +5,8 @@ package server
 
 import (
 	"context"
-	"job-seek/pkg/database/model"
+	"job-seek/pkg/database_v1/model"
 	"job-seek/pkg/protos"
-	"strconv"
 
 	"github.com/sirupsen/logrus"
 	"github.com/twitchtv/twirp"
@@ -65,10 +64,11 @@ func (s *UserManagementServiceServerImpl) fetchUserAccount(userId string, userNa
 	}
 
 	if userId == "" || userId == "-1" {
-		instanceModel.ID = 0
+		// instanceModel.ID = 0
 	} else {
-		userIdInt, _ := strconv.Atoi(userId)
-		instanceModel.ID = uint(userIdInt)
+		// userIdInt, _ := strconv.Atoi(userId)
+		// instanceModel.ID = uint(userIdInt)
+		instanceModel.ID = userId
 	}
 
 	model, err := instanceModel.GetModelByWildKey(s.dbClient)

@@ -52,6 +52,7 @@ func (m *UserProfileUnmarshalModel) ToProto() *protos.UserProfile {
 	mType := protos.UserProfileType_value[m.Type]
 
 	return &protos.UserProfile{
+		Id:          m.Id,
 		UserId:      m.UserId,
 		Title:       m.Title,
 		Position:    m.Position,
@@ -156,7 +157,7 @@ func (m *UserProfileModel) CreateModel(sd *surrealdb.DB) error {
 	// pp.Println(m)
 
 	queryTemplate, _ := template.New("createUserProfileModel").Parse(`
-CREATE UserProfile  CONTENT {
+CREATE UserProfile CONTENT {
 	UserId : 		r"{{.UserId}}",
 	Title : 		s"{{.Title}}",
 	Position : 		s"{{.Position}}",
@@ -168,7 +169,7 @@ CREATE UserProfile  CONTENT {
 	Keywords : 		[{{- range $i, $v := .Keywords}}{{- if $i}},{{- end}}r"{{- $v}}"{{- end}}],
 	StartDate : 	s"{{.StartDate}}",
 	EndDate : 		s"{{.EndDate}}",
-}	`)
+}	 RETURN id;`)
 	var doc bytes.Buffer
 	var err error
 	err = queryTemplate.Execute(&doc, m)
@@ -188,13 +189,22 @@ CREATE UserProfile  CONTENT {
 	query = strings.ReplaceAll(query, "$Description", debugContent)
 
 	result, err := sd.Query(query, m)
-	var message map[string]interface{}
-	surrealdb.Unmarshal(result, message)
+
 	if err != nil {
-		fmt.Println("query:", query)
-		pp.Println("message:", message)
-		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message:", result))
 	}
+
+	var queryResult []QueryResult[*UserProfileModel]
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
+	if err != nil {
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		fmt.Printf("error: %v \n", errorWrap)
+		return errorWrap
+		// return nil, err
+	}
+	m.Id = queryResult[0].Result[0].Id
+
 	return nil
 }
 

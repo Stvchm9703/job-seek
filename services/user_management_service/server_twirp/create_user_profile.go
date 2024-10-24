@@ -6,9 +6,14 @@ package server
 import (
 	"context"
 	"fmt"
-	"job-seek/pkg/database/model"
+	"job-seek/pkg/database_v1/model"
 	"job-seek/pkg/protos"
+	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
 
+	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 	"github.com/twitchtv/twirp"
 )
@@ -43,8 +48,8 @@ func (s *UserManagementServiceServerImpl) CreateUserProfile(ctx context.Context,
 		return nil, twirp.NoError.Errorf("Failed to fetch user account: %v", err)
 	}
 
-	// Save the user profile to the database
-	user, err := s.storeUserProfileToDB(req)
+	// Save the profile profile to the database
+	profile, err := s.storeUserProfileToDB(req)
 	if err != nil {
 		s.log.WithFields(logrus.Fields{
 			"error": err,
@@ -53,15 +58,22 @@ func (s *UserManagementServiceServerImpl) CreateUserProfile(ctx context.Context,
 		return nil, twirp.InternalErrorWith(err)
 	}
 
-	go func() {
+	// go func() {
+	s.log.WithFields(logrus.Fields{
+		"user": profile,
+	}).Info("User profile created successfully")
+	s.log.Info("Start to postprocess user profile")
+	req.Id = profile.Id
+	if err := s.fetchUserProfileRelatedJob(req); err != nil {
 		s.log.WithFields(logrus.Fields{
-			"user": user,
-		}).Info("User profile created successfully")
-		s.log.Info("Start to postprocess user profile")
-	}()
+			"error": err,
+		}).Error("Failed to fetch user profile related job")
+	}
+	// }()
 
 	return &protos.UserResponse{
-		UserId:  fmt.Sprintf("%d", user.ID),
+		// UserId:  fmt.Sprintf("%d", user.ID),
+		UserId:  profile.Id,
 		Status:  "success",
 		Message: "User profile created successfully",
 	}, nil
@@ -93,14 +105,137 @@ func checkUserProfileEmptyFields(req *protos.UserProfile) error {
 	return nil
 }
 
-func (s *UserManagementServiceServerImpl) storeUserProfileToDB(user *protos.UserProfile) (*model.UserProfileModel, error) {
+func (s *UserManagementServiceServerImpl) storeUserProfileToDB(profile *protos.UserProfile) (*model.UserProfileModel, error) {
 	// You can use a database query or any other method to save the user
 	// Return an error if the save operation fails, nil otherwise
+	kw := make([]*model.PreferenceKeywordModel, 0)
+	for _, k := range profile.Keywords {
+		kw_m := &model.PreferenceKeywordModel{}
+		kw_m.FromProto(k)
+		if errr := kw_m.CreateModel(s.dbClient); errr != nil {
+			fmt.Println(errr)
+		}
+		kw = append(kw, kw_m)
+	}
+
 	instanceModel := &model.UserProfileModel{}
-	instanceModel.FromProto(user)
+	instanceModel.FromProto(profile)
+	instanceModel.Keywords = lo.Map[*model.PreferenceKeywordModel, string](kw, func(k *model.PreferenceKeywordModel, _ int) string {
+		return k.Id
+	})
 	if err := instanceModel.CreateModel(s.dbClient); err != nil {
 		return nil, err
 	}
 	// Save the user profile to the database
 	return instanceModel, nil
+}
+
+// request the user profile job
+func (s UserManagementServiceServerImpl) fetchUserProfileRelatedJob(request *protos.UserProfile) error {
+	// create grpc client to request the job
+
+	s.log.WithFields(logrus.Fields{
+		"request": request,
+	}).Info("fetchUserProfileRelatedJob")
+
+	job_req := createUserProfileJobParams(request)
+
+	s.log.WithFields(logrus.Fields{
+		"job_req": job_req,
+	}).Info("fetchUserProfileRelatedJob")
+
+	js_client := protos.NewJobSearchServiceProtobufClient(
+		fmt.Sprintf("http://%s:%d", s.config.JobSearchService.Host, s.config.JobSearchService.Port),
+		&http.Client{},
+	)
+	result, err := js_client.UserJobSearch(context.Background(), job_req)
+	if err != nil {
+		s.log.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("Failed to fetch user profile related job from the job search service")
+		return err
+	}
+
+	s.log.WithFields(logrus.Fields{
+		"result": result,
+	}).Info("fetchUserProfileRelatedJob: success return")
+
+	return nil
+}
+
+func createUserProfileJobParams(request *protos.UserProfile) *protos.JobSearchRequest {
+	// create grpc client to request the job
+	if request == nil {
+		return nil
+	}
+
+	reqSet := protos.JobSearchRequest{
+		UserId:     request.UserId,
+		SalaryType: protos.SalaryType_ANNUAL.Enum(),
+	}
+
+	if request.Salary != "" {
+		// salarySet := strings.Split(request.Salary, " - ")
+		salaryReg := regexp.MustCompile(`\$(\d{1,3}(?:,\d{3})*)`)
+		matches := salaryReg.FindAllString(request.Salary, -1)
+		if len(matches) == 2 {
+			minSalary := strings.ReplaceAll(matches[0], ",", "")
+			if minSalaryInt, err := strconv.Atoi(minSalary); err == nil {
+				// minSalaryInt32 := int32(minSalary)
+				minSalaryInt32 := int32(float32(minSalaryInt) * 0.8)
+				reqSet.MinSalary = &minSalaryInt32
+			}
+
+			maxSalary := strings.ReplaceAll(matches[1], ",", "")
+			if maxSalary, err := strconv.Atoi(maxSalary); err == nil {
+				maxSalaryInt32 := int32(maxSalary)
+				maxSalaryInt32 *= 2
+				reqSet.MaxSalary = &maxSalaryInt32
+			}
+		} else if len(matches) == 1 {
+			minSalary := strings.ReplaceAll(matches[0], ",", "")
+			if minSalaryInt, err := strconv.Atoi(minSalary); err == nil {
+				// minSalaryInt32 := int32(minSalary)
+				minSalaryInt32 := int32(float32(minSalaryInt) * 0.8)
+				reqSet.MinSalary = &minSalaryInt32
+			}
+		}
+	}
+
+	if request.Location != "" {
+		workLocale := strings.ReplaceAll(request.Location, "undefined", "")
+		workLocale = strings.ReplaceAll(workLocale, ",", "")
+		m1 := regexp.MustCompile(`^\d+`)
+		workLocale = m1.ReplaceAllString(workLocale, "")
+		reqSet.WorkLocale = &workLocale
+	}
+
+	for _, kw := range request.Keywords {
+		reqSet.Keywords = append(reqSet.Keywords, kw.Value)
+	}
+
+	if request.Type == protos.UserProfileType_EMPLOYEE {
+		classic := int32(0)
+
+		if request.Position != "" {
+			m2 := regexp.MustCompile(`\d+`)
+			captured := m2.FindAllString(request.Position, -1)
+			if len(captured) > 0 {
+				classic32, _ := strconv.Atoi(captured[0])
+				classic = int32(classic32)
+			}
+		}
+
+		reqSet.Classification = &classic
+
+		reqSet.Keywords = append(reqSet.Keywords, fmt.Sprintf("!%s", request.Title))
+	} else {
+
+		reqSet.Keywords = append(reqSet.Keywords, strings.Split(request.Title, ";")...)
+	}
+
+	reqSet.CacheRef = &request.Id
+
+	return &reqSet
+
 }

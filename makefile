@@ -28,6 +28,18 @@ generate-proto: \
 build-job-search-service:
 	go build -o bin/job-search-service services/job_search_service/main.go
 
+build-user-service:
+	go build -o bin/user-management-service services/user_management_service/main.go 
+
+build-predict-service:
+	go build -o bin/prediction-service services/prediction_service/main.go 
+
+
+
+# run services
+run-docker-dev:
+	docker compose -f docker-compose.yml up -d
+
 run-job-search-service:
 	go run services/job_search_service/main.go  -C=config/job_search_service.toml run -V=4
 
@@ -38,8 +50,18 @@ run-predict-service:
 	go run services/prediction_service/main.go  -C=config/prediction_service.toml run -V=4
 
 
+
+run-service:\
+	run-job-search-service \
+	run-user-service \
+	run-predict-service
+
+
+
 build-service:\
-	build-job-search-service
+	build-job-search-service \
+	build-user-service \
+	build-predict-service
 
 tool-generate-service-template:
 	go run tools/generate-service-template/main.go
