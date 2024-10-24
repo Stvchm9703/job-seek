@@ -6,7 +6,7 @@ package server
 import (
 	"context"
 	"fmt"
-	"job-seek/pkg/database/model"
+	"job-seek/pkg/database_v1/model"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/request/linkedin_search"
 	"job-seek/pkg/request/seek_api"
@@ -66,9 +66,29 @@ func (s *JobSearchServiceServerImpl) JobSearch(ctx context.Context, req *protos.
 		// continue to fetch the next page
 		// get the search params from the cache
 		jobCacheList := model.JobCacheListModel{
-			CacheRef:    *req.CacheRef,
-			UserQueryId: *req.CacheRef,
-			PageNumber:  int(*req.PageNumber),
+			CacheRef:   req.GetCacheRef(),
+			PageNumber: int(req.GetPageNumber()),
+		}
+		protosJob, err := jobCacheList.GetJobCacheList(s.dbClient)
+		if err != nil {
+			s.log.WithFields(logrus.Fields{
+				"error": err,
+			}).Error("fail to fetch jobs from cache")
+			// return nil, status.Errorf(codes.Internal, "fail to fetch jobs")
+			return nil, twirp.InternalErrorWith(err)
+		}
+		s.log.WithFields(logrus.Fields{
+			"method":   "JobSearch",
+			"response": protosJob,
+		}).Info("JobSearch response with exist cache called")
+		return protosJob, nil
+	}
+
+	if req.CacheRef != nil {
+		// continue to fetch the next page
+		// get the search params from the cache
+		jobCacheList := model.JobCacheListModel{
+			CacheRef: req.GetCacheRef(),
 		}
 		protosJob, err := jobCacheList.GetJobCacheList(s.dbClient)
 		if err != nil {
@@ -327,6 +347,7 @@ func (s *JobSearchServiceServerImpl) getJobDetail(jobId string) (*protos.Job, er
 
 		return instJobs, nil
 	}
+
 	startTime := time.Now()
 	var jobDetailData *seek_gql.JobDetailResponse
 	jobDetailData, err = seek_gql.GetPostDetailForApi(jobId, &s.config.SeekService)

@@ -4,10 +4,12 @@ import (
 	// "job-seek/pkg/config"
 	// "job-seek/pkg/database"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/request/seek_api"
+	"log"
 	"strings"
 	"text/template"
 
@@ -136,7 +138,7 @@ CREATE JobCacheList:[s"{{.CacheRef}}","{{.UserQueryId}}",{{.PageNumber}}] CONTEN
 	return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message:", message))
 }
 
-func (m *JobCacheListModel) GetJobCacheList(db *surrealdb.DB) (*protos.JobSearchResponse, error) {
+func (m *JobCacheListModel) GetJobCacheListWithQueryId(db *surrealdb.DB) (*protos.JobSearchResponse, error) {
 	if db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
@@ -172,6 +174,49 @@ func (m *JobCacheListModel) GetJobCacheList(db *surrealdb.DB) (*protos.JobSearch
 	}
 
 	return data[0].ToProto(), nil
+}
+
+func (m *JobCacheListModel) GetJobCacheList(db *surrealdb.DB) (*protos.JobSearchResponse, error) {
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	if m.CacheRef == "" {
+		return nil, fmt.Errorf("cache ref is empty")
+	}
+	query := fmt.Sprintf(`
+		SELECT *, 
+			(SELECT *,
+				(SELECT * FROM CompanyDetail
+					WHERE ReferanceId = $parent.Job[*].CompanyDetail
+					Limit 1
+				)[0] AS CompanyDetail
+			FROM Job 
+			WHERE id INSIDE $parent.Job) AS Job
+		FROM JobCacheList
+		WHERE CacheRef = s'%s'
+		;`, m.CacheRef)
+	result, err := db.Query(query, nil)
+	if err != nil {
+		return nil, errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("raw", result))
+	}
+	// pp.Printf("result: %v", result)
+
+	var queryResult []QueryResult[JobCacheListUnmarshalModel]
+	// err = surrealdb.Unmarshal(result, jobqueryResult)
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
+	if err != nil {
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		log.Fatalf("error: %v", errorWrap)
+		return nil, errorWrap
+		// return nil, err
+	}
+
+	if len(queryResult) == 0 || len(queryResult[0].Result) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+
+	return queryResult[0].Result[0].ToProto(), nil
 }
 
 func (m *JobCacheListModel) DefineModel(sd *surrealdb.DB) error {

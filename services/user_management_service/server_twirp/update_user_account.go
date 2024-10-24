@@ -6,7 +6,7 @@ package server
 import (
 	"context"
 	"fmt"
-	"job-seek/pkg/database/model"
+	"job-seek/pkg/database_v1/model"
 	"job-seek/pkg/protos"
 
 	"github.com/sirupsen/logrus"

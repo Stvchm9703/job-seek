@@ -5,9 +5,8 @@ package server
 
 import (
 	"context"
-	"job-seek/pkg/database/model"
+	"job-seek/pkg/database_v1/model"
 	"job-seek/pkg/protos"
-	"strconv"
 
 	logrus "github.com/sirupsen/logrus"
 	"github.com/twitchtv/twirp"
@@ -20,11 +19,11 @@ func (s *UserManagementServiceServerImpl) ListUserProfile(ctx context.Context, r
 		"request": req,
 	}).Info("GetUserProfile")
 
-	if err := checkFetchUserAccountEmptyFields(req); err != nil {
+	if req.UserId == nil {
 		s.log.WithFields(logrus.Fields{
-			"error": err,
+			"req": req,
 		}).Error("Failed to fetch user profile, empty fields")
-		return nil, err
+		return nil, twirp.InvalidArgumentError("UserId", "Failed to fetch user profile, empty fields")
 	}
 
 	profiles, err := s.fetchUserProfiles(req.GetUserId())
@@ -55,12 +54,14 @@ func (s *UserManagementServiceServerImpl) ListUserProfile(ctx context.Context, r
 func (s *UserManagementServiceServerImpl) fetchUserProfiles(userId string) ([]*protos.UserProfile, error) {
 	// You can use a database query or any other method to save the user
 	// Return an error if the save operation fails, nil otherwise
-	userIdInt, _ := strconv.Atoi(userId)
-	println(userIdInt)
+	// userIdInt, _ := strconv.Atoi(userId)
+	// println(userIdInt)
 
-	instanceModel := model.UserProfileModel{}
-	userIdUint64 := uint64(userIdInt)
-	instanceModel.UserID = &userIdUint64
+	instanceModel := model.UserProfileModel{
+		UserId: userId,
+	}
+	// userIdUint64 := uint64(userIdInt)
+	// instanceModel.UserID = &userIdUint64
 
 	user, err := instanceModel.GetModelByUserId(s.dbClient)
 	if err != nil {

@@ -120,12 +120,8 @@ LET $is_exist = (
         OR UserEmail = $UserEmail
         OR UserPhone = $UserPhone
 );
+IF count($is_exist) > 0 { THROW 'User already exist'; } ;
 
-IF count($is_exist) > 0
-{
-    THROW 'User already exist';
-}
-;
 CREATE UserAccount CONTENT {
 	UserAddress: $UserAddress,
 	UserEmail: $UserEmail,

@@ -5,8 +5,7 @@ package server
 
 import (
 	"context"
-	"fmt"
-	"job-seek/pkg/database/model"
+	"job-seek/pkg/database_v1/model"
 	"job-seek/pkg/protos"
 
 	"github.com/sirupsen/logrus"
@@ -35,7 +34,8 @@ func (s *UserManagementServiceServerImpl) CreateUserAccount(ctx context.Context,
 
 	// Return the user response
 	return &protos.UserResponse{
-		UserId:  fmt.Sprintf("%d", user.Model.ID),
+		// UserId:  fmt.Sprintf("%d", user.ID),
+		UserId:  user.ID,
 		Status:  "success",
 		Message: "User account created successfully",
 	}, nil

@@ -14,7 +14,7 @@ func InitConnection(conf *config.DatabaseConfig, database string) (*surrealdb.DB
 
 	db, err := surrealdb.New(conn)
 	if err != nil {
-		fmt.Errorf("Failed to connect to database: %v \n", err)
+		fmt.Printf("Failed to connect to database: %v \n", err)
 		return nil, err
 	}
 
@@ -27,17 +27,15 @@ func InitConnection(conf *config.DatabaseConfig, database string) (*surrealdb.DB
 	if _, err = db.Signin(map[string]interface{}{
 		"user": conf.User,
 		"pass": conf.Password,
-		// "user": "root",
-		// "pass": "root",
-		// "NS":   namespace,
-		// "DB":   database,
+		"NS":   namespace,
+		"DB":   database,
 	}); err != nil {
-		fmt.Errorf("Failed to sign-in to database: %v \n", err)
+		fmt.Printf("Failed to sign-in to database: %v \n", err)
 		return nil, err
 	}
 
 	if _, err = db.Use(namespace, database); err != nil {
-		fmt.Errorf("Failed to use %s:%s %v \n", namespace, database, err)
+		fmt.Printf("Failed to use %s:%s %v \n", namespace, database, err)
 		return nil, err
 	}
 

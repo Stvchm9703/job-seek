@@ -65,8 +65,14 @@ func (s *JobSearchServiceServerImpl) UserJobSearch(ctx context.Context, req *pro
 		"combinedKeywords": combinedKeywords,
 		"jobRequest":       jobRequest,
 	}).Trace("UserJobSearch called")
-	cacheRef, _ := uuid.NewV7()
-	cacheRefString := cacheRef.String()
+
+	var cacheRefString string
+	if req.GetCacheRef() != "" {
+		cacheRefString = req.GetCacheRef()
+	} else {
+		cacheRef, _ := uuid.NewV7()
+		cacheRefString = cacheRef.String()
+	}
 
 	postData, err := s.getPostJobsListSinglar(cacheRefString, combinedKeywords, jobRequest)
 	if err != nil {

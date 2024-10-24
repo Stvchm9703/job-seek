@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"job-seek/pkg/database"
+	database "job-seek/pkg/database_v1"
 	"job-seek/pkg/protos"
 	"job-seek/pkg/service_util"
 	runConf "job-seek/services/job_search_service/config"
@@ -11,16 +11,16 @@ import (
 	"sync"
 
 	logrus "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
+	surrealdb "github.com/surrealdb/surrealdb.go"
 )
 
 type JobSearchServiceServerImpl struct {
 	log    *logrus.Logger
 	config *runConf.ServiceConfig
 
-	mut *sync.Mutex
-	// dbClient *surrealdb.DB
-	dbClient *gorm.DB
+	mut      *sync.Mutex
+	dbClient *surrealdb.DB
+	// dbClient *gorm.DB
 	// other implement here
 }
 
@@ -35,9 +35,9 @@ func (s *JobSearchServiceServerImpl) Shutdown() error {
 
 	s.log.Info("Closing database connection")
 	if s.dbClient != nil {
-		// s.dbClient.Close()
-		dbInstance, _ := s.dbClient.DB()
-		dbInstance.Close()
+		s.dbClient.Close()
+		// dbInstance, _ := s.dbClient.DB()
+		// dbInstance.Close()
 		// s.dbClient = nil
 	} else {
 		s.log.Warn("Database connection is nil pointer, check the memmory leak")
@@ -49,7 +49,7 @@ func (s *JobSearchServiceServerImpl) Shutdown() error {
 
 func InitService(config *runConf.ServiceConfig, log *logrus.Logger) JobSearchServiceServerImpl {
 
-	dbClient, err := database.InitConnection(&config.DBService, "development")
+	dbClient, err := database.InitConnection(&config.SurrealDBService, "development")
 	log.Info("Connecting to database")
 	if err != nil {
 		println("Failed to connect to database in InitService")

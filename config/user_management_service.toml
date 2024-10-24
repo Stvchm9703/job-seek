@@ -1,10 +1,11 @@
 host = "127.0.0.1"
 port = 60020
-# [surreal_db_service]
+[surreal_db_service]
 # host = '192.168.0.102'
-# port = 8654
-# user = "user_account_service"
-# password = "jobseek_user_account"
+host = '127.0.0.1'
+port = 8654
+user = "user_management_service"
+password = "service_user_management"
 
 [sql_db_service]
 database_path = "db/job_search_service.db"

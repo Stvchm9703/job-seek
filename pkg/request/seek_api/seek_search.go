@@ -98,6 +98,7 @@ type SeekApiTokenRequest struct {
 // 	return responseData, res, nil
 // }
 
+// / !deprecated
 func SeekSearchApiWithPreset(paramsPreset *SeekSearchApiParams, searchKeyWord string, pageNumber int, userId string, userQueryId string) (SeekSearchApiResponse, error) {
 
 	client := sling.New().Base("https://www.seek.com.au/api/chalice-search/v4/").

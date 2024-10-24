@@ -5,6 +5,7 @@ package model
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"job-seek/pkg/protos"
@@ -17,12 +18,12 @@ import (
 )
 
 type PreferenceKeywordModel struct {
-	Id         string `json:"kw_id"`
-	UserId     string `json:"user_id"`
-	Keyword    string `json:"keyword"`
-	Value      string `json:"value"`
-	Type       string `json:"type"`
-	IsPositive bool   `json:"is_positive"`
+	Id         string `json:"id,omitempty"`
+	UserId     string `json:"user_id,omitempty"`
+	Keyword    string `json:"keyword,omitempty"`
+	Value      string `json:"value,omitempty"`
+	Type       string `json:"type,omitempty"`
+	IsPositive bool   `json:"is_positive,omitempty"`
 }
 
 func (m *PreferenceKeywordModel) ToProto() *protos.PreferenceKeyword {
@@ -96,14 +97,14 @@ func (m *PreferenceKeywordModel) CreateModel(sd *surrealdb.DB) error {
 
 	// result, err := sd.Create("PreferenceKeyword", m)
 
-	queryTemplate, _ := template.New("createCompanyDetail").Parse(`
-INSERT INTO CompanyDetail  {
+	queryTemplate, _ := template.New("createPreferenceKeyword").Parse(`
+CREATE PreferenceKeyword CONTENT {
 	UserId: r"{{.UserId}}",
 	Keyword: s"{{.Keyword}}",
 	Value: s"{{.Value}}",
 	Type: s"{{.Type}}",
-	IsPositive {{.IsPositive}},
-};
+	IsPositive: {{.IsPositive}},
+} RETURN id;
 	`)
 	var doc bytes.Buffer
 	var err error
@@ -118,13 +119,24 @@ INSERT INTO CompanyDetail  {
 	// query = strings.ReplaceAll(query, "\"", "'")
 	query = strings.Join(strings.Fields(strings.TrimSpace(query)), " ")
 	result, err := sd.Query(query, m)
-	var message map[string]interface{}
-	surrealdb.Unmarshal(result, message)
+
 	if err != nil {
-		fmt.Println("query:", query)
-		pp.Println("message:", message)
-		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message: %v", message))
+		return errors.Join(err, fmt.Errorf("query: %s", query), pp.Errorf("message:", result))
 	}
+
+	var queryResult []QueryResult[*PreferenceKeywordModel]
+	jsonResult, _ := json.Marshal(result)
+	err = json.Unmarshal(jsonResult, &queryResult)
+	if err != nil {
+		errorWrap := errors.Join(err, fmt.Errorf("query: %s", query), fmt.Errorf("raw: %s", jsonResult))
+		fmt.Printf("error: %v \n", errorWrap)
+		return errorWrap
+		// return nil, err
+	}
+	// pp.Println("queryResult:", queryResult)
+	// update the model id
+	m.Id = queryResult[0].Result[0].Id
+
 	return nil
 }
 
